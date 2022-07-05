@@ -5,6 +5,8 @@ Created on Mon Jul  4 16:13:12 2022
 @author: Callum Marples
 """
 
+
+# Ellipsoid shape class, containing the a, b and c semi-axes of an ellipsoid
 class EllipsoidShape:
     
     def __init__(self, a=1.0, b=1.0, c=1.0):

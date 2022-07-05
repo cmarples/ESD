@@ -1,0 +1,14 @@
+# ignore all contents of the data/ directory
+data/
+
+# ignore doc/notes.txt, but not doc/server/arch.txt
+doc/*.txt
+
+# ignore all .pdf files in the doc/ directory and any of its subdirectories
+doc/**/*.pdf
+
+# ignore VS Code
+.vscode/
+
+# ignore __pycache__
+ellipsoid_geodesics/__pycache__
