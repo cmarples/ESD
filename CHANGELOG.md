@@ -1,6 +1,11 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-07-07
+### Added
+- Determination of neighbouring pixels
+- Function to get (or calculate) distance between neighbouring pixel centres.
+
 ## 2022-07-06
 ### Modified
 - Changed the name of the project to 'LEOD', Library for Ellipsoid cOmputational Determination.

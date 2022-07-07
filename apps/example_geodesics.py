@@ -9,6 +9,9 @@ It works by generating the necessary objects and calculating the distances
 for a simple example.
 """
 
+import os
+os.chdir("..")
+
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
 

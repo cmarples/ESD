@@ -6,6 +6,7 @@ Created on Tue Jul  5 14:30:04 2022
 """
 
 import math
+import numpy as np
 from .ellipsoid_shape import EllipsoidShape
 from .geo_pixel import GeoPixel
 
@@ -39,6 +40,8 @@ class GeoGrid:
                                                self.phi_list[phi_index] )
             self.pixel.append(GeoPixel(i, theta_index, phi_index,
                                        carts, self.no_pixels) )
+        # Set array sizes for pixel neighbour information
+        self.find_neighbour_indices()
             
     # Get pixel index from theta and phi indices
     def find_pixel_index(self, theta_index, phi_index):
@@ -72,11 +75,95 @@ class GeoGrid:
                  self.shape.b_axis * sin_theta * math.sin(phi),
                  self.shape.c_axis * math.cos(theta) ]
         
+    # Find indices of neighbouring pixels
+    # Each pixel has four neighbours. For non-polar pixels, neighbours are
+    # always ordered as "Up, Down, Left, Right".
+    def find_neighbour_indices(self):
+        # Pole neighbours
+        for i in range(self.no_phi):
+            self.pixel[0].neighbour.append(1+i)
+            self.pixel[0].neighbour_distance.append(-1.0)
+            self.pixel[self.no_pixels-1].neighbour.append(self.no_pixels-2-i)
+            self.pixel[self.no_pixels-1].neighbour_distance.append(-1.0)
+        # Non-pole neighbours
+        for i in range(1, self.no_theta-1):
+            for j in range(self.no_phi):
+                pixel_no = self.find_pixel_index(i, j)
+                # Initialise distances
+                self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
+                # Up neighbour (minus theta)
+                if i == 1:
+                    pixel_neighbour = 0
+                else:
+                    pixel_neighbour = self.find_pixel_index(i-1, j)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+                # Down neighbour (plus theta)
+                if i == self.no_theta-2:
+                    pixel_neighbour = self.no_pixels - 1
+                else:
+                    pixel_neighbour = self.find_pixel_index(i+1, j)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)   
+                # Left neighbour (minus phi)
+                if j == 0:
+                    pixel_neighbour = self.find_pixel_index(i, self.no_phi-1)
+                else:
+                    pixel_neighbour = self.find_pixel_index(i, j-1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+                # Right neighbour (plus phi)
+                if j == self.no_phi-1:
+                    pixel_neighbour = self.find_pixel_index(i, 0)
+                else:
+                    pixel_neighbour = self.find_pixel_index(i, j+1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
+                
+    # Get Euclidean distance between pixel i and neighbour k.
+    # If this distance has not been calculated yet, then do so.
+    def get_distance(self, pix_i, k):
+        # pix_i : first pixel
+        # k : neighbour number (if non-pole, must be 1, 2, 3, or 4)
+        # j : index of second pixel (calculated from i and k)
+        if pix_i.neighbour_distance[k] == -1.0:
+            # Calculate Euclidean distance between pixel i and its neighbour j
+            j = pix_i.neighbour[k]
+            #pix_i.neighbour_distance[k] = euclidean_distance(pix_i, self.pixel[j])
+            pix_i.neighbour_distance[k] = math.sqrt( np.sum((pix_i.carts - self.pixel[j].carts)**2.0) )
+            # Assign this distance to the relevant neighbour of pixel j.
+            # Neighbours are always ordered as "0, 1, 2, 3" = "Up, Down, Left, Right".
+            # e.g. if j is the "down" neighbour of i, then i must be the "up" neighbour of j.
+            if pix_i.theta_index == 0:
+                self.pixel[j].neighbour_distance[0] = pix_i.neighbour_distance[k]
+            elif k == 0 or pix_i.theta_index == self.no_theta-1:
+                self.pixel[j].neighbour_distance[1] = pix_i.neighbour_distance[k]
+            elif k == 1:
+                self.pixel[j].neighbour_distance[0] = pix_i.neighbour_distance[k]
+            elif k == 2:
+                self.pixel[j].neighbour_distance[3] = pix_i.neighbour_distance[k]
+            else:
+                self.pixel[j].neighbour_distance[2] = pix_i.neighbour_distance[k]
+        return pix_i.neighbour_distance[k]
     
-            
+
     
+    
+    
+    
+
+    
+
     
 '''
+
+
+if (i.inTheta == 0) { pixel[j].neighbourDistance[0] = i.neighbourDistance[k]; }
+        else if (k == 0 || i.inTheta == mpPatches->GetNTheta()-1) { pixel[j].neighbourDistance[1] = i.neighbourDistance[k]; }
+        else if (k == 1) { pixel[j].neighbourDistance[0] = i.neighbourDistance[k]; }
+        else if (k == 2) { pixel[j].neighbourDistance[3] = i.neighbourDistance[k]; }
+        else { pixel[j].neighbourDistance[2] = i.neighbourDistance[k]; }
+    }
+    return (i.neighbourDistance[k]);
+    
+    
+    
 friend class GeoFMM;
     friend class ContactDistribution;
     public:

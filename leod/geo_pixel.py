@@ -17,6 +17,8 @@ class GeoPixel:
         self.phi_index = phi_index
         self.carts = np.array(carts)
         self.set_pole(no_pixels)
+        self.neighbour = []
+        self.neighbour_distance = []
 
     def set_pole(self, no_pixels):
         if self.pixel_index == 0:

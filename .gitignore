@@ -11,4 +11,4 @@ doc/**/*.pdf
 .vscode/
 
 # ignore __pycache__
-ellipsoid_geodesics/__pycache__
+leod/__pycache__
