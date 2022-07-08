@@ -7,6 +7,8 @@ Created on Tue Jul  5 14:30:04 2022
 
 import math
 import numpy as np
+
+from .binary_search import binary_search
 from .ellipsoid_shape import EllipsoidShape
 from .geo_pixel import GeoPixel
 
@@ -34,8 +36,8 @@ class GeoGrid:
         # Construct a list of pixel objects
         self.pixel = []
         for i in range(self.no_pixels):
-            theta_index = self.find_theta_index(i)
-            phi_index = self.find_phi_index(i, theta_index)
+            theta_index = self.get_theta_index(i)
+            phi_index = self.get_phi_index(i, theta_index)
             carts = self.polars_to_cartesians( self.theta_list[theta_index],
                                                self.phi_list[phi_index] )
             self.pixel.append(GeoPixel(i, theta_index, phi_index,
@@ -44,7 +46,7 @@ class GeoGrid:
         self.find_neighbour_indices()
             
     # Get pixel index from theta and phi indices
-    def find_pixel_index(self, theta_index, phi_index):
+    def get_pixel_index(self, theta_index, phi_index):
         if theta_index > 0 and theta_index < self.no_theta-1:
             return 1 + phi_index + self.no_phi*(theta_index-1)
         elif theta_index == 0:
@@ -53,7 +55,7 @@ class GeoGrid:
             return self.no_pixels - 1
         
     # Get theta index from pixel index
-    def find_theta_index(self, pixel_index):
+    def get_theta_index(self, pixel_index):
         if pixel_index > 0 and pixel_index < self.no_pixels-1:
             return math.ceil(float(pixel_index)/float(self.no_phi))
         elif pixel_index == 0:
@@ -64,8 +66,20 @@ class GeoGrid:
             return self.no_theta
         
     # Get phi index from pixel index and theta index
-    def find_phi_index(self, pixel_index, theta_index):
+    def get_phi_index(self, pixel_index, theta_index):
         return ( pixel_index - 1 - self.no_phi*(theta_index-1) )
+    
+    # Find theta index closest to given theta value, th
+    def find_theta_index(self, th):
+        return binary_search(self.theta_list, th)
+    
+    # Find phi index closest to given phi value, ph
+    def find_phi_index(self, ph):
+        index = binary_search(self.phi_list, ph)
+        if index == self.no_phi:
+            return 0
+        else:
+            return index
     
     # Calculate Cartesian coordinates of a given (theta, phi) point
     # on the ellipsoid, self.shape. Return the coordinates as a list
@@ -88,32 +102,32 @@ class GeoGrid:
         # Non-pole neighbours
         for i in range(1, self.no_theta-1):
             for j in range(self.no_phi):
-                pixel_no = self.find_pixel_index(i, j)
+                pixel_no = self.get_pixel_index(i, j)
                 # Initialise distances
                 self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
                 # Up neighbour (minus theta)
                 if i == 1:
                     pixel_neighbour = 0
                 else:
-                    pixel_neighbour = self.find_pixel_index(i-1, j)
+                    pixel_neighbour = self.get_pixel_index(i-1, j)
                 self.pixel[pixel_no].neighbour.append(pixel_neighbour)
                 # Down neighbour (plus theta)
                 if i == self.no_theta-2:
                     pixel_neighbour = self.no_pixels - 1
                 else:
-                    pixel_neighbour = self.find_pixel_index(i+1, j)
+                    pixel_neighbour = self.get_pixel_index(i+1, j)
                 self.pixel[pixel_no].neighbour.append(pixel_neighbour)   
                 # Left neighbour (minus phi)
                 if j == 0:
-                    pixel_neighbour = self.find_pixel_index(i, self.no_phi-1)
+                    pixel_neighbour = self.get_pixel_index(i, self.no_phi-1)
                 else:
-                    pixel_neighbour = self.find_pixel_index(i, j-1)
+                    pixel_neighbour = self.get_pixel_index(i, j-1)
                 self.pixel[pixel_no].neighbour.append(pixel_neighbour)
                 # Right neighbour (plus phi)
                 if j == self.no_phi-1:
-                    pixel_neighbour = self.find_pixel_index(i, 0)
+                    pixel_neighbour = self.get_pixel_index(i, 0)
                 else:
-                    pixel_neighbour = self.find_pixel_index(i, j+1)
+                    pixel_neighbour = self.get_pixel_index(i, j+1)
                 self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
                 
     # Get Euclidean distance between pixel i and neighbour k.
@@ -125,7 +139,6 @@ class GeoGrid:
         if pix_i.neighbour_distance[k] == -1.0:
             # Calculate Euclidean distance between pixel i and its neighbour j
             j = pix_i.neighbour[k]
-            #pix_i.neighbour_distance[k] = euclidean_distance(pix_i, self.pixel[j])
             pix_i.neighbour_distance[k] = math.sqrt( np.sum((pix_i.carts - self.pixel[j].carts)**2.0) )
             # Assign this distance to the relevant neighbour of pixel j.
             # Neighbours are always ordered as "0, 1, 2, 3" = "Up, Down, Left, Right".
@@ -142,44 +155,3 @@ class GeoGrid:
                 self.pixel[j].neighbour_distance[2] = pix_i.neighbour_distance[k]
         return pix_i.neighbour_distance[k]
     
-
-    
-    
-    
-    
-
-    
-
-    
-'''
-
-
-if (i.inTheta == 0) { pixel[j].neighbourDistance[0] = i.neighbourDistance[k]; }
-        else if (k == 0 || i.inTheta == mpPatches->GetNTheta()-1) { pixel[j].neighbourDistance[1] = i.neighbourDistance[k]; }
-        else if (k == 1) { pixel[j].neighbourDistance[0] = i.neighbourDistance[k]; }
-        else if (k == 2) { pixel[j].neighbourDistance[3] = i.neighbourDistance[k]; }
-        else { pixel[j].neighbourDistance[2] = i.neighbourDistance[k]; }
-    }
-    return (i.neighbourDistance[k]);
-    
-    
-    
-friend class GeoFMM;
-    friend class ContactDistribution;
-    public:
-        GeoGrid();
-        GeoGrid(EllipsoidShape& E, EllipsoidPatches& P);
-        /** Get Euclidean distance between pixel i and neighbour k. If this distance has not been calculated yet, then do so. */
-        double GetDistance(GeoPixel& i, int& k);
-        std::vector<GeoPixel> GetPixels() { return pixel; }
-        void InitialiseStickySiteParameters(double sigmaDegrees);
-        double GetUpperPatchWidth() { return upperPatchWidth; }
-        double GetCutoff() { return cutoffGeoDistance; }
-
-        std::shared_ptr<EllipsoidPatches> mpPatches;    /**< Information on the set of patches. */
-    private:
-        std::shared_ptr<EllipsoidShape> mpShape;        /**< Ellipsoid shape on which geodesics are to be calculated. */
-        std::vector<GeoPixel> pixel;                    /**< Array of pixels corresponding to the given shape. */
-        double upperPatchWidth;
-        double cutoffGeoDistance;
-'''
