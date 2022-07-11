@@ -11,9 +11,11 @@ import os
 os.chdir("..")
 
 import unittest
+import math
 
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
+from leod.geo_fmm import GeoFMM
 
 class TestGeo(unittest.TestCase):
 
@@ -25,9 +27,9 @@ class TestGeo(unittest.TestCase):
         G = GeoGrid(E, 19, 36)
         
         # Test pixel finders
-        self.assertEqual(G.find_pixel_index(12, 19), 416, "Should be 416")
-        self.assertEqual(G.find_theta_index(416), 12, "Should be 12")
-        self.assertEqual(G.find_phi_index(416, 12), 19, "Should be 19")
+        self.assertEqual(G.get_pixel_index(12, 19), 416, "Should be 416")
+        self.assertEqual(G.get_theta_index(416), 12, "Should be 12")
+        self.assertEqual(G.get_phi_index(416, 12), 19, "Should be 19")
         
         # Test neighbour distance (using poles and symmetry)
         neighbour = 0
@@ -36,14 +38,22 @@ class TestGeo(unittest.TestCase):
         d_south = G.get_distance(G.pixel[613], neighbour)
         self.assertAlmostEqual(d_north, d_south, 7, "By symmetry, these should be equal")
         
+        # Test geodesic distances for a particular example
+        grid = GeoGrid(E, 181, 360)
+        th_0 = 90.0 * math.pi / 180.0
+        ph_0 = 0.0
+        fmm0 = GeoFMM(grid, th_0, ph_0)
+        fmm1 = GeoFMM(grid, th_0, ph_0)
+        
+        th_1 = 50.0 * math.pi / 180.0
+        ph_1 = 60.0 * math.pi / 180.0
+        
+        d0 = fmm0.calculate_geodesics(0, th_1, ph_1)
+        d1 = fmm1.calculate_geodesics(1, th_1, ph_1)
+        
+        self.assertAlmostEqual(d0, 2.8676959922, 7, "Expect d = 2.8676959922 for 4-neighbour Dijkstra")
+        self.assertAlmostEqual(d1, 2.3854095543, 7, "Expect d = 2.3854095543 for 1st order FMM")
+        
 if __name__ == '__main__':
     unittest.main()
     
-    
-    '''
-    double n = G.GetDistance(pixel[0], neighbour);
-    neighbour = 35;
-    double s = G.GetDistance(pixel[613], neighbour);
-
-    REQUIRE( isApproximate(n, s, 1.0e-9) );
-    '''

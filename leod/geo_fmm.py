@@ -79,7 +79,7 @@ class GeoFMM:
             pix.neighbour_distance.append( euclidean_distance(pix, self.grid.pixel[pixel_neighbour]) )
             # Left neighbour (minus phi)
             if j == 0:
-                pixel_neighbour = self.grid.get_pixel_index(i, self.no_phi-1)
+                pixel_neighbour = self.grid.get_pixel_index(i, self.grid.no_phi-1)
             else:
                 pixel_neighbour = self.grid.get_pixel_index(i, j-1)
             pix.neighbour.append(pixel_neighbour)
@@ -102,8 +102,8 @@ class GeoFMM:
             # Set end pixel.
             self.end_pixel = self.initialise_pixel(theta_end, phi_end)
             # Perfrom wavefront propagation loop.
-            
-            return -1.0
+            self.perform_loop(order, end_flag=True, refine_flag=False)
+            return self.end_distance
         else:
             # Compute shortest distance from start point to all other pixels.
             # Perfrom wavefront propagation loop.
@@ -118,6 +118,7 @@ class GeoFMM:
             self.end_flag = True
         else:
             self.end_flag == False
+        self.geo_distances[self.start_pixel.pixel_index] = 0.0
         queue = [(0.0, self.start_pixel.pixel_index)]
         no_alive = 0 # Number of pixels with a set distance
         # Perform wavefront propagation
@@ -127,27 +128,47 @@ class GeoFMM:
             # If obtained trial index already alive, skip iteration
             if self.alive[trial] == True:
                 continue
+            
             # Set trial pixel to alive
             self.alive[trial] = True
             no_alive += 1
+            
             # Check end point
-            if end_flag == True:
+            if self.end_flag == True:
                 if trial == self.end_pixel.pixel_index:
-                    # end_distance = ...
+                    self.end_distance = self.fmm_distance(end_prev, self.end_pixel.pixel_index, end_neighbour, order)
                     break
+                
             # Visit neighbours of trial pixel
             for i in range(len(self.grid.pixel[trial].neighbour)):
                 visit = self.grid.pixel[trial].neighbour[i]
                 if self.alive[visit] == True:
                     continue
-                #proposed_distance = ...
+                proposed_distance = self.fmm_distance(trial, visit, i, order)
+                if proposed_distance < self.geo_distances[visit]:
+                    # Add visited pixel to the queue and update value in geo_distances
+                    self.geo_distances[visit] = proposed_distance
+                    heapq.heappush(queue, (proposed_distance, visit))
+                    # If appropriate, record pixel used to derive this distance
+                    if self.end_flag == True:
+                        if visit == self.end_pixel.pixel_index:
+                            end_prev = trial
+                            end_neighbour = i
+                        
         
         
         
     # Determine distance from a trial to visited pixel
     def fmm_distance(self, trial, visit, neighbour_no, order):
         if order > 0: # Fast marching method
-            proposed_distance = -1.0
+            if visit == 0 or visit == self.grid.no_pixels-1: # If visited pixel is a pole
+                proposed_distance = -1.0
+            else:
+                proposed_distance = self.fast_marching_method(visit, order)
+            # If the fast marching method is not applicable, get a distance of -1
+            # and Dijkstra's algorithm (point-to-point distance) is used instead.
+            if proposed_distance == -1.0:
+                proposed_distance = self.point_to_point_distance(trial, neighbour_no)
         else:         # Dijkstra's algorithm
             proposed_distance = self.point_to_point_distance(trial, neighbour_no)
         return proposed_distance
@@ -166,9 +187,110 @@ class GeoFMM:
                 proposed_distance = self.grid.get_distance(self.grid.pixel[trial], neighbour_no)
         proposed_distance += self.geo_distances[trial]
         return proposed_distance
+    
+    # Determine neighbour-to-neighbour distance (including start/end pixel cases)
+    def neighbour_distance(self, visit, neighbour_no):
+        neighbour_dist = 0.0
+        if self.grid.pixel[visit].neighbour[neighbour_no] == self.start_pixel.pixel_index:
+            # Get neighbour number of visit pixel relative to start pixel
+            if self.grid.pixel[visit].neighbour[neighbour_no] == 0: # Neighbour is north pole
+                neighbour_dist = self.start_pixel.neighbour_distance[visit-1]
+            elif self.grid.pixel[visit].neighbour[neighbour_no] == self.grid.no_pixels-1: # Neighbour is south pole
+                neighbour_dist = self.start_pixel.neighbour_distance[self.grid.no_pixels-2-visit]
+            else: # Neighbour not a pole
+                if neighbour_no == 0:
+                    neighbour_dist = self.start_pixel.neighbour_distance[1]
+                elif neighbour_no == 1:
+                    neighbour_dist = self.start_pixel.neighbour_distance[0]
+                elif neighbour_no == 2:
+                    neighbour_dist = self.start_pixel.neighbour_distance[3]
+                elif neighbour_no == 3:
+                    neighbour_dist = self.start_pixel.neighbour_distance[2]
+        elif self.end_flag == True:
+            if visit == self.end_pixel.pixel_index:
+                neighbour_dist = self.end_pixel.neighbour_distance[neighbour_no]
+            else:
+                neighbour_dist = self.grid.get_distance(self.grid.pixel[visit], neighbour_no)
+        else:
+            neighbour_dist = self.grid.get_distance(self.grid.pixel[visit], neighbour_no)
+        return neighbour_dist
+    
+    
+    
+    # Calculate distances using the fast marching method
+    def fast_marching_method(self, visit, order):
+        # Check for existence of 'alive' neighbours
+        if ( ( self.alive[self.grid.pixel[visit].neighbour[0]] == True or self.alive[self.grid.pixel[visit].neighbour[1]] == True  ) and
+             ( self.alive[self.grid.pixel[visit].neighbour[2]] == True or self.alive[self.grid.pixel[visit].neighbour[3]] == True  ) ):
+            # i.e. If up or down neighbour alive AND left or right neighbour alive, use fast marching method
+            
+            # Determine whether Up or Down neighbour has smallest distance from start - use for theta distance.
+            pix_theta = self.grid.pixel[visit].neighbour[0]
+            neighbour_theta = 0     # Up
+            dist_theta = self.geo_distances[pix_theta]
+            if self.geo_distances[self.grid.pixel[visit].neighbour[1]] < dist_theta:
+                pix_theta = self.grid.pixel[visit].neighbour[1]
+                dist_theta = self.geo_distances[pix_theta]
+                neighbour_theta = 1 # Down
+            
+            # Determine whether Left or Right neighbour has smallest distance from start - use for phi distance. 
+            pix_phi = self.grid.pixel[visit].neighbour[2]
+            neighbour_phi = 2     # Left
+            dist_phi = self.geo_distances[pix_phi]
+            if self.geo_distances[self.grid.pixel[visit].neighbour[3]] < dist_phi:
+                pix_phi = self.grid.pixel[visit].neighbour[3]
+                dist_phi = self.geo_distances[pix_phi]
+                neighbour_phi = 3 # Right
+            
+            # Get distances from visited pixel to these neighbours
+            delta_theta = self.neighbour_distance(visit, neighbour_theta)
+            delta_phi = self.neighbour_distance(visit, neighbour_phi)
+            
+            # Use the fast marching method to calculate distance from start to visited pixel
+            if order == 2:
+                # 2nd Order FMM
+                proposed_distance = -1
+            else:
+                # 1st Order FMM
+             
+                # Square reciprocals of the visit-to-neighbour distances
+                r2_theta = 1.0 / (delta_theta*delta_theta)
+                r2_phi = 1.0 / (delta_phi*delta_phi)
+             
+                # Set up quadratic
+                terms = [0] * 3 # [alpha, beta, gamma] with quadratic alpha*x^2 + beta*x + gamma = 0
+                terms[0] = r2_theta + r2_phi
+                terms[1] = -2.0*(dist_theta*r2_theta + dist_phi*r2_phi)
+                terms[2] = (dist_theta/delta_theta)**2 + (dist_phi/delta_phi)**2 - 1.0
+                proposed_distance = self.solve_quadratic(terms)
+        else: # If no alive neighbour exists, use point-to-point distance
+            proposed_distance = -1.0
+        return proposed_distance
+                
+                    
+    
+    # Calculate quadratic terms for the fast marching method.
+    # This only handles one of two directions (theta or phi) and is used
+    # in the 2nd order FMM when only one double neighbour exists.
+    def quadratic_terms(self, dist1, dist2, delta1, delta2, order):
+        terms = [0] * 3 # [alpha, beta, gamma] with quadratic alpha*x^2 + beta*x + gamma = 0
+        if order == 2:
+            terms[0] = -1
+            terms[1] = -1
+            terms[2] = -1
+        elif order == 1:
+            terms[0] = 1.0/(delta1*delta1)
+            terms[1] = -2.0*terms[0]*dist1
+            terms[2] = terms[0]*dist1*dist1
+        return terms
+    
+    # Solve quadratic for fast marching method, using terms obtained from the
+    # quadratic_terms function.
+    def solve_quadratic(self, terms):
+        discr = terms[1]*terms[1] - 4.0*terms[0]*terms[2]
+        if discr > 0:
+            proposed_distance = (-terms[1] + math.sqrt(discr)) / (2.0*terms[0])
+        else:
+            proposed_distance = -1.0 # Use point-to-point distance via Dijkstra's algorithm instead
+        return proposed_distance
         
-        
-        
-        
-        
-        return 0
