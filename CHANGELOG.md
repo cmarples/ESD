@@ -1,6 +1,13 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-07-11
+### Added
+- Implementation of the 4-neighbour Dijkstra algorithm (started 2022-07-08).
+- Implementation of the first order fast marching method.
+- Implementation of the second order fast marching method.
+- Testing of 4-neighbour Dijkstra, 1st and 2nd order FMM; comparing to test from EORL.
+
 ## 2022-07-07
 ### Added
 - Determination of neighbouring pixels

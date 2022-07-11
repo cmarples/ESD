@@ -44,15 +44,18 @@ class TestGeo(unittest.TestCase):
         ph_0 = 0.0
         fmm0 = GeoFMM(grid, th_0, ph_0)
         fmm1 = GeoFMM(grid, th_0, ph_0)
+        fmm2 = GeoFMM(grid, th_0, ph_0)
         
         th_1 = 50.0 * math.pi / 180.0
         ph_1 = 60.0 * math.pi / 180.0
         
         d0 = fmm0.calculate_geodesics(0, th_1, ph_1)
         d1 = fmm1.calculate_geodesics(1, th_1, ph_1)
+        d2 = fmm2.calculate_geodesics(2, th_1, ph_1)
         
         self.assertAlmostEqual(d0, 2.8676959922, 7, "Expect d = 2.8676959922 for 4-neighbour Dijkstra")
         self.assertAlmostEqual(d1, 2.3854095543, 7, "Expect d = 2.3854095543 for 1st order FMM")
+        self.assertAlmostEqual(d2, 2.3550639686, 7, "Expect d = 2.3550639686 for 2nd order FMM")
         
 if __name__ == '__main__':
     unittest.main()

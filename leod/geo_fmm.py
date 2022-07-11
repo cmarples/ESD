@@ -121,6 +121,8 @@ class GeoFMM:
         self.geo_distances[self.start_pixel.pixel_index] = 0.0
         queue = [(0.0, self.start_pixel.pixel_index)]
         no_alive = 0 # Number of pixels with a set distance
+        end_prev = -1
+        end_neighbour = -1
         # Perform wavefront propagation
         while no_alive != self.grid.no_pixels:
             # Obtain index of pixel with smallest distance
@@ -249,7 +251,40 @@ class GeoFMM:
             # Use the fast marching method to calculate distance from start to visited pixel
             if order == 2:
                 # 2nd Order FMM
-                proposed_distance = -1
+                
+                # Check for second order theta neighbours
+                pole_flag = True
+                pix_theta_2 = -1
+                dist_theta_2 = dist_theta + 1
+                if pix_theta != 0 and pix_theta != self.grid.no_pixels-1: # i.e. pix_theta is not a pole
+                    pix_theta_2 = self.grid.pixel[pix_theta].neighbour[neighbour_theta]
+                    dist_theta_2 = self.geo_distances[pix_theta_2]
+                    pole_flag = False
+                
+                # theta terms of quadratic
+                if pole_flag == False and self.alive[pix_theta_2] == True and dist_theta_2 <= dist_theta:
+                    delta_theta_2 = self.neighbour_distance(pix_theta, neighbour_theta)
+                    terms_theta = self.quadratic_terms(dist_theta, dist_theta_2, delta_theta, delta_theta_2, 2)
+                else:
+                    terms_theta = self.quadratic_terms(dist_theta, 0.0, delta_theta, 0.0, 1)
+                    
+                # Check for second order phi neighbours
+                pix_phi_2 = self.grid.pixel[pix_phi].neighbour[neighbour_phi]
+                dist_phi_2 = self.geo_distances[pix_phi_2]
+                
+                # Phi terms of quadratic
+                if self.alive[pix_phi_2] and dist_phi_2 <= dist_phi:
+                    delta_phi_2 = self.neighbour_distance(pix_phi, neighbour_phi)
+                    terms_phi = self.quadratic_terms(dist_phi, dist_phi_2, delta_phi, delta_phi_2, 2)
+                else:
+                    terms_phi = self.quadratic_terms(dist_phi, 0.0, delta_phi, 0.0, 1)
+                
+                # Combine terms and subtract one from constant term
+                terms = terms_theta + terms_phi
+                terms[2] -= 1.0
+                # Solve quadratic for distance from start point
+                proposed_distance = self.solve_quadratic(terms)
+                
             else:
                 # 1st Order FMM
              
@@ -273,11 +308,11 @@ class GeoFMM:
     # This only handles one of two directions (theta or phi) and is used
     # in the 2nd order FMM when only one double neighbour exists.
     def quadratic_terms(self, dist1, dist2, delta1, delta2, order):
-        terms = [0] * 3 # [alpha, beta, gamma] with quadratic alpha*x^2 + beta*x + gamma = 0
+        terms = np.zeros(3) # [alpha, beta, gamma] with quadratic alpha*x^2 + beta*x + gamma = 0
         if order == 2:
-            terms[0] = -1
-            terms[1] = -1
-            terms[2] = -1
+            terms[0] = 9.0 / (4.0*delta1*delta1)
+            terms[1] = -3.0*(dist1 - dist2)/(2.0*delta1*delta2) - 2.0*terms[0]*dist1
+            terms[2] = -3.0*dist1*(dist2 - dist1)/(2.0*delta1*delta2) + terms[0]*dist1*dist1 + (dist1*dist1 + dist2*dist2 - 2.0*dist1*dist2)/(4.0*delta2*delta2)
         elif order == 1:
             terms[0] = 1.0/(delta1*delta1)
             terms[1] = -2.0*terms[0]*dist1
