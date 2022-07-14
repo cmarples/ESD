@@ -96,19 +96,27 @@ class GeoFMM:
     # Calculate geodesic distances using the fast marching method, or Dijkstra's algorithm.
     # If a single endpoint is desired, input positive values of theta_end and
     # phi_end. If either is negative, then distance to all pixels is found.
-    def calculate_geodesics(self, order, theta_end=-1.0, phi_end=-1.0):
-        if theta_end >= 0.0 and phi_end >= 0.0:
-            # Compute shortest distance from start point to end point.
-            # Set end pixel.
-            self.end_pixel = self.initialise_pixel(theta_end, phi_end)
-            # Perfrom wavefront propagation loop.
-            self.perform_loop(order, end_flag=True, refine_flag=False)
-            return self.end_distance
-        else:
-            # Compute shortest distance from start point to all other pixels.
-            # Perfrom wavefront propagation loop.
-            
+    def calculate_geodesics(self, order, theta_end=-1.0, phi_end=-1.0,
+                            is_refine=False, refine_range=1, refine_theta=3, refine_phi=3):
+        if is_refine == True:
+            self.refine_range = refine_range
+            self.refine_theta = refine_theta
+            self.refine_phi = refine_phi
+            self.initialise_refined_grid()
             return -1.0
+        else:
+            if theta_end >= 0.0 and phi_end >= 0.0:
+                # Compute shortest distance from start point to end point.
+                # Set end pixel.
+                self.end_pixel = self.initialise_pixel(theta_end, phi_end)
+                # Perfrom wavefront propagation loop.
+                self.perform_loop(order, end_flag=True, refine_flag=False)
+                return self.end_distance
+            else:
+                # Compute shortest distance from start point to all other pixels.
+                # Perfrom wavefront propagation loop.
+                
+                return -1.0
                 
                 
     # Determine the required shortest distances by wavefront propagation.
@@ -326,6 +334,40 @@ class GeoFMM:
         if discr > 0:
             proposed_distance = (-terms[1] + math.sqrt(discr)) / (2.0*terms[0])
         else:
-            proposed_distance = -1.0 # Use point-to-point distance via Dijkstra's algorithm instead
+            proposed_distance = -1.0 # Use point-to-point distance via Dijkstra's algorithm instead.
         return proposed_distance
-        
+    
+    # Initialise a refined grid for use in a source refined fast marching method.
+    def initialise_refined_grid(self):
+        # pix_refine is a list containing all main grid pixels within the 
+        # refinement range of the start pixel.
+        self.pix_refine = []
+        if self.start_pixel.pixel_index == 0:                       # North pole
+            self.pix_refine.append(0)
+            for i in range(self.refine_range):
+                for j in range(self.grid.n_phi):
+                    self.pix_refine.append(self.grid.get_pixel_index(i+1, j))
+        elif self.start_pixel.pixel_index == self.grid.no_pixels-1: # South pole
+            self.pix_refine.append(self.grid.no_pixels-1)
+            for i in range(self.refine_range):
+                for j in range(self.grid.n_phi):
+                    self.pix_refine.append(self.grid.get_pixel_index(self.grid.no_theta - 2 - i, j))
+        else:                                                       # Non-pole
+             for i in range(self.grid.no_pixels):
+                 th = self.grid.pixel[i].theta_index
+                 ph = self.grid.pixel[i].phi_index
+                 if ( (abs(th - self.start_pixel.theta_index) <= self.refine_range) and
+                    (  abs(ph - self.start_pixel.phi_index) <= self.refine_range or
+                       abs(ph - self.start_pixel.phi_index) >= self.grid.no_phi - self.refine_range or
+                       self.grid.pixel[i].is_north == True or self.grid.pixel[i].is_south == True) ):
+                     self.pix_refine.append(i)
+        # Create refined grid
+        no_theta_rfnd = self.grid.no_theta * self.refine_theta - 2
+        no_phi_rfnd = self.grid.no_phi * self.refine_phi
+        no_theta_border = int(self.refine_range*self.refine_theta + (self.refine_theta-1)/2)
+        no_phi_border = int(self.refine_range*self.refine_phi + (self.refine_phi-1)/2)
+         
+         
+                
+                
+                

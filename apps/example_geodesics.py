@@ -18,7 +18,7 @@ from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
 from leod.geo_fmm import GeoFMM
 
-test_type = 4
+test_type = 5
 
 if test_type == 1:   # Generate the GeoGrid, GeoPixel and GeoFMM objects
     
@@ -56,8 +56,8 @@ elif test_type == 3: # 1st Order FMM example
     
 elif test_type == 4: # 2nd Order FMM example
     
-    E = EllipsoidShape(3.0, 2.0, 1.0)
-    G = GeoGrid(E, 181, 360)
+    E = EllipsoidShape(1.0, 1.0, 1.0)
+    G = GeoGrid(E, 200, 200)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
     F = GeoFMM(G, th_0, ph_0)
@@ -66,4 +66,16 @@ elif test_type == 4: # 2nd Order FMM example
     
     # Expect d = 2.3550639686
     d = F.calculate_geodesics(2, th_1, ph_1)
+
+elif test_type == 5: # 2nd Order FMM example (with refinement)
     
+    E = EllipsoidShape(1.0, 1.0, 1.0)
+    G = GeoGrid(E, 200, 200)
+    th_0 = 90.0 * math.pi / 180.0
+    ph_0 = 0.0
+    F = GeoFMM(G, th_0, ph_0)
+    th_1 = 50.0 * math.pi / 180.0
+    ph_1 = 60.0 * math.pi / 180.0
+    
+    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=True, refine_range=1, 
+                              refine_theta=3, refine_phi=3)
