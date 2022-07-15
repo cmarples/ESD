@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-07-14
+### Added
+- First part of initialisation of a source refined grid.
+
 ## 2022-07-11
 ### Added
 - Implementation of the 4-neighbour Dijkstra algorithm (started 2022-07-08).

@@ -17,11 +17,12 @@ from .geo_pixel import GeoPixel
 # pixels, by calculating the neighbour-to-neighbour distances.
 class GeoGrid:
     # Constructor
-    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36):
+    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36, is_refine=False):
         # Take inputs
         self.shape = shape
         self.no_theta = no_theta
         self.no_phi = no_phi
+        self.is_refine = is_refine
         # Calculate number of pixels and required increments
         self.no_pixels = (self.no_theta - 2)*self.no_phi + 2
         self.delta_theta = math.pi / (self.no_theta - 1)
@@ -33,17 +34,23 @@ class GeoGrid:
             self.theta_list[i] = i * self.delta_theta
         for i in range(self.no_phi+1):
             self.phi_list[i] = i * self.delta_phi
-        # Construct a list of pixel objects
-        self.pixel = []
-        for i in range(self.no_pixels):
-            theta_index = self.get_theta_index(i)
-            phi_index = self.get_phi_index(i, theta_index)
-            carts = self.polars_to_cartesians( self.theta_list[theta_index],
-                                               self.phi_list[phi_index] )
-            self.pixel.append(GeoPixel(i, theta_index, phi_index,
-                                       carts, self.no_pixels) )
-        # Set array sizes for pixel neighbour information
-        self.find_neighbour_indices()
+        
+        if self.is_refine == True:
+            self.is_initialised = False
+            
+        else:
+            # Construct a list of pixel objects
+            self.pixel = []
+            for i in range(self.no_pixels):
+                theta_index = self.get_theta_index(i)
+                phi_index = self.get_phi_index(i, theta_index)
+                carts = self.polars_to_cartesians( self.theta_list[theta_index],
+                                                   self.phi_list[phi_index] )
+                self.pixel.append(GeoPixel(i, theta_index, phi_index,
+                                           carts, self.no_pixels) )
+            # Set array sizes for pixel neighbour information
+            self.find_neighbour_indices()
+            self.is_initialised = False
             
     # Get pixel index from theta and phi indices
     def get_pixel_index(self, theta_index, phi_index):
@@ -154,4 +161,9 @@ class GeoGrid:
             else:
                 self.pixel[j].neighbour_distance[2] = pix_i.neighbour_distance[k]
         return pix_i.neighbour_distance[k]
+    
+    # Initialise a grid to be used in a source refinement fast marching calculation
+    def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi):
+        print('rfnd')
+        
     
