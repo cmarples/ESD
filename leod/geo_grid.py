@@ -165,5 +165,56 @@ class GeoGrid:
     # Initialise a grid to be used in a source refinement fast marching calculation
     def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi):
         print('rfnd')
+        self.border_pixels = []
+        # Check if poles are on the border
+        if centre_theta == no_theta_border or (centre_theta != 0 and centre_theta < no_theta_border):
+            self.border_pixels.append(0)               # North pole on border
+        elif ((self.no_theta - 1 - centre_theta == no_theta_border) or 
+             (centre_theta != self.no_theta - 1 and self.no_theta - 1 - centre_theta < no_theta_border)):
+            self.border_pixels.append(self.no_theta-1) # South pole on border
+        
+        # Check all pixels for inclusion in the refined grid
+        # Only include pixel if it is within a main pixel in the refinement range
+        for i in range(1, self.no_pixels-1):
+            th = self.get_theta_index(i)
+            ph = self.get_phi_index(i, th)
+            pixel_valid = True
+            if centre_theta == 0:                 # Centre pixel is north pole
+                if th > no_theta_border:
+                    pixel_valid == False
+                elif th == no_theta_border:
+                    self.border_pixels.append(i)
+            elif centre_theta == self.no_theta-1: # Centre pixel is south pole
+                if th < self.no_theta - 1 - no_theta_border:
+                    pixel_valid == False
+                elif th == self.no_theta - 1 - no_theta_border:
+                    self.border_pixels.append(i)
+            else:                                 # Centre pixel not a pole
+                th_diff = abs(th - centre_theta)
+                ph_diff = ph - centre_phi
+                # Handle phi periodicity
+                if ph_diff > self.no_phi/2:
+                    ph_diff -= self.no_phi
+                elif ph_diff < -self.no_phi/2:
+                    ph_diff += self.no_phi
+                ph_diff = abs(ph_diff)
+                # Check for inclusion
+                if th_diff > no_theta_border or abs(ph_diff) > no_phi_border:
+                    pixel_valid = False
+                # Check for border
+                if ((pixel_valid == True) and 
+                   (th_diff == no_theta_border or abs(ph_diff) == no_phi_border)):
+                   self.border_pixels.append(i)
+                
+
+
+
+
+
+
+
+
+
+
         
     

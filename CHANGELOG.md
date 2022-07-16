@@ -1,6 +1,14 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-07-16
+### Added
+- Border list in refined grid has been implemented.
+
+## 2022-07-15
+### Modified
+- GeoFMM functions now take a GeoGrid as an input, so that a refined grid can be used.
+
 ## 2022-07-14
 ### Added
 - First part of initialisation of a source refined grid.
