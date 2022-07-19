@@ -46,8 +46,8 @@ class GeoGrid:
                 phi_index = self.get_phi_index(i, theta_index)
                 carts = self.polars_to_cartesians( self.theta_list[theta_index],
                                                    self.phi_list[phi_index] )
-                self.pixel.append(GeoPixel(i, theta_index, phi_index,
-                                           carts, self.no_pixels) )
+                self.pixel.append(GeoPixel(i, theta_index, phi_index, self.no_pixels,
+                                           carts, False) )
             # Set array sizes for pixel neighbour information
             self.find_neighbour_indices()
             self.is_initialised = False
@@ -164,14 +164,14 @@ class GeoGrid:
     
     # Initialise a grid to be used in a source refinement fast marching calculation
     def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi):
-        print('rfnd')
+        self.pixel = []
         self.border_pixels = []
-        # Check if poles are on the border
+        # Check if north pole is within the border
         if centre_theta == no_theta_border or (centre_theta != 0 and centre_theta < no_theta_border):
             self.border_pixels.append(0)               # North pole on border
-        elif ((self.no_theta - 1 - centre_theta == no_theta_border) or 
-             (centre_theta != self.no_theta - 1 and self.no_theta - 1 - centre_theta < no_theta_border)):
-            self.border_pixels.append(self.no_theta-1) # South pole on border
+            self.pixel.append(GeoPixel(0, 0, 0, self.no_pixels, np.array([0,0,self.shape.c_axis]), False))
+        else:
+            self.pixel.append(GeoPixel(0, 0, 0, self.no_pixels, [0,0,0], True))
         
         # Check all pixels for inclusion in the refined grid
         # Only include pixel if it is within a main pixel in the refinement range
@@ -205,6 +205,26 @@ class GeoGrid:
                 if ((pixel_valid == True) and 
                    (th_diff == no_theta_border or abs(ph_diff) == no_phi_border)):
                    self.border_pixels.append(i)
+            if pixel_valid == True:
+                # Initialise full GeoPixel
+                carts = self.polars_to_cartesians( self.theta_list[th],
+                                                   self.phi_list[ph] )
+                self.pixel.append(GeoPixel(i, th, ph, self.no_pixels,
+                                           carts, False) )
+            else:
+                # Initialise GeoPixel, containing only the index information
+                self.pixel.append(GeoPixel(i, th, ph, self.no_pixels, [0,0,0], True))
+                
+        # Check if south pole is within the border        
+        if ((self.no_theta - 1 - centre_theta == no_theta_border) or 
+             (centre_theta != self.no_theta - 1 and self.no_theta - 1 - centre_theta < no_theta_border)):
+            self.border_pixels.append(self.no_theta-1) # South pole on border
+            self.pixel.append(GeoPixel(self.no_pixels-1, self.no_theta-1, 0, self.no_pixels,
+                                       np.array([0,0,-self.shape.c_axis]), False))
+        else:
+            self.pixel.append(GeoPixel(self.no_pixels-1, self.no_theta-1, 0,
+                                       self.no_pixels, [0,0,0], True))
+               
                 
 
 

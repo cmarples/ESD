@@ -11,14 +11,15 @@ import numpy as np
 # marching method. An array of these objects is associated with a particular
 # EllipsoidShape object.
 class GeoPixel:
-    def __init__(self, pixel_index, theta_index, phi_index, carts, no_pixels):
+    def __init__(self, pixel_index, theta_index, phi_index, no_pixels, carts=np.zeros(3), is_refine=False):
         self.pixel_index = pixel_index
         self.theta_index = theta_index
         self.phi_index = phi_index
-        self.carts = np.array(carts)
         self.set_pole(no_pixels)
-        self.neighbour = []
-        self.neighbour_distance = []
+        if is_refine == False:
+            self.carts = np.array(carts)
+            self.neighbour = []
+            self.neighbour_distance = []
 
     def set_pole(self, no_pixels):
         if self.pixel_index == 0:

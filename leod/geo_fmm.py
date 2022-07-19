@@ -45,8 +45,8 @@ class GeoFMM:
         phi_index = grid.find_phi_index(phi)
         pixel_index = grid.get_pixel_index(theta_index, phi_index)
         carts = grid.polars_to_cartesians(theta, phi)
-        pix = GeoPixel(pixel_index, theta_index, phi_index,
-                       carts, grid.no_pixels)
+        pix = GeoPixel(pixel_index, theta_index, phi_index,  grid.no_pixels,
+                       carts, False)
         pix.neighbour = []
         pix.neighbour_distance = []
         if pix.is_north == True:   # North pole
