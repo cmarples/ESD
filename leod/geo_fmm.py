@@ -12,6 +12,7 @@ Created on Fri Jul  8 12:16:23 2022
 import math
 import numpy as np
 import heapq
+import copy
 from .geo_pixel import GeoPixel
 from .geo_grid import GeoGrid
 
@@ -104,14 +105,27 @@ class GeoFMM:
             self.refine_theta = refine_theta
             self.refine_phi = refine_phi
             self.initialise_refined_grid(self.grid_main)
-            return -1.0
+            self.geo_distances = [math.inf] * self.grid_rfnd.no_pixels
+            self.alive = [False] * self.grid_rfnd.no_pixels
+            if theta_end >= 0.0 and phi_end >= 0.0:
+                self.end_distance = -1.0
+                self.end_pixel = self.initialise_pixel(theta_end, phi_end, self.grid_main)
+                self.perform_loop(order, self.grid_rfnd, self.start_pixel_rfnd, end_flag=True, refine_flag=True, main_flag=False)
+                self.transfer_grid()
+                self.perform_loop(order, self.grid_main, self.start_pixel, end_flag=True, refine_flag=False, main_flag=True)
+
+                return self.end_distance
+            else:
+                return -1.0
         else:
+            self.geo_distances = [math.inf] * self.grid_main.no_pixels
+            self.alive = [False] * self.grid_main.no_pixels
             if theta_end >= 0.0 and phi_end >= 0.0:
                 # Compute shortest distance from start point to end point.
                 # Set end pixel.
                 self.end_pixel = self.initialise_pixel(theta_end, phi_end, self.grid_main)
                 # Perfrom wavefront propagation loop.
-                self.perform_loop(order, self.grid_main, end_flag=True, refine_flag=False)
+                self.perform_loop(order, self.grid_main, self.start_pixel, end_flag=True)
                 return self.end_distance
             else:
                 # Compute shortest distance from start point to all other pixels.
@@ -122,20 +136,25 @@ class GeoFMM:
                 
     # Determine the required shortest distances by wavefront propagation.
     # This is the main loop for Dijkstra's algorithm and the fast marching method.            
-    def perform_loop(self, order, grid, end_flag, refine_flag):
+    def perform_loop(self, order, grid, start_pix, end_flag, refine_flag=False, main_flag=False):
+        
         if end_flag == True:
             self.end_flag = True
         else:
             self.end_flag == False
-        self.geo_distances[self.start_pixel.pixel_index] = 0.0
-        queue = [(0.0, self.start_pixel.pixel_index)]
-        no_alive = 0 # Number of pixels with a set distance
+        if main_flag == False:
+            self.geo_distances[start_pix.pixel_index] = 0.0
+            self.queue = [(0.0, start_pix.pixel_index)]
+            no_alive = 0 # Number of pixels with a set distance
+        else:
+            no_alive = len([i for i in self.alive if i == True])
+            
         end_prev = -1
         end_neighbour = -1
         # Perform wavefront propagation
         while no_alive != grid.no_pixels:
             # Obtain index of pixel with smallest distance
-            trial_distance, trial = heapq.heappop(queue)
+            trial_distance, trial = heapq.heappop(self.queue)
             # If obtained trial index already alive, skip iteration
             if self.alive[trial] == True:
                 continue
@@ -147,19 +166,23 @@ class GeoFMM:
             # Check end point
             if self.end_flag == True:
                 if trial == self.end_pixel.pixel_index:
-                    self.end_distance = self.fmm_distance(grid, end_prev, self.end_pixel.pixel_index, end_neighbour, order)
+                    self.end_distance = self.fmm_distance(grid, end_prev, self.end_pixel.pixel_index, end_neighbour, order, start_pix)
                     break
-                
+            # Check border (refined only)
+            if refine_flag == True and trial in grid.border_pixels:
+                break
+            
+            
             # Visit neighbours of trial pixel
             for i in range(len(grid.pixel[trial].neighbour)):
                 visit = grid.pixel[trial].neighbour[i]
                 if self.alive[visit] == True:
                     continue
-                proposed_distance = self.fmm_distance(grid, trial, visit, i, order)
+                proposed_distance = self.fmm_distance(grid, trial, visit, i, order, start_pix)
                 if proposed_distance < self.geo_distances[visit]:
                     # Add visited pixel to the queue and update value in geo_distances
                     self.geo_distances[visit] = proposed_distance
-                    heapq.heappush(queue, (proposed_distance, visit))
+                    heapq.heappush(self.queue, (proposed_distance, visit))
                     # If appropriate, record pixel used to derive this distance
                     if self.end_flag == True:
                         if visit == self.end_pixel.pixel_index:
@@ -167,31 +190,29 @@ class GeoFMM:
                             end_neighbour = i
                         
         
-        
-        
     # Determine distance from a trial to visited pixel
-    def fmm_distance(self, grid, trial, visit, neighbour_no, order):
+    def fmm_distance(self, grid, trial, visit, neighbour_no, order, start_pix):
         if order > 0: # Fast marching method
             if visit == 0 or visit == grid.no_pixels-1: # If visited pixel is a pole
                 proposed_distance = -1.0
             else:
-                proposed_distance = self.fast_marching_method(visit, order, grid)
+                proposed_distance = self.fast_marching_method(visit, order, grid, start_pix)
             # If the fast marching method is not applicable, get a distance of -1
             # and Dijkstra's algorithm (point-to-point distance) is used instead.
             if proposed_distance == -1.0:
-                proposed_distance = self.point_to_point_distance(trial, neighbour_no, grid)
+                proposed_distance = self.point_to_point_distance(trial, neighbour_no, grid, start_pix)
         else:         # Dijkstra's algorithm
-            proposed_distance = self.point_to_point_distance(trial, neighbour_no, grid)
+            proposed_distance = self.point_to_point_distance(trial, neighbour_no, grid, start_pix)
         return proposed_distance
     
     # Calculate distance between representative points of trial and neighbour
-    def point_to_point_distance(self, trial, neighbour_no, grid):
-        if trial == self.start_pixel.pixel_index:
-            proposed_distance = self.start_pixel.neighbour_distance[neighbour_no]
+    def point_to_point_distance(self, trial, neighbour_no, grid, start_pix):
+        if trial == start_pix.pixel_index:
+            proposed_distance = start_pix.neighbour_distance[neighbour_no]
         else:
             if self.end_flag == True:
                 if grid.pixel[trial].neighbour[neighbour_no] == self.end_pixel.pixel_index:
-                    proposed_distance = self.neighbour_distance(trial, neighbour_no, grid)
+                    proposed_distance = self.get_neighbour_distance(trial, neighbour_no, grid, start_pix)
                 else:
                     proposed_distance = grid.get_distance(grid.pixel[trial], neighbour_no)
             else:
@@ -200,23 +221,23 @@ class GeoFMM:
         return proposed_distance
     
     # Determine neighbour-to-neighbour distance (including start/end pixel cases)
-    def neighbour_distance(self, visit, neighbour_no, grid):
+    def get_neighbour_distance(self, visit, neighbour_no, grid, start_pix):
         neighbour_dist = 0.0
-        if grid.pixel[visit].neighbour[neighbour_no] == self.start_pixel.pixel_index:
+        if grid.pixel[visit].neighbour[neighbour_no] == start_pix.pixel_index:
             # Get neighbour number of visit pixel relative to start pixel
             if grid.pixel[visit].neighbour[neighbour_no] == 0: # Neighbour is north pole
-                neighbour_dist = self.start_pixel.neighbour_distance[visit-1]
+                neighbour_dist = start_pix.neighbour_distance[visit-1]
             elif grid.pixel[visit].neighbour[neighbour_no] == grid.no_pixels-1: # Neighbour is south pole
-                neighbour_dist = self.start_pixel.neighbour_distance[grid.no_pixels-2-visit]
+                neighbour_dist = start_pix.neighbour_distance[grid.no_pixels-2-visit]
             else: # Neighbour not a pole
                 if neighbour_no == 0:
-                    neighbour_dist = self.start_pixel.neighbour_distance[1]
+                    neighbour_dist = start_pix.neighbour_distance[1]
                 elif neighbour_no == 1:
-                    neighbour_dist = self.start_pixel.neighbour_distance[0]
+                    neighbour_dist = start_pix.neighbour_distance[0]
                 elif neighbour_no == 2:
-                    neighbour_dist = self.start_pixel.neighbour_distance[3]
+                    neighbour_dist = start_pix.neighbour_distance[3]
                 elif neighbour_no == 3:
-                    neighbour_dist = self.start_pixel.neighbour_distance[2]
+                    neighbour_dist = start_pix.neighbour_distance[2]
         elif self.end_flag == True:
             if visit == self.end_pixel.pixel_index:
                 neighbour_dist = self.end_pixel.neighbour_distance[neighbour_no]
@@ -229,7 +250,7 @@ class GeoFMM:
     
     
     # Calculate distances using the fast marching method
-    def fast_marching_method(self, visit, order, grid):
+    def fast_marching_method(self, visit, order, grid, start_pix):
         # Check for existence of 'alive' neighbours
         if ( ( self.alive[grid.pixel[visit].neighbour[0]] == True or self.alive[grid.pixel[visit].neighbour[1]] == True  ) and
              ( self.alive[grid.pixel[visit].neighbour[2]] == True or self.alive[grid.pixel[visit].neighbour[3]] == True  ) ):
@@ -254,8 +275,8 @@ class GeoFMM:
                 neighbour_phi = 3 # Right
             
             # Get distances from visited pixel to these neighbours
-            delta_theta = self.neighbour_distance(visit, neighbour_theta, grid)
-            delta_phi = self.neighbour_distance(visit, neighbour_phi, grid)
+            delta_theta = self.get_neighbour_distance(visit, neighbour_theta, grid, start_pix)
+            delta_phi = self.get_neighbour_distance(visit, neighbour_phi, grid, start_pix)
             
             # Use the fast marching method to calculate distance from start to visited pixel
             if order == 2:
@@ -272,7 +293,7 @@ class GeoFMM:
                 
                 # theta terms of quadratic
                 if pole_flag == False and self.alive[pix_theta_2] == True and dist_theta_2 <= dist_theta:
-                    delta_theta_2 = self.neighbour_distance(pix_theta, neighbour_theta, grid)
+                    delta_theta_2 = self.get_neighbour_distance(pix_theta, neighbour_theta, grid, start_pix)
                     terms_theta = self.quadratic_terms(dist_theta, dist_theta_2, delta_theta, delta_theta_2, 2)
                 else:
                     terms_theta = self.quadratic_terms(dist_theta, 0.0, delta_theta, 0.0, 1)
@@ -283,7 +304,7 @@ class GeoFMM:
                 
                 # Phi terms of quadratic
                 if self.alive[pix_phi_2] and dist_phi_2 <= dist_phi:
-                    delta_phi_2 = self.neighbour_distance(pix_phi, neighbour_phi, grid)
+                    delta_phi_2 = self.get_neighbour_distance(pix_phi, neighbour_phi, grid, start_pix)
                     terms_phi = self.quadratic_terms(dist_phi, dist_phi_2, delta_phi, delta_phi_2, 2)
                 else:
                     terms_phi = self.quadratic_terms(dist_phi, 0.0, delta_phi, 0.0, 1)
@@ -340,28 +361,7 @@ class GeoFMM:
     
     # Initialise a refined grid for use in a source refined fast marching method.
     def initialise_refined_grid(self, grid):
-        # pix_refine is a list containing all main grid pixels within the 
-        # refinement range of the start pixel.
-        self.pix_refine = []
-        if self.start_pixel.pixel_index == 0:                       # North pole
-            self.pix_refine.append(0)
-            for i in range(self.refine_range):
-                for j in range(grid.n_phi):
-                    self.pix_refine.append(grid.get_pixel_index(i+1, j))
-        elif self.start_pixel.pixel_index == grid.no_pixels-1: # South pole
-            self.pix_refine.append(grid.no_pixels-1)
-            for i in range(self.refine_range):
-                for j in range(grid.n_phi):
-                    self.pix_refine.append(grid.get_pixel_index(grid.no_theta - 2 - i, j))
-        else:                                                       # Non-pole
-             for i in range(grid.no_pixels):
-                 th = grid.pixel[i].theta_index
-                 ph = grid.pixel[i].phi_index
-                 if ( (abs(th - self.start_pixel.theta_index) <= self.refine_range) and
-                    (  abs(ph - self.start_pixel.phi_index) <= self.refine_range or
-                       abs(ph - self.start_pixel.phi_index) >= grid.no_phi - self.refine_range or
-                       grid.pixel[i].is_north == True or grid.pixel[i].is_south == True) ):
-                     self.pix_refine.append(i)
+        
         # Create refined grid
         no_theta_rfnd = grid.no_theta * self.refine_theta - 2
         no_phi_rfnd = grid.no_phi * self.refine_phi
@@ -377,10 +377,72 @@ class GeoFMM:
         # Find indices of the centre pixel, in the refied grid
         centre_theta = self.grid_rfnd.find_theta_index(centre_theta)
         centre_phi = self.grid_rfnd.find_phi_index(centre_phi)
-        #pixel_index = self.grid_rfnd.get_pixel_index(theta_centre_rfnd, phi_centre_rfnd)
+        
+        # Initialise refined grid
         self.grid_rfnd.initialise_refined_grid(no_theta_border, no_phi_border, centre_theta, centre_phi)
-        print('a')
-         
+        
+        # Create refined grid starting pixel
+        self.start_pixel_rfnd = self.initialise_pixel(self.theta, self.phi, self.grid_rfnd) 
+        
+    # Go from refined grid to the main grid, ready to proceed with FMM calculation
+    def transfer_grid(self):
+        # pix_refine is a list containing all main grid pixels within the 
+        # refinement range of the start pixel.
+        pix_refine = []
+        if self.start_pixel.pixel_index == 0:                       # North pole
+            pix_refine.append(0)
+            for i in range(self.refine_range):
+                for j in range(self.grid_main.n_phi):
+                    pix_refine.append(self.grid_main.get_pixel_index(i+1, j))
+        elif self.start_pixel.pixel_index == self.grid_main.no_pixels-1:      # South pole
+            pix_refine.append(self.grid_main.no_pixels-1)
+            for i in range(self.refine_range):
+                for j in range(self.grid_main.n_phi):
+                    pix_refine.append(self.grid_main.get_pixel_index(self.grid_main.no_theta - 2 - i, j))
+        else:                                                       # Non-pole
+             for i in range(self.grid_main.no_pixels):
+                 th = self.grid_main.pixel[i].theta_index
+                 ph = self.grid_main.pixel[i].phi_index
+                 if ( (abs(th - self.start_pixel.theta_index) <= self.refine_range) and
+                    (  abs(ph - self.start_pixel.phi_index) <= self.refine_range or
+                       abs(ph - self.start_pixel.phi_index) >= self.grid_main.no_phi - self.refine_range or
+                       self.grid_main.pixel[i].is_north == True or self.grid_main.pixel[i].is_south == True) ):
+                     pix_refine.append(i)
+        # main2rfnd maps main grid pixels corresponding to pix_refine to the
+        # equivalent refined grid pixel.
+        main2rfnd = [-1] * len(pix_refine)
+        for i in range(len(pix_refine)):
+            th = self.grid_main.pixel[pix_refine[i]].theta_index
+            ph = self.grid_main.pixel[pix_refine[i]].phi_index
+            main2rfnd[i] = self.grid_rfnd.find_pixel_index(self.grid_main.theta_list[th],
+                                                           self.grid_main.phi_list[ph])
+        # Map refined grid data to the main grid
+        alive_main = [False] * self.grid_main.no_pixels
+        geo_distances_main = [math.inf] * self.grid_main.no_pixels
+        self.queue = []
+        for i in range(len(pix_refine)):
+            pix_main = pix_refine[i] # Index of a relevant main grid pixel
+            pix_rfnd = main2rfnd[i]  # Index of corresponding refined grid pixel
+            # Transfer distance from start point
+            geo_distances_main[pix_main] = self.geo_distances[pix_rfnd]
+            if pix_rfnd in self.alive:
+                count = 0 # Number of neighbours with non-infinite distance values
+                for pix_nei in self.grid_main.pixel[pix_main].neighbour:
+                    if pix_nei in pix_refine:
+                        if self.geo_distances[main2rfnd[pix_refine.index[pix_nei]]] < math.inf:
+                            count += 1
                 
-                
-                
+                if count == 4:
+                    # Pixel is set to alive if all 4 neighbours have a set value
+                    alive_main.add(pix_main)
+                else:
+                    # Otherwise, add to the queue
+                    heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
+            elif self.geo_distances[pix_rfnd] < math.inf:
+                heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
+        # Copy 'main grid' alive and geo_distances arrays to the GeoFMM version
+        self.alive = copy.copy(alive_main)
+        self.geo_distances = copy.copy(geo_distances_main)
+                    
+                    
+                        

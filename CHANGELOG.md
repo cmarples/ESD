@@ -1,6 +1,18 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-07-22
+### Added
+- Mapping from refined grid to main grid (transfer_grid).
+- Calculation of subsequent main grid fast marching method.
+
+## 2022-07-20
+### Added
+- Neighbours of refined pixels (in the refinement region) now initialised.
+### Modified
+- Fixed potential bug where south pole pixel incorrectly indexed as n_theta-1, rather than n_pixels-1 when adding to 'border_pixels'.
+- Renamed 'neighbour_distance' function to 'get_neighbour_distance' to avoid ambiguity with the GeoPixel lists of the same name.
+
 ## 2022-07-16
 ### Added
 - Border list in refined grid has been implemented.
