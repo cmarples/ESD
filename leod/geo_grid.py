@@ -49,7 +49,10 @@ class GeoGrid:
                 self.pixel.append(GeoPixel(i, theta_index, phi_index, self.no_pixels,
                                            carts, False) )
             # Set array sizes for pixel neighbour information
-            self.find_neighbour_indices()
+            for i in range(self.no_pixels):    
+                th = self.get_theta_index(i)
+                ph = self.get_phi_index(i, th)
+                self.find_neighbour_indices(i, th, ph)
             self.is_initialised = False
             
     # Get pixel index from theta and phi indices
@@ -105,47 +108,43 @@ class GeoGrid:
     # Find indices of neighbouring pixels
     # Each pixel has four neighbours. For non-polar pixels, neighbours are
     # always ordered as "Up, Down, Left, Right".
-    def find_neighbour_indices(self):
+    def find_neighbour_indices(self, pixel_no, th, ph):
         # Pole neighbours
-        if self.is_refine == False or 0 in self.refinement_region:
-            for i in range(self.no_phi):
-                self.pixel[0].neighbour.append(1+i)
+        if pixel_no == 0:                  # North pole
+            for k in range(self.no_phi):
+                self.pixel[0].neighbour.append(1+k)
                 self.pixel[0].neighbour_distance.append(-1.0)
-        if self.is_refine == False or self.no_pixels-1 in self.refinement_region:
-            for i in range(self.no_phi):
-                self.pixel[self.no_pixels-1].neighbour.append(self.no_pixels-2-i)
+        elif pixel_no == self.no_pixels-1: # South pole
+            for k in range(self.no_phi):
+                self.pixel[self.no_pixels-1].neighbour.append(self.no_pixels-2-k)
                 self.pixel[self.no_pixels-1].neighbour_distance.append(-1.0)
-        # Non-pole neighbours
-        for i in range(1, self.no_theta-1):
-            for j in range(self.no_phi):
-                pixel_no = self.get_pixel_index(i, j)
-                if self.is_refine == False or pixel_no in self.refinement_region:
-                    # Initialise distances
-                    self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
-                    # Up neighbour (minus theta)
-                    if i == 1:
-                        pixel_neighbour = 0
-                    else:
-                        pixel_neighbour = self.get_pixel_index(i-1, j)
-                    self.pixel[pixel_no].neighbour.append(pixel_neighbour)
-                    # Down neighbour (plus theta)
-                    if i == self.no_theta-2:
-                        pixel_neighbour = self.no_pixels - 1
-                    else:
-                        pixel_neighbour = self.get_pixel_index(i+1, j)
-                    self.pixel[pixel_no].neighbour.append(pixel_neighbour)   
-                    # Left neighbour (minus phi)
-                    if j == 0:
-                        pixel_neighbour = self.get_pixel_index(i, self.no_phi-1)
-                    else:
-                        pixel_neighbour = self.get_pixel_index(i, j-1)
-                    self.pixel[pixel_no].neighbour.append(pixel_neighbour)
-                    # Right neighbour (plus phi)
-                    if j == self.no_phi-1:
-                        pixel_neighbour = self.get_pixel_index(i, 0)
-                    else:
-                        pixel_neighbour = self.get_pixel_index(i, j+1)
-                    self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
+        else:                              # Not a pole
+            # Initialise distances
+            self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
+            # Up neighbour (minus theta)
+            if th == 1:
+                pixel_neighbour = 0
+            else:
+                pixel_neighbour = self.get_pixel_index(th-1, ph)
+            self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+            # Down neighbour (plus theta)
+            if th == self.no_theta-2:
+                pixel_neighbour = self.no_pixels - 1
+            else:
+                pixel_neighbour = self.get_pixel_index(th+1, ph)
+            self.pixel[pixel_no].neighbour.append(pixel_neighbour)   
+            # Left neighbour (minus phi)
+            if ph == 0:
+                pixel_neighbour = self.get_pixel_index(th, self.no_phi-1)
+            else:
+                pixel_neighbour = self.get_pixel_index(th, ph-1)
+            self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+            # Right neighbour (plus phi)
+            if ph == self.no_phi-1:
+                pixel_neighbour = self.get_pixel_index(th, 0)
+            else:
+                pixel_neighbour = self.get_pixel_index(th, ph+1)
+            self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
                 
     # Get Euclidean distance between pixel i and neighbour k.
     # If this distance has not been calculated yet, then do so.
@@ -176,12 +175,11 @@ class GeoGrid:
     def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi):
         self.pixel = []
         self.border_pixels = []
-        self.refinement_region = []
         # Check if north pole is within the border
         if centre_theta == no_theta_border or (centre_theta != 0 and centre_theta < no_theta_border):
             self.border_pixels.append(0)               # North pole on border
-            self.refinement_range.append(0)
             self.pixel.append(GeoPixel(0, 0, 0, self.no_pixels, np.array([0,0,self.shape.c_axis]), False))
+            self.find_neighbour_indices(0, 0, 0)
         else:
             self.pixel.append(GeoPixel(0, 0, 0, self.no_pixels, [0,0,0], True))
         
@@ -223,7 +221,7 @@ class GeoGrid:
                                                    self.phi_list[ph] )
                 self.pixel.append(GeoPixel(i, th, ph, self.no_pixels,
                                            carts, False) )
-                self.refinement_region.append(i)
+                self.find_neighbour_indices(i, th, ph)
             else:
                 # Initialise GeoPixel, containing only the index information
                 self.pixel.append(GeoPixel(i, th, ph, self.no_pixels, [0,0,0], True))
@@ -232,14 +230,14 @@ class GeoGrid:
         if ((self.no_theta - 1 - centre_theta == no_theta_border) or 
              (centre_theta != self.no_theta - 1 and self.no_theta - 1 - centre_theta < no_theta_border)):
             self.border_pixels.append(self.no_pixels-1) # South pole on border
-            self.refinement_range.append(self.no_pixels-1)
             self.pixel.append(GeoPixel(self.no_pixels-1, self.no_theta-1, 0, self.no_pixels,
                                        np.array([0,0,-self.shape.c_axis]), False))
+            self.find_neighbour_indices(self.no_pixels-1, self.no_theta-1, 0)
         else:
             self.pixel.append(GeoPixel(self.no_pixels-1, self.no_theta-1, 0,
                                        self.no_pixels, [0,0,0], True))
-        # Initialise neighbours of relevant pixels
-        self.find_neighbour_indices()
+        
+        
                
                 
 
