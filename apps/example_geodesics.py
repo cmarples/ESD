@@ -13,6 +13,7 @@ import os
 os.chdir("..")
 
 import math
+import time
 
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
@@ -60,22 +61,28 @@ elif test_type == 4: # 2nd Order FMM example
     G = GeoGrid(E, 200, 200)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
+    tic = time.perf_counter()
     F = GeoFMM(G, th_0, ph_0)
     th_1 = 50.0 * math.pi / 180.0
     ph_1 = 60.0 * math.pi / 180.0
     
     # Expect d = 2.3550639686
     d = F.calculate_geodesics(2, th_1, ph_1)
-
+    toc = time.perf_counter()
+    print(toc - tic)
 elif test_type == 5: # 2nd Order FMM example (with refinement)
     
+    no_div = 3
     E = EllipsoidShape(1.0, 1.0, 1.0)
     G = GeoGrid(E, 200, 200)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
+    tic = time.perf_counter()
     F = GeoFMM(G, th_0, ph_0)
     th_1 = 50.0 * math.pi / 180.0
     ph_1 = 60.0 * math.pi / 180.0
     
-    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=True, refine_range=1, 
-                              refine_theta=3, refine_phi=3)
+    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=True, refine_range=5, 
+                              refine_theta=no_div, refine_phi=no_div)
+    toc = time.perf_counter()
+    print(toc - tic)
