@@ -172,9 +172,10 @@ class GeoGrid:
         return pix_i.neighbour_distance[k]
     
     # Initialise a grid to be used in a source refinement fast marching calculation
-    def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi):
-        self.pixel = []
-        self.border_pixels = []
+    def initialise_refined_grid(self, no_theta_border, no_phi_border, centre_theta, centre_phi, pix_refine, main2rfnd):
+        
+        
+        
         # Check if north pole is within the border
         if centre_theta == no_theta_border or (centre_theta != 0 and centre_theta < no_theta_border):
             self.border_pixels.append(0)               # North pole on border

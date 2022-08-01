@@ -73,7 +73,7 @@ elif test_type == 4: # 2nd Order FMM example
 elif test_type == 5: # 2nd Order FMM example (with refinement)
     
     x_ref = 5
-    no_div = 9
+    no_div = 3
     E = EllipsoidShape(1.0, 1.0, 1.0)
     G = GeoGrid(E, 200, 200)
     th_0 = 90.0 * math.pi / 180.0
