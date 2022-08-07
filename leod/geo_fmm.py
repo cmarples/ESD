@@ -36,7 +36,7 @@ class GeoFMM:
         self.start_pixel = self.initialise_pixel(theta, phi, grid) 
         # Initialise distance from the start and set all pixels to not alive
         self.geo_distances = [math.inf] * grid.no_pixels
-        self.alive = [False] * grid.no_pixels
+        self.alive = []
 
         
         
@@ -196,6 +196,7 @@ class GeoFMM:
             if visit == 0 or visit == grid.no_pixels-1: # If visited pixel is a pole
                 proposed_distance = -1.0
             else:
+                #print(trial, ' , ', visit)
                 proposed_distance = self.fast_marching_method(visit, order, grid, start_pix)
             # If the fast marching method is not applicable, get a distance of -1
             # and Dijkstra's algorithm (point-to-point distance) is used instead.
@@ -390,7 +391,8 @@ class GeoFMM:
     def initialise_refined_grid(self, grid):
         
         # Create refined grid
-        no_theta_rfnd = grid.no_theta * self.refine_theta - 2
+        #no_theta_rfnd = grid.no_theta * self.refine_theta - 2
+        no_theta_rfnd = self.refine_theta*(grid.no_theta-1) + 1
         no_phi_rfnd = grid.no_phi * self.refine_phi
         no_theta_border = int(self.refine_range*self.refine_theta + (self.refine_theta-1)/2)
         no_phi_border = int(self.refine_range*self.refine_phi + (self.refine_phi-1)/2)
@@ -404,12 +406,6 @@ class GeoFMM:
         # Find indices of the centre pixel, in the refied grid
         centre_theta = self.grid_rfnd.find_theta_index(centre_theta)
         centre_phi = self.grid_rfnd.find_phi_index(centre_phi)
-        # Use centre pixel to find borders of refined region
-        th_border_0 = centre_theta - no_theta_border
-        th_border_1 = centre_theta + no_theta_border
-        ph_border_0 = centre_phi - no_phi_border
-        ph_border_1 = centre_phi + no_phi_border
-        
         
         # Initialise refined grid
         self.pix_refine = self.find_refinement_pixels()
@@ -447,7 +443,9 @@ class GeoFMM:
                     
                     for j in range(ph_dn, ph_up+1):
                         
-
+                        #if j == 0:
+                            #print('j=0')
+                            
                         # Account for periodicity of phi
                         if i == 0 or i == self.grid_rfnd.no_theta-1:
                             j_in = 0 # Pixel is a pole
@@ -486,7 +484,6 @@ class GeoFMM:
                             if  th_diff == no_theta_border or abs(ph_diff) == no_phi_border:
                                self.grid_rfnd.border_pixels.append(pix_in)
                         self.grid_rfnd.pix.append(pix_in)
-            
 
         
         
@@ -509,22 +506,30 @@ class GeoFMM:
             pix_rfnd = self.main2rfnd[i]  # Index of corresponding refined grid pixel
             # Transfer distance from start point
             geo_distances_main[pix_main] = self.geo_distances[pix_rfnd]
-            if pix_rfnd in self.alive:
+            #if pix_rfnd in self.alive:
+            if self.alive[pix_rfnd] == True:
                 count = 0 # Number of neighbours with non-infinite distance values
                 for pix_nei in self.grid_main.pixel[pix_main].neighbour:
                     if pix_nei in self.pix_refine:
-                        if self.geo_distances[self.main2rfnd[self.pix_refine.index[pix_nei]]] < math.inf:
+                        if self.geo_distances[self.main2rfnd[self.pix_refine.index(pix_nei)]] < math.inf:
                             count += 1
                 
                 if count == 4:
                     # Pixel is set to alive if all 4 neighbours have a set value
-                    alive_main.add(pix_main)
+                    #alive_main.append(pix_main)
+                    alive_main[pix_main] = True
                 else:
                     # Otherwise, add to the queue
                     heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
             elif self.geo_distances[pix_rfnd] < math.inf:
                 heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
         # Copy 'main grid' alive and geo_distances arrays to the GeoFMM version
+        
+        c = 0
+        for i in range(len(alive_main)):
+            if alive_main[i] == True:
+                c += 1
+        
         self.alive = copy.copy(alive_main)
         self.geo_distances = copy.copy(geo_distances_main)
                     
