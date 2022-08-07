@@ -34,8 +34,9 @@ class GeoFMM:
     def initialise(self, theta, phi, grid):
         # Set Start pixel
         self.start_pixel = self.initialise_pixel(theta, phi, grid) 
-        # Initialise distance from the start and set all pixels to not alive
-        self.geo_distances = [math.inf] * grid.no_pixels
+        self.is_refined_grid = False
+        # Initialise distance and alive lists as empty
+        self.geo_distances = []
         self.alive = []
 
         
@@ -105,13 +106,13 @@ class GeoFMM:
             self.refine_theta = refine_theta
             self.refine_phi = refine_phi
             self.initialise_refined_grid(self.grid_main)
-            self.geo_distances = [math.inf] * self.grid_rfnd.no_pixels
-            self.alive = [False] * self.grid_rfnd.no_pixels
             if theta_end >= 0.0 and phi_end >= 0.0:
                 self.end_distance = -1.0
                 self.end_pixel = self.initialise_pixel(theta_end, phi_end, self.grid_main)
+                self.is_refined_grid = True
                 self.perform_loop(order, self.grid_rfnd, self.start_pixel_rfnd, end_flag=True, refine_flag=True, main_flag=False)
                 self.transfer_grid()
+                self.is_refined_grid = False
                 self.perform_loop(order, self.grid_main, self.start_pixel, end_flag=True, refine_flag=False, main_flag=True)
 
                 return self.end_distance
@@ -143,7 +144,7 @@ class GeoFMM:
         else:
             self.end_flag == False
         if main_flag == False:
-            self.geo_distances[start_pix.pixel_index] = 0.0
+            self.set_distance(start_pix.pixel_index, 0.0)
             self.queue = [(0.0, start_pix.pixel_index)]
             no_alive = 0 # Number of pixels with a set distance
         else:
@@ -156,11 +157,11 @@ class GeoFMM:
             # Obtain index of pixel with smallest distance
             trial_distance, trial = heapq.heappop(self.queue)
             # If obtained trial index already alive, skip iteration
-            if self.alive[trial] == True:
+            if self.is_alive(trial) == True:
                 continue
             
             # Set trial pixel to alive
-            self.alive[trial] = True
+            self.set_alive(trial)
             no_alive += 1
             
             # Check end point
@@ -176,12 +177,12 @@ class GeoFMM:
             # Visit neighbours of trial pixel
             for i in range(len(grid.pixel[trial].neighbour)):
                 visit = grid.pixel[trial].neighbour[i]
-                if self.alive[visit] == True:
+                if self.is_alive(visit) == True:
                     continue
                 proposed_distance = self.fmm_distance(grid, trial, visit, i, order, start_pix)
-                if proposed_distance < self.geo_distances[visit]:
+                if proposed_distance < self.get_distance(visit):
                     # Add visited pixel to the queue and update value in geo_distances
-                    self.geo_distances[visit] = proposed_distance
+                    self.set_distance(visit, proposed_distance) 
                     heapq.heappush(self.queue, (proposed_distance, visit))
                     # If appropriate, record pixel used to derive this distance
                     if self.end_flag == True:
@@ -218,7 +219,7 @@ class GeoFMM:
                     proposed_distance = grid.get_distance(grid.pixel[trial], neighbour_no)
             else:
                 proposed_distance = grid.get_distance(grid.pixel[trial], neighbour_no)
-        proposed_distance += self.geo_distances[trial]
+        proposed_distance += self.get_distance(trial)
         return proposed_distance
     
     # Determine neighbour-to-neighbour distance (including start/end pixel cases)
@@ -253,26 +254,26 @@ class GeoFMM:
     # Calculate distances using the fast marching method
     def fast_marching_method(self, visit, order, grid, start_pix):
         # Check for existence of 'alive' neighbours
-        if ( ( self.alive[grid.pixel[visit].neighbour[0]] == True or self.alive[grid.pixel[visit].neighbour[1]] == True  ) and
-             ( self.alive[grid.pixel[visit].neighbour[2]] == True or self.alive[grid.pixel[visit].neighbour[3]] == True  ) ):
+        if ( ( self.is_alive(grid.pixel[visit].neighbour[0]) == True or self.is_alive(grid.pixel[visit].neighbour[1]) == True  ) and
+             ( self.is_alive(grid.pixel[visit].neighbour[2]) == True or self.is_alive(grid.pixel[visit].neighbour[3]) == True  ) ):
             # i.e. If up or down neighbour alive AND left or right neighbour alive, use fast marching method
             
             # Determine whether Up or Down neighbour has smallest distance from start - use for theta distance.
             pix_theta = grid.pixel[visit].neighbour[0]
             neighbour_theta = 0     # Up
-            dist_theta = self.geo_distances[pix_theta]
-            if self.geo_distances[grid.pixel[visit].neighbour[1]] < dist_theta:
+            dist_theta = self.get_distance(pix_theta)
+            if self.get_distance(grid.pixel[visit].neighbour[1]) < dist_theta:
                 pix_theta = grid.pixel[visit].neighbour[1]
-                dist_theta = self.geo_distances[pix_theta]
+                dist_theta = self.get_distance(pix_theta)
                 neighbour_theta = 1 # Down
             
             # Determine whether Left or Right neighbour has smallest distance from start - use for phi distance. 
             pix_phi = grid.pixel[visit].neighbour[2]
             neighbour_phi = 2     # Left
-            dist_phi = self.geo_distances[pix_phi]
-            if self.geo_distances[grid.pixel[visit].neighbour[3]] < dist_phi:
+            dist_phi = self.get_distance(pix_phi)
+            if self.get_distance(grid.pixel[visit].neighbour[3]) < dist_phi:
                 pix_phi = grid.pixel[visit].neighbour[3]
-                dist_phi = self.geo_distances[pix_phi]
+                dist_phi = self.get_distance(pix_phi)
                 neighbour_phi = 3 # Right
             
             # Get distances from visited pixel to these neighbours
@@ -289,11 +290,11 @@ class GeoFMM:
                 dist_theta_2 = dist_theta + 1
                 if pix_theta != 0 and pix_theta != grid.no_pixels-1: # i.e. pix_theta is not a pole
                     pix_theta_2 = grid.pixel[pix_theta].neighbour[neighbour_theta]
-                    dist_theta_2 = self.geo_distances[pix_theta_2]
+                    dist_theta_2 = self.get_distance(pix_theta_2)
                     pole_flag = False
                 
                 # theta terms of quadratic
-                if pole_flag == False and self.alive[pix_theta_2] == True and dist_theta_2 <= dist_theta:
+                if pole_flag == False and self.is_alive(pix_theta_2) == True and dist_theta_2 <= dist_theta:
                     delta_theta_2 = self.get_neighbour_distance(pix_theta, neighbour_theta, grid, start_pix)
                     terms_theta = self.quadratic_terms(dist_theta, dist_theta_2, delta_theta, delta_theta_2, 2)
                 else:
@@ -301,10 +302,10 @@ class GeoFMM:
                     
                 # Check for second order phi neighbours
                 pix_phi_2 = grid.pixel[pix_phi].neighbour[neighbour_phi]
-                dist_phi_2 = self.geo_distances[pix_phi_2]
+                dist_phi_2 = self.get_distance(pix_phi_2)
                 
                 # Phi terms of quadratic
-                if self.alive[pix_phi_2] and dist_phi_2 <= dist_phi:
+                if self.is_alive(pix_phi_2) and dist_phi_2 <= dist_phi:
                     delta_phi_2 = self.get_neighbour_distance(pix_phi, neighbour_phi, grid, start_pix)
                     terms_phi = self.quadratic_terms(dist_phi, dist_phi_2, delta_phi, delta_phi_2, 2)
                 else:
@@ -412,10 +413,7 @@ class GeoFMM:
         self.main2rfnd = [-1] * len(self.pix_refine)
         self.grid_rfnd.pixel = [-1] * self.grid_rfnd.no_pixels
         self.grid_rfnd.border_pixels = []
-        
-        self.grid_rfnd.pix = []
-        
-        
+        self.grid_rfnd.refined_indices = []
         
         # Find the relevant pixels in the refined grid
         for k in range(len(self.pix_refine)):
@@ -483,13 +481,11 @@ class GeoFMM:
                             # Check for border
                             if  th_diff == no_theta_border or abs(ph_diff) == no_phi_border:
                                self.grid_rfnd.border_pixels.append(pix_in)
-                        self.grid_rfnd.pix.append(pix_in)
-
-        
-        
-            
-            
-        #self.grid_rfnd.initialise_refined_grid(no_theta_border, no_phi_border, centre_theta, centre_phi, pix_refine, main2rfnd)
+                        self.grid_rfnd.refined_indices.append(pix_in)
+        # Get number of refined pixels and initialise arrays with this length
+        self.no_refined_pixels = len(self.grid_rfnd.refined_indices)
+        self.alive = [False] * self.no_refined_pixels
+        self.geo_distances = [math.inf] * self.no_refined_pixels
         
         # Create refined grid starting pixel
         self.start_pixel_rfnd = self.initialise_pixel(self.theta, self.phi, self.grid_rfnd) 
@@ -505,13 +501,13 @@ class GeoFMM:
             pix_main = self.pix_refine[i] # Index of a relevant main grid pixel
             pix_rfnd = self.main2rfnd[i]  # Index of corresponding refined grid pixel
             # Transfer distance from start point
-            geo_distances_main[pix_main] = self.geo_distances[pix_rfnd]
+            geo_distances_main[pix_main] = self.get_distance(pix_rfnd)
             #if pix_rfnd in self.alive:
-            if self.alive[pix_rfnd] == True:
+            if self.is_alive(pix_rfnd) == True:
                 count = 0 # Number of neighbours with non-infinite distance values
                 for pix_nei in self.grid_main.pixel[pix_main].neighbour:
                     if pix_nei in self.pix_refine:
-                        if self.geo_distances[self.main2rfnd[self.pix_refine.index(pix_nei)]] < math.inf:
+                        if self.get_distance(self.main2rfnd[self.pix_refine.index(pix_nei)]) < math.inf:
                             count += 1
                 
                 if count == 4:
@@ -520,9 +516,9 @@ class GeoFMM:
                     alive_main[pix_main] = True
                 else:
                     # Otherwise, add to the queue
-                    heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
-            elif self.geo_distances[pix_rfnd] < math.inf:
-                heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
+                    heapq.heappush(self.queue, (self.get_distance(pix_rfnd), pix_main))
+            elif self.get_distance(pix_rfnd) < math.inf:
+                heapq.heappush(self.queue, (self.get_distance(pix_rfnd), pix_main))
         # Copy 'main grid' alive and geo_distances arrays to the GeoFMM version
         
         c = 0
@@ -533,5 +529,30 @@ class GeoFMM:
         self.alive = copy.copy(alive_main)
         self.geo_distances = copy.copy(geo_distances_main)
                     
-                    
-                        
+    # Determine whether pixel is in the alive set
+    def is_alive(self, pixel_index):
+        if self.is_refined_grid == True:
+            return self.alive[self.grid_rfnd.refined_indices.index(pixel_index)]
+        else:
+            return self.alive[pixel_index]
+        
+    # Set pixel as alive
+    def set_alive(self, pixel_index):
+        if self.is_refined_grid == True:
+            self.alive[self.grid_rfnd.refined_indices.index(pixel_index)] = True
+        else:
+            self.alive[pixel_index] = True
+            
+    # Get distance to pixel
+    def get_distance(self, pixel_index):
+        if self.is_refined_grid == True:
+            return self.geo_distances[self.grid_rfnd.refined_indices.index(pixel_index)]
+        else:
+            return self.geo_distances[pixel_index]
+        
+    # Set distance to pixel
+    def set_distance(self, pixel_index, distance):
+        if self.is_refined_grid == True:
+           self.geo_distances[self.grid_rfnd.refined_indices.index(pixel_index)] = distance
+        else:
+            self.geo_distances[pixel_index] = distance
