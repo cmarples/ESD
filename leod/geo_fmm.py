@@ -174,7 +174,7 @@ class GeoFMM:
                     break
             # Check border (refined only)
            # if refine_flag == True and trial in grid.border_pixels:
-            if self.border_check(refine_flag, trial, grid) == True:
+            if refine_flag == True and grid.pixel[trial].is_border == True:
                 break
             
             
@@ -193,13 +193,7 @@ class GeoFMM:
                         if visit == self.end_pixel.pixel_index:
                             end_prev = trial
                             end_neighbour = i
-    
-    # Check border (TEMPORARY FUNCTION)                    
-    def border_check(self, refine_flag, trial, grid):
-        if refine_flag == True and trial in grid.border_pixels:
-            return True
-        else:
-            return False
+
         
         
     # Determine distance from a trial to visited pixel
@@ -422,10 +416,10 @@ class GeoFMM:
         self.pix_refine = self.find_refinement_pixels()
         self.main2rfnd = [-1] * len(self.pix_refine)
         self.grid_rfnd.pixel = {}
-        self.grid_rfnd.border_pixels = []
         self.grid_rfnd.refined_indices = []
         self.alive = {}
         self.geo_distances = {}
+        self.no_border_pixels = 0
         
         # Find the relevant pixels in the refined grid
         for k in range(len(self.pix_refine)):
@@ -479,9 +473,11 @@ class GeoFMM:
                         
                         # Check whether pixel is on refined region border
                         if pix_in == 0 and centre_theta != 0 and centre_theta < no_theta_border:
-                            self.grid_rfnd.border_pixels.append(pix_in)
+                            self.grid_rfnd.pixel[pix_in].is_border = True
+                            self.no_border_pixels += 1
                         elif pix_in == self.grid_rfnd.no_pixels-1 and centre_theta != self.grid_rfnd.no_theta - 1 and self.grid_rfnd.no_theta - 1 - centre_theta < no_theta_border:
-                            self.grid_rfnd.border_pixels.append(pix_in)
+                            self.grid_rfnd.pixel[pix_in].is_border = True
+                            self.no_border_pixels += 1
                         else:
                             th_diff = abs(i - centre_theta)
                             ph_diff = j_in - centre_phi
@@ -492,7 +488,8 @@ class GeoFMM:
                                 ph_diff += self.grid_rfnd.no_phi
                             # Check for border
                             if  th_diff == no_theta_border or abs(ph_diff) == no_phi_border:
-                               self.grid_rfnd.border_pixels.append(pix_in)
+                               self.grid_rfnd.pixel[pix_in].is_border = True
+                               self.no_border_pixels += 1
                         self.grid_rfnd.refined_indices.append(pix_in)
                         self.alive[pix_in] = False
                         self.geo_distances[pix_in] = math.inf

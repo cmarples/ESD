@@ -20,6 +20,8 @@ class GeoPixel:
             self.carts = np.array(carts)
             self.neighbour = []
             self.neighbour_distance = []
+            self.is_border = False
+            
 
     def set_pole(self, no_pixels):
         if self.pixel_index == 0:
