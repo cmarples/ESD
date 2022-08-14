@@ -39,15 +39,14 @@ class GeoGrid:
             self.is_initialised = False
             
         else:
-            # Construct a list of pixel objects
-            self.pixel = []
+            # Construct a dictionary of pixel objects
+            self.pixel = {}
             for i in range(self.no_pixels):
                 theta_index = self.get_theta_index(i)
                 phi_index = self.get_phi_index(i, theta_index)
                 carts = self.polars_to_cartesians( self.theta_list[theta_index],
                                                    self.phi_list[phi_index] )
-                self.pixel.append(GeoPixel(i, theta_index, phi_index, self.no_pixels,
-                                           carts, False) )
+                self.pixel[i] = GeoPixel(i, theta_index, phi_index, self.no_pixels, carts, False)
             # Set array sizes for pixel neighbour information
             for i in range(self.no_pixels):    
                 th = self.get_theta_index(i)

@@ -173,7 +173,8 @@ class GeoFMM:
                     self.end_distance = self.fmm_distance(grid, end_prev, self.end_pixel.pixel_index, end_neighbour, order, start_pix)
                     break
             # Check border (refined only)
-            if refine_flag == True and trial in grid.border_pixels:
+           # if refine_flag == True and trial in grid.border_pixels:
+            if self.border_check(refine_flag, trial, grid) == True:
                 break
             
             
@@ -192,7 +193,14 @@ class GeoFMM:
                         if visit == self.end_pixel.pixel_index:
                             end_prev = trial
                             end_neighbour = i
-                        
+    
+    # Check border (TEMPORARY FUNCTION)                    
+    def border_check(self, refine_flag, trial, grid):
+        if refine_flag == True and trial in grid.border_pixels:
+            return True
+        else:
+            return False
+        
         
     # Determine distance from a trial to visited pixel
     def fmm_distance(self, grid, trial, visit, neighbour_no, order, start_pix):
@@ -251,7 +259,6 @@ class GeoFMM:
         else:
             neighbour_dist = grid.get_distance(grid.pixel[visit], neighbour_no)
         return neighbour_dist
-    
     
     
     # Calculate distances using the fast marching method
@@ -414,7 +421,7 @@ class GeoFMM:
         # Initialise refined grid
         self.pix_refine = self.find_refinement_pixels()
         self.main2rfnd = [-1] * len(self.pix_refine)
-        self.grid_rfnd.pixel = [-1] * self.grid_rfnd.no_pixels
+        self.grid_rfnd.pixel = {}
         self.grid_rfnd.border_pixels = []
         self.grid_rfnd.refined_indices = []
         self.alive = {}
