@@ -18,6 +18,7 @@ import time
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
 from leod.geo_fmm import GeoFMM
+from leod.sphere_geodesics import great_circle_distance
 
 test_type = 5
 
@@ -44,15 +45,15 @@ elif test_type == 2: # 4-neighbour Dijkstra example
     
 elif test_type == 3: # 1st Order FMM example
     
-    E = EllipsoidShape(3.0, 2.0, 1.0)
-    G = GeoGrid(E, 181, 360)
-    th_0 = 90.0 * math.pi / 180.0
+    E = EllipsoidShape(1.0, 1.0, 1.0)
+    r = 125
+    G = GeoGrid(E, r, r)
+    th_0 = 90.0001 * math.pi / 180.0
     ph_0 = 0.0
     F = GeoFMM(G, th_0, ph_0)
     th_1 = 50.0 * math.pi / 180.0
     ph_1 = 60.0 * math.pi / 180.0
     
-    # Expect d = 2.3854095543
     d = F.calculate_geodesics(1, th_1, ph_1)
     
 elif test_type == 4: # 2nd Order FMM example
@@ -72,10 +73,11 @@ elif test_type == 4: # 2nd Order FMM example
     print(toc - tic)
 elif test_type == 5: # 2nd Order FMM example (with refinement)
     
-    x_ref = 5
-    no_div = 3
+    n = 10 # n_theta = n_phi
+    x_ref = 10
+    no_div = 5
     E = EllipsoidShape(1.0, 1.0, 1.0)
-    G = GeoGrid(E, 200, 200)
+    G = GeoGrid(E, n, n)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
     tic = time.perf_counter()
@@ -87,3 +89,5 @@ elif test_type == 5: # 2nd Order FMM example (with refinement)
                               refine_theta=no_div, refine_phi=no_div)
     toc = time.perf_counter()
     print(toc - tic)
+    
+    s = great_circle_distance(1.0, th_0, ph_0, th_1, ph_1)

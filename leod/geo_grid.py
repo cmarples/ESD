@@ -80,7 +80,10 @@ class GeoGrid:
     
     # Find theta index closest to given theta value, th
     def find_theta_index(self, th):
-        return binary_search(self.theta_list, th)
+        if th < math.pi:
+            return binary_search(self.theta_list, th)
+        else:
+            return self.no_theta-1
     
     # Find phi index closest to given phi value, ph
     def find_phi_index(self, ph):
