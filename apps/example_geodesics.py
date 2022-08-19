@@ -73,11 +73,11 @@ elif test_type == 4: # 2nd Order FMM example
     print(toc - tic)
 elif test_type == 5: # 2nd Order FMM example (with refinement)
     
-    n = 10 # n_theta = n_phi
+    n = 200 # n_theta = n_phi
     x_ref = 10
     no_div = 5
     E = EllipsoidShape(1.0, 1.0, 1.0)
-    G = GeoGrid(E, n, n)
+    G = GeoGrid(E, 200, 300)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
     tic = time.perf_counter()
@@ -86,7 +86,7 @@ elif test_type == 5: # 2nd Order FMM example (with refinement)
     ph_1 = 60.0 * math.pi / 180.0
     
     d = F.calculate_geodesics(2, th_1, ph_1, is_refine=True, refine_range=x_ref, 
-                              refine_theta=no_div, refine_phi=no_div)
+                              refine_theta=3, refine_phi=5)
     toc = time.perf_counter()
     print(toc - tic)
     

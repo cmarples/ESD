@@ -100,7 +100,7 @@ class GeoFMM:
     # If a single endpoint is desired, input positive values of theta_end and
     # phi_end. If either is negative, then distance to all pixels is found.
     def calculate_geodesics(self, order, theta_end=-1.0, phi_end=-1.0,
-                            is_refine=False, refine_range=1, refine_theta=3, refine_phi=3):
+                            is_refine=False, refine_range=10, refine_theta=5, refine_phi=5):
         if is_refine == True:
             self.refine_range = refine_range
             self.refine_theta = refine_theta
@@ -108,12 +108,18 @@ class GeoFMM:
             self.initialise_refined_grid(self.grid_main)
             if theta_end >= 0.0 and phi_end >= 0.0:
                 self.end_distance = -1.0
-                self.end_pixel = self.initialise_pixel(theta_end, phi_end, self.grid_main)
+                self.end_pixel_main = self.initialise_pixel(theta_end, phi_end, self.grid_main)
+                if self.end_pixel_main.pixel_index in self.pix_refine:
+                    self.end_pixel = self.initialise_pixel(theta_end, phi_end, self.grid_rfnd)
+                    end_flag = True
+                else:
+                    end_flag = False
                 self.is_refined_grid = True
-                self.perform_loop(order, self.grid_rfnd, self.start_pixel_rfnd, end_flag=True, refine_flag=True, main_flag=False)
-                if self.end_distance == -1:
+                self.perform_loop(order, self.grid_rfnd, self.start_pixel_rfnd, end_flag, refine_flag=True, main_flag=False)
+                if self.end_distance == -1.0:
                     self.transfer_grid()
                     self.is_refined_grid = False
+                    self.end_pixel = self.end_pixel_main
                     self.perform_loop(order, self.grid_main, self.start_pixel, end_flag=True, refine_flag=False, main_flag=True)
                 return self.end_distance
             else:
@@ -145,7 +151,7 @@ class GeoFMM:
         if end_flag == True:
             self.end_flag = True
         else:
-            self.end_flag == False
+            self.end_flag = False
         self.geo_distances[start_pix.pixel_index] = 0.0
         if main_flag == False:
             self.queue = [(0.0, start_pix.pixel_index)]
@@ -442,6 +448,7 @@ class GeoFMM:
         else:
             # Find the relevant pixels in the refined grid
             for k in range(len(self.pix_refine)):
+
                 # Get (main grid) indices and values for theta and phi
                 th_in = self.grid_main.pixel[self.pix_refine[k]].theta_index
                 ph_in = self.grid_main.pixel[self.pix_refine[k]].phi_index
@@ -452,48 +459,74 @@ class GeoFMM:
                 self.main2rfnd[k] = self.grid_rfnd.find_pixel_index(self.grid_main.theta_list[th_in],
                                                                     self.grid_main.phi_list[ph_in])
                 # Get theta and phi indices of central pixel
-                th_c = self.grid_rfnd.get_theta_index(self.main2rfnd[k])
-                ph_c = self.grid_rfnd.get_phi_index(self.main2rfnd[k], th_c)
                 # Find limits for loops over theta and phi (based on refine_theta and refine_phi)
+                th_c = self.grid_rfnd.get_theta_index(self.main2rfnd[k])
                 th_dn = th_c - int((self.refine_theta - 1)/2)
                 th_up = th_c + int((self.refine_theta - 1)/2)
-                ph_dn = ph_c - int((self.refine_phi - 1)/2)
-                ph_up = ph_c + int((self.refine_phi - 1)/2)
+                if th_c == 0 or th_c == self.grid_rfnd.no_theta-1:
+                    ph_c = 0
+                    ph_dn = ph_c - self.refine_range*self.refine_phi + int((self.refine_phi - 1)/2)
+                    ph_up = ph_c + self.refine_range*self.refine_phi + int((self.refine_phi - 1)/2)
+                else:
+                    ph_c = self.grid_rfnd.get_phi_index(self.main2rfnd[k], th_c)
+                    ph_dn = ph_c - int((self.refine_phi - 1)/2)
+                    ph_up = ph_c + int((self.refine_phi - 1)/2)
+                    
                 for i in range(th_dn, th_up+1):
                     # Ignore if theta out of range
                     if i >= 0 and i < self.grid_rfnd.no_theta:
                         
-                        for j in range(ph_dn, ph_up+1):
+                        if i == 0:
+                            # North pole
+                            carts = np.zeros(3)
+                            carts[2] = self.grid_rfnd.shape.c_axis
+                            self.grid_rfnd.pixel[0] = GeoPixel(0, 0, 0, self.grid_rfnd.no_pixels, carts)
+                            self.grid_rfnd.find_neighbour_indices(0, 0, 0)
+                            if centre_theta != 0 and centre_theta < no_theta_border:
+                                self.grid_rfnd.pixel[0].is_border = True
+                                self.no_border_pixels += 1
+                            self.grid_rfnd.refined_indices.append(0)
+                            self.alive[0] = False
+                            self.geo_distances[0] = math.inf
                                 
-                            # Account for periodicity of phi
-                            if i == 0 or i == self.grid_rfnd.no_theta-1:
-                                j_in = 0 # Pixel is a pole
-                            elif j < 0:
-                                j_in = j + self.grid_rfnd.no_phi
-                            elif j >= self.grid_rfnd.no_phi:
-                                j_in = j - self.grid_rfnd.no_phi
-                            else:
-                                j_in = j
-                            # Find index of pixel
-                            if i == th_c and j == ph_c:
-                                # Central pixel
-                                pix_in = self.main2rfnd[k]
-                            else:
-                                pix_in = self.grid_rfnd.get_pixel_index(i, j_in)
-                            # Create pixel
-                            carts = self.grid_rfnd.polars_to_cartesians( self.grid_rfnd.theta_list[i],
-                                                                         self.grid_rfnd.phi_list[j_in] )
-                            self.grid_rfnd.pixel[pix_in] = GeoPixel(pix_in, i, j_in, self.grid_rfnd.no_pixels, carts)
-                            self.grid_rfnd.find_neighbour_indices(pix_in, i, j_in)
+                        elif i == self.grid_rfnd.no_theta - 1:
+                            # South pole
+                            carts = np.zeros(3)
+                            carts[2] = -self.grid_rfnd.shape.c_axis
+                            self.grid_rfnd.pixel[self.grid_rfnd.no_pixels - 1] = GeoPixel(self.grid_rfnd.no_pixels - 1, self.grid_rfnd.no_theta - 1, 0, self.grid_rfnd.no_pixels, carts)
+                            self.grid_rfnd.find_neighbour_indices(self.grid_rfnd.no_pixels - 1, self.grid_rfnd.no_theta - 1, 0)
+                            if centre_theta != self.grid_rfnd.no_theta - 1 and self.grid_rfnd.no_theta - 1 - centre_theta < no_theta_border:
+                                self.grid_rfnd.pixel[self.grid_rfnd.no_pixels - 1].is_border = True
+                                self.no_border_pixels += 1
+                            self.grid_rfnd.refined_indices.append(self.grid_rfnd.no_pixels - 1)
+                            self.alive[self.grid_rfnd.no_pixels - 1] = False
+                            self.geo_distances[self.grid_rfnd.no_pixels - 1] = math.inf
                             
-                            # Check whether pixel is on refined region border
-                            if pix_in == 0 and centre_theta != 0 and centre_theta < no_theta_border:
-                                self.grid_rfnd.pixel[pix_in].is_border = True
-                                self.no_border_pixels += 1
-                            elif pix_in == self.grid_rfnd.no_pixels-1 and centre_theta != self.grid_rfnd.no_theta - 1 and self.grid_rfnd.no_theta - 1 - centre_theta < no_theta_border:
-                                self.grid_rfnd.pixel[pix_in].is_border = True
-                                self.no_border_pixels += 1
-                            else:
+                        else:
+                            for j in range(ph_dn, ph_up+1):
+                                
+                                # Account for periodicity of phi
+                                if i == 0 or i == self.grid_rfnd.no_theta-1:
+                                    j_in = 0 # Pixel is a pole
+                                elif j < 0:
+                                    j_in = j + self.grid_rfnd.no_phi
+                                elif j >= self.grid_rfnd.no_phi:
+                                    j_in = j - self.grid_rfnd.no_phi
+                                else:
+                                    j_in = j
+                                # Find index of pixel
+                                if i == th_c and j == ph_c:
+                                    # Central pixel
+                                    pix_in = self.main2rfnd[k]
+                                else:
+                                    pix_in = self.grid_rfnd.get_pixel_index(i, j_in)
+                                # Create pixel
+                                carts = self.grid_rfnd.polars_to_cartesians( self.grid_rfnd.theta_list[i],
+                                                                             self.grid_rfnd.phi_list[j_in] )
+                                self.grid_rfnd.pixel[pix_in] = GeoPixel(pix_in, i, j_in, self.grid_rfnd.no_pixels, carts)
+                                self.grid_rfnd.find_neighbour_indices(pix_in, i, j_in)
+                                
+                                # Check whether pixel is on refined region border
                                 th_diff = abs(i - centre_theta)
                                 ph_diff = j_in - centre_phi
                                 # Handle phi periodicity
@@ -505,11 +538,12 @@ class GeoFMM:
                                 if  th_diff == no_theta_border or abs(ph_diff) == no_phi_border:
                                    self.grid_rfnd.pixel[pix_in].is_border = True
                                    self.no_border_pixels += 1
-                            self.grid_rfnd.refined_indices.append(pix_in)
-                            self.alive[pix_in] = False
-                            self.geo_distances[pix_in] = math.inf
+                                   
+                                self.grid_rfnd.refined_indices.append(pix_in)
+                                self.alive[pix_in] = False
+                                self.geo_distances[pix_in] = math.inf
                         
-           # Get number of refined pixels and initialise arrays with this length
+            # Get number of refined pixels and initialise arrays with this length
             self.no_refined_pixels = len(self.grid_rfnd.refined_indices)
         
         # Create refined grid starting pixel
