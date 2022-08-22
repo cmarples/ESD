@@ -158,9 +158,10 @@ class GeoFMM:
             no_alive = 0 # Number of pixels with a set distance
         else:
             no_alive = len([i for i in self.alive.values() if i == True])
-            
+        
         end_prev = -1
         end_neighbour = -1
+        
         # Perform wavefront propagation
         while no_alive != grid.no_pixels:
             # Obtain index of pixel with smallest distance
@@ -552,6 +553,7 @@ class GeoFMM:
     # Go from refined grid to the main grid, ready to proceed with FMM calculation
     def transfer_grid(self):
         # Map refined grid data to the main grid
+        
         # Initialise temporary dictionaries for main grid data
         alive_main = {}
         geo_distances_main = {}
@@ -565,12 +567,12 @@ class GeoFMM:
             pix_rfnd = self.main2rfnd[i]  # Index of corresponding refined grid pixel
             # Transfer distance from start point
             geo_distances_main[pix_main] = self.geo_distances[pix_rfnd]
-            #if pix_rfnd in self.alive:
+            
             if self.alive[pix_rfnd] == True:
                 count = 0 # Number of neighbours with non-infinite distance values
                 for pix_nei in self.grid_main.pixel[pix_main].neighbour:
                     if pix_nei in self.pix_refine:
-                        if self.geo_distances[self.main2rfnd[self.pix_refine.index(pix_nei)]] < math.inf:
+                        if self.alive[self.main2rfnd[self.pix_refine.index(pix_nei)]] == True:
                             count += 1
                 
                 if count == 4:
@@ -582,6 +584,7 @@ class GeoFMM:
                     heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
             elif self.geo_distances[pix_rfnd] < math.inf:
                 heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
+
         # Copy 'main grid' alive and geo_distances arrays to the GeoFMM version
         
         c = 0
