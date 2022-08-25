@@ -77,11 +77,32 @@ elif test_type == 5: # 2nd Order FMM example (with refinement)
     x_ref = 10
     no_div = 5
     E = EllipsoidShape(1.0, 1.0, 1.0)
-    G = GeoGrid(E, n, n)
+    G = GeoGrid(E, 121, 240)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
     tic = time.perf_counter()
     F = GeoFMM(G, th_0, ph_0)
+    th_1 = 50.0 * math.pi / 180.0
+    ph_1 = 60.0 * math.pi / 180.0
+    
+    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=False, refine_range=x_ref, 
+                              refine_theta=no_div, refine_phi=no_div)
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    s = great_circle_distance(1.0, th_0, ph_0, th_1, ph_1)
+    
+elif test_type == 6: # 2nd Order FMM example on a flat grid
+    
+    n = 200 # n_theta = n_phi
+    x_ref = 10
+    no_div = 5
+    E = EllipsoidShape(1.0, 1.0, 1.0)
+    G = GeoGrid(E, 201, 200, is_flat = True)
+    th_0 = 90.0 * math.pi / 180.0
+    ph_0 = 0.0
+    tic = time.perf_counter()
+    F = GeoFMM(G, th_0, ph_0, is_flat = True)
     th_1 = 50.0 * math.pi / 180.0
     ph_1 = 60.0 * math.pi / 180.0
     

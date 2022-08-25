@@ -17,12 +17,13 @@ from .geo_pixel import GeoPixel
 # pixels, by calculating the neighbour-to-neighbour distances.
 class GeoGrid:
     # Constructor
-    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36, is_refine=False):
+    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36, is_refine=False, is_flat=False):
         # Take inputs
         self.shape = shape
         self.no_theta = no_theta
         self.no_phi = no_phi
         self.is_refine = is_refine
+        self.is_flat = is_flat
         # Calculate number of pixels and required increments
         self.no_pixels = (self.no_theta - 2)*self.no_phi + 2
         self.delta_theta = math.pi / (self.no_theta - 1)
@@ -44,8 +45,11 @@ class GeoGrid:
             for i in range(self.no_pixels):
                 theta_index = self.get_theta_index(i)
                 phi_index = self.get_phi_index(i, theta_index)
-                carts = self.polars_to_cartesians( self.theta_list[theta_index],
-                                                   self.phi_list[phi_index] )
+                if self.is_flat == False:
+                    carts = self.polars_to_cartesians( self.theta_list[theta_index],
+                                                       self.phi_list[phi_index] )
+                else:
+                    carts = [self.phi_list[phi_index], self.theta_list[theta_index]]    
                 self.pixel[i] = GeoPixel(i, theta_index, phi_index, self.no_pixels, carts, False)
             # Set array sizes for pixel neighbour information
             for i in range(self.no_pixels):    
@@ -158,6 +162,7 @@ class GeoGrid:
             # Calculate Euclidean distance between pixel i and its neighbour j
             j = pix_i.neighbour[k]
             pix_i.neighbour_distance[k] = math.sqrt( np.sum((pix_i.carts - self.pixel[j].carts)**2.0) )
+            
             # Assign this distance to the relevant neighbour of pixel j.
             # Neighbours are always ordered as "0, 1, 2, 3" = "Up, Down, Left, Right".
             # e.g. if j is the "down" neighbour of i, then i must be the "up" neighbour of j.

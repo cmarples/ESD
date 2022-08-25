@@ -24,10 +24,11 @@ def euclidean_distance(p, q):
 
 class GeoFMM:
     # Constructor
-    def __init__(self, grid, theta, phi):
+    def __init__(self, grid, theta, phi, is_flat=False):
         self.theta = theta
         self.phi = phi
         self.grid_main = grid
+        self.is_flat = is_flat
         self.initialise(theta, phi, grid)
         
     # Initialise fast marching method for a given start point
@@ -46,7 +47,10 @@ class GeoFMM:
         theta_index = grid.find_theta_index(theta)
         phi_index = grid.find_phi_index(phi)
         pixel_index = grid.get_pixel_index(theta_index, phi_index)
-        carts = grid.polars_to_cartesians(theta, phi)
+        if self.is_flat == False:
+            carts = grid.polars_to_cartesians(theta, phi)
+        else:
+            carts = [phi, theta]
         pix = GeoPixel(pixel_index, theta_index, phi_index,  grid.no_pixels,
                        carts, False)
         pix.neighbour = []
@@ -522,8 +526,12 @@ class GeoFMM:
                                 else:
                                     pix_in = self.grid_rfnd.get_pixel_index(i, j_in)
                                 # Create pixel
-                                carts = self.grid_rfnd.polars_to_cartesians( self.grid_rfnd.theta_list[i],
-                                                                             self.grid_rfnd.phi_list[j_in] )
+                                if self.is_flat == False:
+                                    carts = self.grid_rfnd.polars_to_cartesians( self.grid_rfnd.theta_list[i],
+                                                                                 self.grid_rfnd.phi_list[j_in] )
+                                else:
+                                    carts = [self.grid_rfnd.phi_list[j_in], self.grid_rfnd.theta_list[i]]
+                                
                                 self.grid_rfnd.pixel[pix_in] = GeoPixel(pix_in, i, j_in, self.grid_rfnd.no_pixels, carts)
                                 self.grid_rfnd.find_neighbour_indices(pix_in, i, j_in)
                                 
