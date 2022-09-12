@@ -577,21 +577,24 @@ class GeoFMM:
             geo_distances_main[pix_main] = self.geo_distances[pix_rfnd]
             
             if self.alive[pix_rfnd] == True:
-                count = 0 # Number of neighbours with non-infinite distance values
+                count = 0 # Number of neighbours that are alive on the refined grid
+                count_d = 0 # Number of neighbours with non-infinite distance
                 for pix_nei in self.grid_main.pixel[pix_main].neighbour:
                     if pix_nei in self.pix_refine:
                         if self.alive[self.main2rfnd[self.pix_refine.index(pix_nei)]] == True:
                             count += 1
-                
+                        if self.geo_distances[self.main2rfnd[self.pix_refine.index(pix_nei)]] < math.inf:
+                            count_d += 1
+
                 if count == 4:
                     # Pixel is set to alive if all 4 neighbours have a set value
                     #alive_main.append(pix_main)
                     alive_main[pix_main] = True
-                else:
+                elif count_d > 1:
                     # Otherwise, add to the queue
-                    heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
-            elif self.geo_distances[pix_rfnd] < math.inf:
-                heapq.heappush(self.queue, (self.geo_distances[pix_rfnd], pix_main))
+                    heapq.heappush(self.queue, (geo_distances_main[pix_main], pix_main))
+            #elif self.geo_distances[pix_rfnd] < math.inf:
+                #heapq.heappush(self.queue, (geo_distances_main[pix_main], pix_main))
 
         # Copy 'main grid' alive and geo_distances arrays to the GeoFMM version
         

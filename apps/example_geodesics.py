@@ -19,8 +19,13 @@ from leod.ellipsoid_shape import EllipsoidShape
 from leod.geo_grid import GeoGrid
 from leod.geo_fmm import GeoFMM
 from leod.sphere_geodesics import great_circle_distance
+from leod.spheroid_geodesics import spheroid_geo_distance
+from leod.triaxial_geodesics import boundary_value_method
 
-test_type = 5
+from leod.triaxial_geodesics import solve_RK4
+import numpy as np
+
+test_type = 10
 
 if test_type == 1:   # Generate the GeoGrid, GeoPixel and GeoFMM objects
     
@@ -77,7 +82,7 @@ elif test_type == 5: # 2nd Order FMM example (with refinement)
     x_ref = 10
     no_div = 5
     E = EllipsoidShape(1.0, 1.0, 1.0)
-    G = GeoGrid(E, 121, 240)
+    G = GeoGrid(E, 190, 350)
     th_0 = 90.0 * math.pi / 180.0
     ph_0 = 0.0
     tic = time.perf_counter()
@@ -85,7 +90,7 @@ elif test_type == 5: # 2nd Order FMM example (with refinement)
     th_1 = 50.0 * math.pi / 180.0
     ph_1 = 60.0 * math.pi / 180.0
     
-    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=False, refine_range=x_ref, 
+    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=True, refine_range=x_ref, 
                               refine_theta=no_div, refine_phi=no_div)
     toc = time.perf_counter()
     print(toc - tic)
@@ -112,3 +117,56 @@ elif test_type == 6: # 2nd Order FMM example on a flat grid
     print(toc - tic)
     
     s = great_circle_distance(1.0, th_0, ph_0, th_1, ph_1)
+    
+elif test_type == 7: # Sphere geodesic using GeographicLib
+    E = EllipsoidShape(1.0, 1.0, 1.0)
+    th_0 = 90.0 * math.pi / 180.0
+    ph_0 = 0.0
+    th_1 = 50.0 * math.pi / 180.0
+    ph_1 = 60.0 * math.pi / 180.0
+    
+    c = great_circle_distance(1.0, th_0, ph_0, th_1, ph_1)
+    s = spheroid_geo_distance(E, th_0, ph_0, th_1, ph_1)
+    
+elif test_type == 8: # Spheroid geodesic using GeographicLib     
+    E = EllipsoidShape(6378137.0, 6378137.0, 6356752.3142) # WGS84 ellipsoid
+    th_0 = (90.0 - 41.32) * math.pi / 180.0
+    ph_0 = 174.81 * math.pi / 180.0
+    th_1 = (90.0 + 40.96) * math.pi / 180.0
+    ph_1 = -5.50 * math.pi / 180.0
+    s = spheroid_geo_distance(E, th_0, ph_0, th_1, ph_1)
+    
+elif test_type == 9: # Triaxial geodesics using Panou's boundary value method
+    E = EllipsoidShape(6378172.0, 6378103.0, 6356753.0) # Earth parameters
+    th_0 = 0.0
+    ph_0 = 0.0
+    th_1 = 0.0
+    ph_1 = 90.0 * math.pi / 180.0
+    #s = boundary_value_method(E, th_0, ph_0, th_1, ph_1, 1.0e-12, True, 10000)
+    #s = s[0]
+    conv = math.pi / 180.0
+    s = boundary_value_method(E, 30.0*conv, 0.0, -30.0*conv, 175.0*conv, tol=1e-12, Jacobi=True, n = 16000) 
+
+elif test_type == 10: # Prolate and Oblate
+   
+   n = 200 # n_phi
+   th_0 = 90.0 * math.pi / 180.0
+   ph_0 = 0.0
+   th_1 = 50.0 * math.pi / 180.0
+   ph_1 = 60.0 * math.pi / 180.0
+   
+   # Prolate
+   E1 = EllipsoidShape(1.0, 1.0, 2.0)
+   E1.normalise()
+   G1 = GeoGrid(E1, n+1, n)
+   F1 = GeoFMM(G1, th_0, ph_0)
+   d1 = F1.calculate_geodesics(2, th_1, ph_1, is_refine=False)
+   s1 = spheroid_geo_distance(E1, th_0, ph_0, th_1, ph_1)   
+    
+   # Oblate
+   E2 = EllipsoidShape(2.0, 2.0, 1.0)
+   E2.normalise()
+   G2 = GeoGrid(E2, n+1, n)
+   F2 = GeoFMM(G2, th_0, ph_0)
+   d2 = F2.calculate_geodesics(2, th_1, ph_1, is_refine=False)
+   s2 = spheroid_geo_distance(E2, th_0, ph_0, th_1, ph_1) 

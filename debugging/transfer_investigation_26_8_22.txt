@@ -1,0 +1,10 @@
+for j in range(len(self.pix_refine)):
+    pix = self.pix_refine[j]
+    pr = self.main2rfnd[j]
+    print(pix)
+    print(self.grid_main.pixel[pix].theta_index)
+    print(self.grid_main.pixel[pix].phi_index)
+    print(self.geo_distances[pr])
+    print(self.alive[self.main2rfnd[j]])
+    print(' ')
+    

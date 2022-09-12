@@ -19,7 +19,7 @@ ph_0 = 0.0
 th_1 = 50.0 * math.pi / 180.0
 ph_1 = 60.0 * math.pi / 180.0
 
-n_res = np.arange(10, 110, step=10)
+n_res = np.arange(10, 370, step=10)
 m = len(n_res)
 
 x_ref = 10
@@ -38,7 +38,7 @@ for i in range(m):        # i : theta index
         G1 = GeoGrid(E, n_res[i], n_res[j])
         F1 = GeoFMM(G1, th_0, ph_0)
         tic = time.perf_counter()
-        distances[i][j] = F1.calculate_geodesics(2, th_1, ph_1)
+        distances[i][j] = F1.calculate_geodesics(2, th_1, ph_1, False)
         toc = time.perf_counter()
         times[i][j] = toc - tic
         
@@ -53,8 +53,9 @@ for i in range(m):        # i : theta index
     if (i+1)%6 == 0:
         print(['i = ', i, ' out of 35 complete.'])
 
+
 # Write to files
-np.save('data/res_theta_phi.txt', distances)
-np.save('data/res_theta_phi_refined.txt', dist_rfnd)
-np.save('data/res_theta_phi_times.txt', times)
-np.save('data/res_theta_phi_refined_times.txt', times_rfnd)
+np.savetxt('data/res_theta_phi.csv', distances)
+np.savetxt('data/res_theta_phi_refined.csv', dist_rfnd)
+np.savetxt('data/res_theta_phi_times.csv', times)
+np.savetxt('data/res_theta_phi_refined_times.csv', times_rfnd)
