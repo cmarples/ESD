@@ -31,7 +31,23 @@ except ModuleNotFoundError:
 print(" ")    
 
 class TestGeo(unittest.TestCase):
-
+    
+    def test_8_neighbour(self):
+        print("Simple tests of 8-neighbour GeoGrid")
+        a = 3.0
+        a = 3.0
+        b = 2.0
+        c = 1.0
+        E = EllipsoidShape(a, b, c)
+        G = GeoGrid(E, 5, 8, neighbour8=True)
+        
+        self.assertEqual(G.no_pixels, 26, "Should be 26")
+        self.assertEqual(G.pixel[9].neighbour, [1, 17, 16, 10, 8, 2, 24, 18], "Should be [1, 17, 16, 10, 8, 2, 24, 18]")
+        self.assertEqual(G.pixel[8].neighbour, [0, 16, 7, 1, 0, 0, 15, 9], "Should be [0, 16, 7, 1, 0, 0, 15, 9]")
+        self.assertEqual(G.pixel[20].neighbour, [12, 25, 19, 21, 11, 13, 25, 25], "Should be [12, 25, 19, 21, 11, 13, 25, 25]")
+        print("Test passed")
+        print(" ")
+            
     def test_geo(self):
         print("Simple tests for initialisation of EllipsoidShape and GeoGrid objects")
         a = 3.0
@@ -101,37 +117,7 @@ class TestGeo(unittest.TestCase):
             print("Test passed")
             print(" ")
             
-    def test_boundary_value_method_1(self):
-        print(" ")
-        print("Test use of the boundary value method on a triaxial ellipsoid, comparing to Table 1 of Panou, 2013")
-        a = 6378172.0
-        b = 6378103.0 # Earth parameters
-        c = 6356753.0
-        conv = math.pi / 180.0 # Conversion factor from degrees to radians
-        
-        s = boundary_value_method(a, b, c, 0.0, 0.0, 0.0, 90.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 10018754.9569, 4, "Expect d = 10018754.9569 m")
-        
-        s = boundary_value_method(a, b, c, 1.0*conv, 0.0, -80.0*conv, 5.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 8947130.7221, 4, "Expect d = 8947130.7221 m")
-        
-        s = boundary_value_method(a, b, c, 5.0*conv, 0.0, -60.0*conv, 40.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 8004762.4330, 4, "Expect d = 8004762.4330 m")
-        
-        s = boundary_value_method(a, b, c, 30.0*conv, 0.0, -30.0*conv, 175.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 19547128.7971, 4, "Expect d = 19547128.7971 m")
-        
-        s = boundary_value_method(a, b, c, 60.0*conv, 0.0, 60.0*conv, 175.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 6705715.1610, 4, "Expect d = 6705715.1610 m")
-        
-        s = boundary_value_method(a, b, c, 75.0*conv, 0.0, 80.0*conv, 120.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 2482501.2608, 4, "Expect d = 2482501.2608 m")
-        
-        s = boundary_value_method(a, b, c, 80.0*conv, 0.0, 60.0*conv, 90.0*conv, Jacobi=True, n = 16000)      
-        self.assertAlmostEqual(s[0], 3519745.1283, 4, "Expect d = 3519745.1283 m")
-        
-        print("Test passed")
-        print(" ")
+    
             
 if __name__ == '__main__':
     unittest.main()

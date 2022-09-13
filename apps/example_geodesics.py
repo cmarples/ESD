@@ -25,7 +25,7 @@ from leod.triaxial_geodesics import boundary_value_method
 from leod.triaxial_geodesics import solve_RK4
 import numpy as np
 
-test_type = 10
+test_type = 11
 
 if test_type == 1:   # Generate the GeoGrid, GeoPixel and GeoFMM objects
     
@@ -170,3 +170,23 @@ elif test_type == 10: # Prolate and Oblate
    F2 = GeoFMM(G2, th_0, ph_0)
    d2 = F2.calculate_geodesics(2, th_1, ph_1, is_refine=False)
    s2 = spheroid_geo_distance(E2, th_0, ph_0, th_1, ph_1) 
+   
+elif test_type == 11: # 8-neighbour Dijkstra
+    a = 1.0
+    b = 1.0
+    c = 1.0
+    E = EllipsoidShape(a, b, c)
+    G = GeoGrid(E, 200, 200, neighbour8=False)
+    
+    th_0 = 90.0 * math.pi / 180.0
+    ph_0 = 0.0
+    th_1 = 50.0 * math.pi / 180.0
+    ph_1 = 60.0 * math.pi / 180.0
+    
+    F = GeoFMM(G, th_0, ph_0)
+    
+    d = F.calculate_geodesics(0, th_1, ph_1)
+    
+    
+    
+    

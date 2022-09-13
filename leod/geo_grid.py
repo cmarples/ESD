@@ -17,12 +17,13 @@ from .geo_pixel import GeoPixel
 # pixels, by calculating the neighbour-to-neighbour distances.
 class GeoGrid:
     # Constructor
-    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36, is_refine=False, is_flat=False):
+    def __init__(self, shape=EllipsoidShape(), no_theta=19, no_phi=36, is_refine=False, neighbour8=False, is_flat=False):
         # Take inputs
         self.shape = shape
         self.no_theta = no_theta
         self.no_phi = no_phi
         self.is_refine = is_refine
+        self.neighbour8 = neighbour8
         self.is_flat = is_flat
         # Calculate number of pixels and required increments
         self.no_pixels = (self.no_theta - 2)*self.no_phi + 2
@@ -126,7 +127,10 @@ class GeoGrid:
                 self.pixel[self.no_pixels-1].neighbour_distance.append(-1.0)
         else:                              # Not a pole
             # Initialise distances
-            self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
+            if self.neighbour8 == True:
+                self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+            else:
+                self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
             # Up neighbour (minus theta)
             if th == 1:
                 pixel_neighbour = 0
@@ -151,6 +155,44 @@ class GeoGrid:
             else:
                 pixel_neighbour = self.get_pixel_index(th, ph+1)
             self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
+            
+            if self.neighbour8 == True:
+                # Up-left neighbour (minus theta, minus phi)
+                if th == 1:
+                    pixel_neighbour = 0
+                else:
+                    if ph == 0:
+                        pixel_neighbour = self.get_pixel_index(th-1, self.no_phi-1)
+                    else:
+                        pixel_neighbour = self.get_pixel_index(th-1, ph-1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+                # Up-right neighbour (minus theta, plus phi)
+                if th == 1:
+                    pixel_neighbour = 0
+                else:
+                    if ph == self.no_phi-1:
+                        pixel_neighbour = self.get_pixel_index(th-1, 0)
+                    else:
+                        pixel_neighbour = self.get_pixel_index(th-1, ph+1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+                # Down-left neighbour (plus theta, minus phi)
+                if th == self.no_theta-2:
+                    pixel_neighbour = self.no_pixels - 1
+                else:
+                    if ph == 0:
+                        pixel_neighbour = self.get_pixel_index(th+1, self.no_phi-1)
+                    else:
+                        pixel_neighbour = pixel_neighbour = self.get_pixel_index(th+1, ph-1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
+                # Up-right neighbour (minus theta, plus phi)
+                if th == self.no_theta-2:
+                    pixel_neighbour = self.no_pixels - 1
+                else:
+                    if ph == self.no_phi-1:
+                        pixel_neighbour = self.get_pixel_index(th+1, 0)
+                    else:
+                        pixel_neighbour = self.get_pixel_index(th+1, ph+1)
+                self.pixel[pixel_no].neighbour.append(pixel_neighbour)
                 
     # Get Euclidean distance between pixel i and neighbour k.
     # If this distance has not been calculated yet, then do so.
@@ -174,6 +216,15 @@ class GeoGrid:
                 self.pixel[j].neighbour_distance[0] = pix_i.neighbour_distance[k]
             elif k == 2:
                 self.pixel[j].neighbour_distance[3] = pix_i.neighbour_distance[k]
-            else:
+            elif k == 3:
                 self.pixel[j].neighbour_distance[2] = pix_i.neighbour_distance[k]
+            # 8-neighbour cases
+            elif k == 4:
+                self.pixel[j].neighbour_distance[7] = pix_i.neighbour_distance[k]
+            elif k == 5:
+                self.pixel[j].neighbour_distance[6] = pix_i.neighbour_distance[k]
+            elif k == 6:
+                self.pixel[j].neighbour_distance[5] = pix_i.neighbour_distance[k]
+            elif k == 7:
+                self.pixel[j].neighbour_distance[4] = pix_i.neighbour_distance[k]
         return pix_i.neighbour_distance[k]

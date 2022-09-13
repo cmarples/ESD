@@ -98,6 +98,47 @@ class GeoFMM:
                 pixel_neighbour = grid.get_pixel_index(i, j+1)
             pix.neighbour.append(pixel_neighbour)
             pix.neighbour_distance.append( euclidean_distance(pix, grid.pixel[pixel_neighbour]) )
+            if grid.neighbour8 == True:
+                # Up-left neighbour (minus theta, minus phi)
+                if i == 1:
+                    pixel_neighbour = 0
+                else:
+                    if j == 0:
+                        pixel_neighbour = grid.get_pixel_index(i-1, grid.no_phi-1)
+                    else:
+                        pixel_neighbour = grid.get_pixel_index(i-1, j-1)
+                pix.neighbour.append(pixel_neighbour)
+                pix.neighbour_distance.append( euclidean_distance(pix, grid.pixel[pixel_neighbour]) )
+                # Up-right neighbour (minus theta, plus phi)
+                if i == 1:
+                    pixel_neighbour = 0
+                else:
+                    if j == grid.no_phi-1:
+                        pixel_neighbour = grid.get_pixel_index(i-1, 0)
+                    else:
+                        pixel_neighbour = grid.get_pixel_index(i-1, j+1)
+                pix.neighbour.append(pixel_neighbour)
+                pix.neighbour_distance.append( euclidean_distance(pix, grid.pixel[pixel_neighbour]) )
+                # Down-left neighbour (plus theta, minus phi)
+                if i == grid.no_theta-2:
+                    pixel_neighbour = grid.no_pixels - 1
+                else:
+                    if j == 0:
+                        pixel_neighbour = grid.get_pixel_index(i+1, grid.no_phi-1)
+                    else:
+                        pixel_neighbour = pixel_neighbour = grid.get_pixel_index(i+1, j-1)
+                pix.neighbour.append(pixel_neighbour)
+                pix.neighbour_distance.append( euclidean_distance(pix, grid.pixel[pixel_neighbour]) )
+                # Up-right neighbour (minus theta, plus phi)
+                if i == grid.no_theta-2:
+                    pixel_neighbour = grid.no_pixels - 1
+                else:
+                    if j == grid.no_phi-1:
+                        pixel_neighbour = grid.get_pixel_index(i+1, 0)
+                    else:
+                        pixel_neighbour = grid.get_pixel_index(i+1, j+1)
+                pix.neighbour.append(pixel_neighbour)
+                pix.neighbour_distance.append( euclidean_distance(pix, grid.pixel[pixel_neighbour]) )
         return pix
     
     # Calculate geodesic distances using the fast marching method, or Dijkstra's algorithm.
