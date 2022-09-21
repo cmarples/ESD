@@ -23,7 +23,7 @@ class GeoGrid:
         self.no_theta = no_theta
         self.no_phi = no_phi
         self.is_refine = is_refine
-        self.neighbour8 = neighbour8
+        self.is_neighbour8 = neighbour8
         self.is_flat = is_flat
         # Calculate number of pixels and required increments
         self.no_pixels = (self.no_theta - 2)*self.no_phi + 2
@@ -127,7 +127,7 @@ class GeoGrid:
                 self.pixel[self.no_pixels-1].neighbour_distance.append(-1.0)
         else:                              # Not a pole
             # Initialise distances
-            if self.neighbour8 == True:
+            if self.is_neighbour8 == True:
                 self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
             else:
                 self.pixel[pixel_no].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
@@ -156,7 +156,7 @@ class GeoGrid:
                 pixel_neighbour = self.get_pixel_index(th, ph+1)
             self.pixel[pixel_no].neighbour.append(pixel_neighbour) 
             
-            if self.neighbour8 == True:
+            if self.is_neighbour8 == True:
                 # Up-left neighbour (minus theta, minus phi)
                 if th == 1:
                     pixel_neighbour = 0
