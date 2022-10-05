@@ -17,11 +17,10 @@ import time
 
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.fmm_vertex import FmmVertex
-from leod.fmm_grid import FmmGrid
-from leod.fmm_create_polar import generate_polar_grid
+from leod.fmm_polar_graph import generate_polar_graph
 
 test_no = 1
 
 if test_no == 1: # Create ellipsoid grid using polar coordinates
     shape = EllipsoidShape(3.0, 2.0, 1.0)
-    grid = generate_polar_grid(shape, 6, 4)
+    vertex = generate_polar_graph(shape, 6, 4,is_connect_8=True)
