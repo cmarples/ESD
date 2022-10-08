@@ -13,7 +13,7 @@ import numpy as np
 from .ellipsoid_shape import EllipsoidShape
 from .fmm_vertex import FmmVertex
 
-def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False):
+def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstra=False):
     
     # Create list of FmmVertex
     vertex = []
@@ -51,11 +51,13 @@ def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False):
         find_neighbour_indices(vertex, i, polar_index[i][0], polar_index[i][1], 
                                no_theta, no_phi, no_vertices, is_connect_8)
     
+    # Find Fast Marching update triangles
+    if is_Dijkstra == False:
+        for i in range(no_vertices):
+            find_update_triangles(vertex, i, no_theta, no_phi, no_vertices, is_connect_8)
     
-    
-    
-    
-    
+    # Check that these triangles are acute (and thus valid for the FMM)
+    #check_triangles(vertex)
     
     
     
@@ -174,7 +176,7 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
                 else:
                     vertex_neighbour = vertex_neighbour = get_vertex_index(th+1, ph-1, no_vertices, no_theta, no_phi)
             vertex[i].neighbour.append(vertex_neighbour)
-            # Up-right neighbour (minus theta, plus phi)
+            # Down-right neighbour (plus theta, plus phi)
             if th == no_theta-2:
                 vertex_neighbour = no_vertices - 1
             else:
@@ -183,4 +185,126 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
                 else:
                     vertex_neighbour = get_vertex_index(th+1, ph+1, no_vertices, no_theta, no_phi)
             vertex[i].neighbour.append(vertex_neighbour)
-        
+
+# Get the two adjacent phi indices (accounting for the phi boundary)
+def get_adjacent_phi(j, no_phi):
+    j_plus = j + 1
+    j_minus = j - 1
+    if j_plus == no_phi:
+        j_plus -= no_phi
+    if j_minus == -1:
+        j_minus += no_phi
+    return [j_plus, j_minus]
+
+# Find the possible triangles that can be used to update vertex i
+def find_update_triangles(vertex, i, no_theta, no_phi, no_vertices, is_connect_8):
+    
+    # Handle poles seperately
+    if i == 0:
+        # North pole
+        for j in range(no_phi):
+            [j_plus, j_minus] = get_adjacent_phi(j, no_phi)
+            vertex[i].neighbour_faces.append([j_plus+1, j_minus+1])
+    elif i == no_vertices-1:
+        # South pole
+        for j in range(no_phi):
+            [j_plus, j_minus] = get_adjacent_phi(j, no_phi)
+            vertex[i].neighbour_faces.append([no_vertices-1-no_phi+j_plus, no_vertices-1-no_phi+j_minus])
+    else:    
+        if is_connect_8 == False:
+            # Non-polar vertex with 4 neighbours
+            
+            # Up     (need left and right)
+            vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
+            # Down   (need left and right)
+            vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
+            # Left   (need up and down)
+            vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[1]])
+            # Right  (need up and down)
+            vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[1]])
+                    
+        else:
+            th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
+            # Non-polar vertex with 8 neighbours
+            if th_index == 1:
+                # North pole adjacent
+                del vertex[i].neighbour[4]
+                del vertex[i].neighbour[4] # Remove duplicated north pole neighbours
+                # Up         (need left and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
+                # Down       (need down-left and down-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
+                # Left       (need up and down-left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[4]])
+                # Right      (need up and down-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[5]])
+                # Down-left  (need down and left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[2]])
+                # Down-right (need down and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[3]])
+                
+            elif th_index == no_theta - 2:
+                # South pole adjacent
+                del vertex[i].neighbour[6]
+                del vertex[i].neighbour[6] # Remove duplicated south pole neighbours
+                # Up         (need up-left and up-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
+                # Down       (need left and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
+                # Left       (need down and up-left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[4]])
+                # Right      (need down and up-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[5]])
+                # Up-left    (need up and left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[2]])
+                # Up-right   (need up and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[3]])
+                
+            else:
+                # Up         (need up-left and up-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
+                # Down       (need down-left and down-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[6], vertex[i].neighbour[7]])
+                # Left       (need up-left and down-left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[6]])
+                # Right      (need up-right and down-right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[5], vertex[i].neighbour[7]])
+                # Up-left    (need up and left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[2]])
+                # Up-right   (need up and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[3]])
+                # Down-left  (need down and left)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[2]])
+                # Down-right (need down and right)
+                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[3]])
+            
+# Check that each triangle is valid by calculating each vertex angle
+def check_triangles(vertex):
+    
+    # Check each vertex in turn
+    for i in range(len(vertex)):
+        vertex[i].face_valid = []
+        vertex[i].face_angle = []
+        #if i == 0:
+        #    x = 1
+        #elif i == len(vertex)-1:
+        #    x=1
+        #else:
+        for j_count in range(len(vertex[i].neighbour)):
+            j = vertex[i].neighbour[j_count]
+            w1 = vertex[i].carts - vertex[j].carts
+            vertex[i].face_valid.append([False, False])
+            vertex[i].face_angle.append([-2.0, -2.0])
+            for k_count in range(2):
+                k = vertex[i].neighbour_faces[j_count][k_count]
+                w2 = vertex[i].carts - vertex[k].carts
+                # Need angle between vectors w1 and w2 to be <= 90 degrees
+                cos_alpha = np.dot(w1, w2)
+                vertex[i].face_angle[j_count][k_count] = cos_alpha
+                if cos_alpha > 0 or math.fabs(cos_alpha) < 1.0e-15:
+                    vertex[i].face_valid[j_count][k_count] = True
+    
+    
+    
+    
+    
