@@ -18,4 +18,4 @@ class FmmVertex:
         self.carts = carts
         self.neighbour = []
         self.neighbour_distance = []
-        self.neighbour_faces = []
+        self.face = []

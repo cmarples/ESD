@@ -56,8 +56,7 @@ def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstr
         for i in range(no_vertices):
             find_update_triangles(vertex, i, no_theta, no_phi, no_vertices, is_connect_8)
     
-    # Check that these triangles are acute (and thus valid for the FMM)
-    #check_triangles(vertex)
+    
     
     
     
@@ -107,7 +106,8 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         
         # South pole
         for k in range(no_phi):
-            vertex[no_vertices-1].neighbour.append(no_vertices-2-k)
+            #vertex[no_vertices-1].neighbour.append(no_vertices-2-k)
+            vertex[no_vertices-1].neighbour.append(no_vertices-1-no_phi+k)
             vertex[no_vertices-1].neighbour_distance.append(-1.0)
             
     else:     
@@ -202,109 +202,83 @@ def find_update_triangles(vertex, i, no_theta, no_phi, no_vertices, is_connect_8
     # Handle poles seperately
     if i == 0:
         # North pole
-        for j in range(no_phi):
-            [j_plus, j_minus] = get_adjacent_phi(j, no_phi)
-            vertex[i].neighbour_faces.append([j_plus+1, j_minus+1])
+        for j in range(no_phi-1):
+            vertex[i].face.append([j+1, j+2])
+        vertex[i].face.append([no_phi, 1])
     elif i == no_vertices-1:
         # South pole
-        for j in range(no_phi):
-            [j_plus, j_minus] = get_adjacent_phi(j, no_phi)
-            vertex[i].neighbour_faces.append([no_vertices-1-no_phi+j_plus, no_vertices-1-no_phi+j_minus])
+        k = no_vertices-1-no_phi # Starting vertex
+        for j in range(no_phi-1):
+            
+            #[j_plus, j_minus] = get_adjacent_phi(j, no_phi)
+            #vertex[i].neighbour_faces.append([no_vertices-1-no_phi+j_plus, no_vertices-1-no_phi+j_minus])
+            vertex[i].face.append([k+j, k+j+1])
+        vertex[i].face.append([no_vertices-2, k])
     else:    
         if is_connect_8 == False:
             # Non-polar vertex with 4 neighbours
+            vertex[i].face.append([vertex[i].neighbour[0], vertex[i].neighbour[3]]) # Up-right
+            vertex[i].face.append([vertex[i].neighbour[3], vertex[i].neighbour[1]]) # Down-right
+            vertex[i].face.append([vertex[i].neighbour[1], vertex[i].neighbour[2]]) # Down-left
+            vertex[i].face.append([vertex[i].neighbour[2], vertex[i].neighbour[0]]) # Up-left
             
-            # Up     (need left and right)
-            vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
-            # Down   (need left and right)
-            vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
-            # Left   (need up and down)
-            vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[1]])
-            # Right  (need up and down)
-            vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[1]])
-                    
         else:
             th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
-            # Non-polar vertex with 8 neighbours
+            
             if th_index == 1:
                 # North pole adjacent
                 del vertex[i].neighbour[4]
                 del vertex[i].neighbour[4] # Remove duplicated north pole neighbours
-                # Up         (need left and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
-                # Down       (need down-left and down-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
-                # Left       (need up and down-left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[4]])
-                # Right      (need up and down-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[5]])
-                # Down-left  (need down and left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[2]])
-                # Down-right (need down and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[3]])
+                vertex[i].face.append([vertex[i].neighbour[0], vertex[i].neighbour[3]]) # Up-right
+                vertex[i].face.append([vertex[i].neighbour[3], vertex[i].neighbour[5]]) # Down-right-right
+                vertex[i].face.append([vertex[i].neighbour[5], vertex[i].neighbour[1]]) # Down-right-left
+                vertex[i].face.append([vertex[i].neighbour[1], vertex[i].neighbour[4]]) # Down-left-right
+                vertex[i].face.append([vertex[i].neighbour[4], vertex[i].neighbour[2]]) # Down-left-left
+                vertex[i].face.append([vertex[i].neighbour[2], vertex[i].neighbour[0]]) # Up-left
                 
             elif th_index == no_theta - 2:
                 # South pole adjacent
                 del vertex[i].neighbour[6]
                 del vertex[i].neighbour[6] # Remove duplicated south pole neighbours
-                # Up         (need up-left and up-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
-                # Down       (need left and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[2], vertex[i].neighbour[3]])
-                # Left       (need down and up-left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[4]])
-                # Right      (need down and up-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[5]])
-                # Up-left    (need up and left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[2]])
-                # Up-right   (need up and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[3]])
+                vertex[i].face.append([vertex[i].neighbour[0], vertex[i].neighbour[5]]) # Up-right-left
+                vertex[i].face.append([vertex[i].neighbour[5], vertex[i].neighbour[3]]) # Up-right-right
+                vertex[i].face.append([vertex[i].neighbour[3], vertex[i].neighbour[1]]) # Down-right
+                vertex[i].face.append([vertex[i].neighbour[1], vertex[i].neighbour[2]]) # Down-left
+                vertex[i].face.append([vertex[i].neighbour[2], vertex[i].neighbour[4]]) # Up-left-left
+                vertex[i].face.append([vertex[i].neighbour[4], vertex[i].neighbour[0]]) # Up-left-right
                 
             else:
-                # Up         (need up-left and up-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[5]])
-                # Down       (need down-left and down-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[6], vertex[i].neighbour[7]])
-                # Left       (need up-left and down-left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[4], vertex[i].neighbour[6]])
-                # Right      (need up-right and down-right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[5], vertex[i].neighbour[7]])
-                # Up-left    (need up and left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[2]])
-                # Up-right   (need up and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[0], vertex[i].neighbour[3]])
-                # Down-left  (need down and left)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[2]])
-                # Down-right (need down and right)
-                vertex[i].neighbour_faces.append([vertex[i].neighbour[1], vertex[i].neighbour[3]])
-            
+                
+                # Non-polar vertex with 8 neighbours
+                vertex[i].face.append([vertex[i].neighbour[0], vertex[i].neighbour[5]]) # Up-right-left
+                vertex[i].face.append([vertex[i].neighbour[5], vertex[i].neighbour[3]]) # Up-right-right
+                vertex[i].face.append([vertex[i].neighbour[3], vertex[i].neighbour[7]]) # Down-right-right
+                vertex[i].face.append([vertex[i].neighbour[7], vertex[i].neighbour[1]]) # Down-right-left
+                vertex[i].face.append([vertex[i].neighbour[1], vertex[i].neighbour[6]]) # Down-left-right
+                vertex[i].face.append([vertex[i].neighbour[6], vertex[i].neighbour[2]]) # Down-left-left
+                vertex[i].face.append([vertex[i].neighbour[2], vertex[i].neighbour[4]]) # Up-left-left
+                vertex[i].face.append([vertex[i].neighbour[4], vertex[i].neighbour[0]]) # Up-left-right
+
 # Check that each triangle is valid by calculating each vertex angle
 def check_triangles(vertex):
-    
+    no_obtuse = 0
     # Check each vertex in turn
     for i in range(len(vertex)):
         vertex[i].face_valid = []
-        vertex[i].face_angle = []
-        #if i == 0:
-        #    x = 1
-        #elif i == len(vertex)-1:
-        #    x=1
-        #else:
-        for j_count in range(len(vertex[i].neighbour)):
-            j = vertex[i].neighbour[j_count]
-            w1 = vertex[i].carts - vertex[j].carts
-            vertex[i].face_valid.append([False, False])
-            vertex[i].face_angle.append([-2.0, -2.0])
-            for k_count in range(2):
-                k = vertex[i].neighbour_faces[j_count][k_count]
-                w2 = vertex[i].carts - vertex[k].carts
-                # Need angle between vectors w1 and w2 to be <= 90 degrees
-                cos_alpha = np.dot(w1, w2)
-                vertex[i].face_angle[j_count][k_count] = cos_alpha
-                if cos_alpha > 0 or math.fabs(cos_alpha) < 1.0e-15:
-                    vertex[i].face_valid[j_count][k_count] = True
-    
-    
-    
-    
-    
+        vertex[i].face_dot = []
+        for face_no in range(len(vertex[i].face)):
+            # Triangle vertices
+            j, k = vertex[i].face[face_no]
+            # Edge vectors
+            w1 = vertex[j].carts - vertex[i].carts
+            w2 = vertex[k].carts - vertex[i].carts
+            # Need angle between vectors w1 and w2 to be <= 90 degrees
+            cos_alpha = np.dot(w1, w2)
+            vertex[i].face_dot.append(cos_alpha)
+            if cos_alpha > 0 or math.fabs(cos_alpha) < 1.0e-15:
+                vertex[i].face_valid.append(True)
+            else:
+                vertex[i].face_valid.append(False) 
+                no_obtuse += 1
+    return no_obtuse
+        
