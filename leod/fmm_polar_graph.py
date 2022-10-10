@@ -100,7 +100,6 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         # North pole                  
         for k in range(no_phi):
             vertex[0].neighbour.append(1+k)
-            vertex[0].neighbour_distance.append(-1.0)
             
     elif i == no_vertices-1: 
         
@@ -108,17 +107,10 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         for k in range(no_phi):
             #vertex[no_vertices-1].neighbour.append(no_vertices-2-k)
             vertex[no_vertices-1].neighbour.append(no_vertices-1-no_phi+k)
-            vertex[no_vertices-1].neighbour_distance.append(-1.0)
             
     else:     
         # Not a pole
-                         
-        # Initialise distances
-        if is_connect_8 == True:
-            vertex[i].neighbour_distance = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-        else:
-            vertex[i].neighbour_distance = [-1.0, -1.0, -1.0, -1.0]
-            
+
         # Up neighbour (minus theta)
         if th == 1:
             vertex_neighbour = 0

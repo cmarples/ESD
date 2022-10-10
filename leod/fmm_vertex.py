@@ -17,5 +17,6 @@ class FmmVertex:
         self.is_endpoint = is_endpoint
         self.carts = carts
         self.neighbour = []
-        self.neighbour_distance = []
         self.face = []
+        self.distance_to_vertex = {}
+        
