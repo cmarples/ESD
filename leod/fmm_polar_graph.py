@@ -12,6 +12,7 @@ import numpy as np
 
 from .ellipsoid_shape import EllipsoidShape
 from .fmm_vertex import FmmVertex
+from .binary_search import binary_search
 
 def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstra=False):
     
@@ -89,6 +90,28 @@ def get_theta_index(vertex_index, no_vertices, no_theta, no_phi):
 def get_phi_index(vertex_index, theta_index, no_phi):
     return ( vertex_index - 1 - no_phi*(theta_index-1) )
 
+# Find theta index closest to given theta value, th
+def find_theta_index(theta_list, th):
+    if th < math.pi:
+        return binary_search(theta_list, th)
+    else:
+        return len(theta_list)-1
+
+# Find phi index closest to given phi value, ph
+def find_phi_index(phi_list, ph):
+    index = binary_search(phi_list, ph)
+    if index == len(phi_list)-1:
+        return 0
+    else:
+        return index
+
+# Find index of vertex closest to th and ph
+def find_vertex_index(theta_list, phi_list, th, ph):
+    th_index = find_theta_index(theta_list, th)
+    ph_index = find_phi_index(phi_list, ph)
+    no_vertices = (len(theta_list) - 2)*(len(phi_list)-1) + 2
+    return get_vertex_index(th_index, ph_index, no_vertices, len(theta_list), len(phi_list)-1)
+    
 # Find indices of neighbouring vertices
 # Each pixel has four neighbours. For non-polar vertices, neighbours are
 # always ordered as "Up, Down, Left, Right".

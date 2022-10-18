@@ -357,7 +357,7 @@ class GeoFMM:
             elif pix_visit.neighbour[neighbour_no] == grid.no_pixels-1: # Neighbour is south pole
                 neighbour_dist = start_pix.neighbour_distance[grid.no_pixels-2-pix_visit.pixel_index]
             else: # Neighbour not a pole
-                neighbour_dist = start_pix.neighbour_distance[inverted_neighbour[neighbour_no]]
+                neighbour_dist = start_pix.neighbour_distance[self.inverted_neighbour[neighbour_no]]
         #elif self.end_flag == True:
         #    if grid.pixel[visit].neighbour[neighbour_no] == self.end_pixel.pixel_index:
         #        neighbour_dist = self.end_pixel.neighbour_distance[neighbour_no]
