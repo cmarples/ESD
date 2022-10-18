@@ -15,6 +15,7 @@ os.chdir("..")
 import math
 import time
 
+import leod.fmm_polar_graph as pg
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.fmm_vertex import FmmVertex
 from leod.fmm_polar_graph import generate_polar_graph
@@ -66,4 +67,10 @@ if test_no == 2: # Test triaxial graph for obtuse angles
     vertex = generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
     
     # Check that these triangles are acute (and thus valid for the FMM)
-    no_obtuse = check_triangles(vertex)
+    no_obtuse_1 = check_triangles(vertex)
+    p = pg.pole_adjacent_angles(vertex, no_theta, no_phi, len(vertex))
+    
+    if no_obtuse_1 > 0:
+        pg.split_update_triangles(vertex, no_theta, no_phi, len(vertex))
+    
+    no_obtuse_2 = check_triangles(vertex)

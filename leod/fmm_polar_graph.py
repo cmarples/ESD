@@ -297,3 +297,36 @@ def check_triangles(vertex):
                 no_obtuse += 1
     return no_obtuse
         
+
+# Split problematic triangles
+def split_update_triangles(vertex, no_theta, no_phi, no_vertices):
+    
+    for i in range(no_vertices):
+        th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
+        
+        if th_index == 1: # North pole adjacent
+            if vertex[i].face_valid[5] == False: # Split north-west triangle
+                w1 = vertex[0].carts - vertex[i].carts
+                cos_alpha = vertex[i].face_dot[5]
+                j = vertex[vertex[i].neighbour[2]].neighbour[2]
+                while cos_alpha < 0:
+                    w2 = vertex[j].carts - vertex[i].carts
+                    cos_alpha = np.dot(w1, w2)
+                    if cos_alpha >= 0:
+                        vertex[i].face[5:6] = ([vertex[i].face[5][0], j], [vertex[i].face[5][1], j])
+                        break
+                    else:
+                        j = vertex[j].neighbour[2]
+                
+            
+            
+            
+# Check upward pointing, pole adjacent triangles
+def pole_adjacent_angles(vertex, no_theta, no_phi, no_vertices):
+    no_obtuse = 0
+    acute = [True] * no_phi
+    for i in range(1, no_phi+1):
+        if vertex[i].face_valid[5] == False:
+            no_obtuse += 1
+            acute[i-1] = False
+    return acute, no_obtuse
