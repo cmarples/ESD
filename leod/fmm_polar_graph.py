@@ -297,36 +297,175 @@ def check_triangles(vertex):
                 no_obtuse += 1
     return no_obtuse
         
-
+# Split pole facing angles
+def split_polar_angle(vertex, i, w_pole, face_no, neighbour_no):
+    cos_alpha = vertex[i].face_dot[face_no]
+    j = vertex[vertex[i].neighbour[neighbour_no]].neighbour[neighbour_no]
+    no_iterations = 0
+    while cos_alpha < 0:
+        w2 = vertex[j].carts - vertex[i].carts
+        cos_alpha = np.dot(w_pole, w2)
+        if cos_alpha >= 0:
+            vertex[i].face.append([vertex[i].face[face_no][0], j])
+            vertex[i].face.append([vertex[i].face[face_no][1], j])
+            vertex[j].neighbour.append(i)
+            break
+        else:
+            j = vertex[j].neighbour[neighbour_no]
+            no_iterations += 1 
+            if no_iterations == 360:
+                print(['i = ', i, ', face ', face_no])
+                raise NameError('No split could be found')
+                        
+# Split obtuse angles
+def split_obtuse_angle(vertex, i, face_no, nb_orthog, nb_diag):
+    w1 = vertex[vertex[i].neighbour[nb_orthog]].carts - vertex[i].carts
+    cos_alpha = vertex[i].face_dot[face_no]
+    j = vertex[vertex[i].neighbour[nb_diag]].neighbour[nb_orthog]
+    no_iterations = 0
+    while cos_alpha < 0:
+        w2 = vertex[j].carts - vertex[i].carts
+        cos_alpha = np.dot(w1, w2)
+        if cos_alpha >= 0:
+            vertex[i].face.append([vertex[i].face[face_no][0], j])
+            vertex[i].face.append([vertex[i].face[face_no][1], j])
+            vertex[j].neighbour.append(i)
+            break
+        else:
+            j = vertex[j].neighbour[nb_orthog]
+            no_iterations += 1 
+            if no_iterations == 360:
+                print(['i = ', i, ', face ', face_no])
+                raise NameError('No split could be found')
+                
+    w3 = vertex[vertex[i].neighbour[nb_diag]].carts - vertex[i].carts
+    
+    if np.dot(w2, w3) < 0:
+        print('invalid angle')
+                    
 # Split problematic triangles
 def split_update_triangles(vertex, no_theta, no_phi, no_vertices):
     
     for i in range(no_vertices):
+        
         th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
         
         if th_index == 1: # North pole adjacent
+            wp = vertex[0].carts - vertex[i].carts
+            if vertex[i].face_valid[0] == False: # Split north-east triangle
+                split_polar_angle(vertex, i, wp, 0, 3)
+            if vertex[i].face_valid[1] == False: # Split east-south-east triangle
+                split_obtuse_angle(vertex, i, 1, 3, 5)
+            if vertex[i].face_valid[4] == False: # Split west-south-west triangle
+                split_obtuse_angle(vertex, i, 4, 2, 4)
             if vertex[i].face_valid[5] == False: # Split north-west triangle
-                w1 = vertex[0].carts - vertex[i].carts
-                cos_alpha = vertex[i].face_dot[5]
-                j = vertex[vertex[i].neighbour[2]].neighbour[2]
-                while cos_alpha < 0:
-                    w2 = vertex[j].carts - vertex[i].carts
-                    cos_alpha = np.dot(w1, w2)
-                    if cos_alpha >= 0:
-                        vertex[i].face[5:6] = ([vertex[i].face[5][0], j], [vertex[i].face[5][1], j])
-                        break
-                    else:
-                        j = vertex[j].neighbour[2]
-                
+                split_polar_angle(vertex, i, wp, 5, 2)          
+            no_faces = 6
+
+        elif th_index == no_theta-2: # South pole adjacent
+            wp = vertex[no_vertices-1].carts - vertex[i].carts
+            if vertex[i].face_valid[1] == False: # Split east-north-east triangle
+                split_obtuse_angle(vertex, i, 1, 3, 5)
+            if vertex[i].face_valid[2] == False: # Split south-east triangle
+                split_polar_angle(vertex, i, wp, 2, 3)       
+            if vertex[i].face_valid[3] == False: # Split north-west triangle
+                split_polar_angle(vertex, i, wp, 3, 2)
+            if vertex[i].face_valid[4] == False: # Split west-north-west triangle
+                split_obtuse_angle(vertex, i, 4, 2, 4)
+            no_faces = 6        
+            
+                    
+        else: # Not adjacent to a pole
+            if vertex[i].face_valid[1] == False: # Split east-north-east triangle
+                split_obtuse_angle(vertex, i, 1, 3, 5)
+            if vertex[i].face_valid[2] == False: # Split east-south-east triangle
+                split_obtuse_angle(vertex, i, 2, 3, 7)
+            if vertex[i].face_valid[5] == False: # Split west-south-west triangle
+                split_obtuse_angle(vertex, i, 5, 2, 6)
+            if vertex[i].face_valid[6] == False: # Split west-north-west triangle
+                split_obtuse_angle(vertex, i, 6, 2, 4)
+            no_faces = 8
+        
+        m = 0        
+        for j in range(no_faces):
+            if vertex[i].face_valid[j] == False:
+                del vertex[i].face[j-m]
+                m += 1
+                    
+                    
+               
             
             
             
 # Check upward pointing, pole adjacent triangles
-def pole_adjacent_angles(vertex, no_theta, no_phi, no_vertices):
-    no_obtuse = 0
-    acute = [True] * no_phi
-    for i in range(1, no_phi+1):
-        if vertex[i].face_valid[5] == False:
-            no_obtuse += 1
-            acute[i-1] = False
-    return acute, no_obtuse
+def find_obtuse_angles(vertex, no_theta, no_phi, no_vertices):
+    no_obtuse = [0, 0, 0, 0, 0, 0, 0, 0]
+    acute_north_pole = [[True]*no_phi]
+    acute_north_pole_adjacent = [[True]*6] * no_phi
+    acute_north = [[True]*8] * no_phi
+    acute_equator = [[True]*8] * no_phi
+    acute_south = [[True]*8] * no_phi
+    acute_south_pole_adjacent = [[True]*6] * no_phi
+    acute_south_pole = [[True]*no_phi]
+    no_obtuse_north_adjacent = [0] * 6
+    no_obtuse_north = [0] * 8
+    no_obtuse_south = [0] * 8
+    no_obtuse_south_adjacent = [0] * 6
+    
+    th_eq = (no_theta-1) / 2
+    for i in range(no_vertices):
+        if i == 0: # North pole
+            for j in range(len(vertex[i].face_valid)):
+                if vertex[i].face_valid[j] == False:
+                    no_obtuse[0] += 1
+                    no_obtuse[1] += 1
+                    acute_north_pole[j] = False
+        elif i == no_vertices-1: # South pole
+            for j in range(len(vertex[i].face_valid)):
+                if vertex[i].face_valid[j] == False:
+                    no_obtuse[0] += 1
+                    no_obtuse[7] += 1
+                    acute_south_pole[j] = False
+        else:
+            th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
+            ph_index = get_phi_index(i, th_index, no_phi)
+            if th_index == 1: # North pole adjacent
+                for j in range(6):
+                    if vertex[i].face_valid[j] == False:
+                        no_obtuse[0] += 1
+                        no_obtuse[2] += 1
+                        acute_north_pole_adjacent[ph_index][j] = False
+                        no_obtuse_north_adjacent[j] += 1
+            elif th_index == no_theta-2: # South pole adjacent
+                for j in range(6):
+                    if vertex[i].face_valid[j] == False:
+                        no_obtuse[0] += 1
+                        no_obtuse[6] += 1
+                        acute_south_pole_adjacent[ph_index][j] = False
+                        no_obtuse_south_adjacent[j] += 1
+            elif th_index == th_eq: # Equator
+                for j in range(8):
+                    if vertex[i].face_valid[j] == False:
+                        no_obtuse[0] += 1
+                        no_obtuse[4] += 1
+                        acute_equator[ph_index][j] = False
+            elif th_index < th_eq: # Northern hemisphere
+                for j in range(8):
+                    if vertex[i].face_valid[j] == False:
+                        no_obtuse[0] += 1
+                        no_obtuse[3] += 1
+                        no_obtuse_north[j] += 1
+                        if th_index == th_eq/2:
+                            acute_north[ph_index][j] = False
+            elif th_index > th_eq: # Southern hemisphere
+                for j in range(8):
+                    if vertex[i].face_valid[j] == False:
+                        no_obtuse[0] += 1
+                        no_obtuse[5] += 1
+                        no_obtuse_south[j] += 1
+                        if th_index == 3*th_eq/2:
+                            acute_south[ph_index][j] = False
+  
+    return [no_obtuse, acute_north_pole, acute_north_pole_adjacent, acute_north,
+            acute_equator, acute_south, acute_south_pole_adjacent, acute_south_pole,
+            no_obtuse_north_adjacent, no_obtuse_north, no_obtuse_south, no_obtuse_south_adjacent]

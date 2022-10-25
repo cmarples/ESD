@@ -17,6 +17,7 @@ class FmmResult:
     def __init__(self, no_vertices):
         self.distance = [math.inf] * no_vertices
         self.accepted = [False] * no_vertices
+        self.update = [0] * no_vertices
         
 def fast_marching(vertex, start, order):
     # Initialise output object
@@ -58,12 +59,17 @@ def fast_marching_update(visit, trial, vertex, fmm, order):
         # Does an accepted third vertex exist?
         support = get_supporting_vertex(visit, trial, vertex, fmm)
         if support == -1:
+            fmm.update[visit] = trial
             return get_distance(vertex, visit, trial) + fmm.distance[trial]
         else:
-            v = fmm_first_order_update(visit, trial, support, vertex, fmm)
+            fmm.update[visit] = [trial, support]
+            v = fmm_first_order_update(visit, trial, support, vertex, vertex[visit].carts, fmm)
+            if v[0] == -1:
+                v[0] = get_distance(vertex, visit, trial) + fmm.distance[trial]
             return v[0]
     else:
         # Dijkstra's algorithm
+        fmm.update[visit] = trial
         return get_distance(vertex, visit, trial) + fmm.distance[trial]
     
     
@@ -102,15 +108,17 @@ def get_supporting_vertex(visit, trial, vertex, fmm):
 
 
 
-def fmm_first_order_update(visit, trial, support, vertex, fmm):
+def fmm_first_order_update(visit, trial, support, vertex, visit_carts, fmm):
     
     # Vectors of triangle sides
-    p1 = (vertex[trial].carts - vertex[visit].carts)
-    p2 = (vertex[support].carts - vertex[visit].carts)
+    p1 = (vertex[trial].carts - visit_carts)
+    p2 = (vertex[support].carts - visit_carts)
     p11 = p1[0]*p1[0] + p1[1]*p1[1] + p1[2]*p1[2]
     p12 = p1[0]*p2[0] + p1[1]*p2[1] + p1[2]*p2[2]
     p22 = p2[0]*p2[0] + p2[1]*p2[1] + p2[2]*p2[2]
     
+    if p12 < 0:
+        print('obtuse')
     
     # Find vectors a and b
     a = np.array([1.0, 1.0])
@@ -133,12 +141,51 @@ def fmm_first_order_update(visit, trial, support, vertex, fmm):
         #v1 = v*(-b[0] - u) - p12*(-b[1] - u)
         #v2 = v*(-b[1] - u) - p12*(-b[0] - u)
         if u > -b[0] and u > -b[1] and v1 < 0 and v2 < 0:
+            fmm.update[visit] = [trial, support]
             return [u, alpha, beta, gamma]
         else:
-            return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
+            fmm.update[visit] = trial
+            return [-1, alpha, beta, gamma]
     else:
-        return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
+        fmm.update[visit] = trial
+        return [-1, alpha, beta, gamma]
     
+
+
+
+def fmm_endpoint(end_vertex, end_carts, vertex, fmm, order, visit, trial, support=-1):
+    if order > 0:
+        if support == -1:
+            dist = -1
+        else:
+            v = fmm_first_order_update(visit, trial, support, vertex, end_carts, fmm)
+            dist = v[0]
+    else:
+        dist = -1
+    if dist == -1:
+        # Dijkstra's algorithm
+        return fmm.distance[trial] + math.sqrt( (vertex[trial].carts[0] - end_carts[0])**2.0 +
+                                                (vertex[trial].carts[1] - end_carts[1])**2.0 +
+                                                (vertex[trial].carts[2] - end_carts[2])**2.0 )
+
+
+def fmm_idw(end_carts, carts_1, carts_2, carts_3, carts_4, d1, d2, d3, d4):
+    w1 = 1.0 / ( (end_carts[0] - carts_1[0])**2.0 + (end_carts[1] - carts_1[1])**2.0 + (end_carts[2] - carts_1[2])**2.0 )
+    w2 = 1.0 / ( (end_carts[0] - carts_2[0])**2.0 + (end_carts[1] - carts_2[1])**2.0 + (end_carts[2] - carts_2[2])**2.0 )
+    w3 = 1.0 / ( (end_carts[0] - carts_3[0])**2.0 + (end_carts[1] - carts_3[1])**2.0 + (end_carts[2] - carts_3[2])**2.0 )
+    w4 = 1.0 / ( (end_carts[0] - carts_4[0])**2.0 + (end_carts[1] - carts_4[1])**2.0 + (end_carts[2] - carts_4[2])**2.0 )
+    return (w1*d1 + w2*d2 + w3*d3 + w4*d4) / (w1 + w2 + w3 + w4)
+
+
+
+
+
+
+
+
+
+
+
 
 def fmm_first_order_update_original(visit, trial, support, vertex, fmm):
     
@@ -166,8 +213,3 @@ def fmm_first_order_update_original(visit, trial, support, vertex, fmm):
             return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
     else:
         return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
-    
-    
-    
-    
-    

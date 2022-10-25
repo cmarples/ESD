@@ -190,10 +190,11 @@ elif test_type == 11: # 8-neighbour Dijkstra
     s = taxicab_distance_sphere(a, th_0, ph_0, th_1[0], ph_1[0])
     
 elif test_type == 12: # Multiple endpoints
-    a = 1.0
-    b = 1.0
+    a = 3.0
+    b = 2.0
     c = 1.0
     E = EllipsoidShape(a, b, c)
+    E.normalise()
     G = GeoGrid(E, 181, 360, neighbour8=False)
     
     deg2rad = math.pi / 180.0
@@ -204,10 +205,12 @@ elif test_type == 12: # Multiple endpoints
     
     F = GeoFMM(G, th_0, ph_0)
     
-    d = F.calculate_geodesics(1, th_1, ph_1, is_refine=False, refine_range=10, refine_theta=3, refine_phi=3)
+    d = F.calculate_geodesics(2, th_1, ph_1, is_refine=False, refine_range=10, refine_theta=3, refine_phi=3)
     
-    s = [-1.0] * 3
-    for i in range(3):
-        s[i] = taxicab_distance_sphere(a, th_0, ph_0, th_1[i], ph_1[i])
+    #s = [-1.0] * 3
+    #for i in range(3):
+    #    s[i] = taxicab_distance_sphere(a, th_0, ph_0, th_1[i], ph_1[i])
         
-    s = great_circle_distance(1.0, th_0, ph_0, th_1[0], ph_1[0])
+    #s = great_circle_distance(1.0, th_0, ph_0, th_1[0], ph_1[0])
+    
+    s = boundary_value_method(E, 90.0*deg2rad, 0.0001*deg2rad, 50.0*deg2rad, 60.0*deg2rad, tol=1e-12, Jacobi=False, n = 16000) 
