@@ -18,9 +18,6 @@ import time
 import leod.fmm_polar_graph as pg
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.fmm_vertex import FmmVertex
-from leod.fmm_polar_graph import generate_polar_graph
-from leod.fmm_polar_graph import check_triangles
-from leod.fmm_polar_graph import find_vertex_index
 from leod.fmm_fast_marching import fast_marching
 from leod.fmm_fast_marching import fmm_endpoint
 from leod.fmm_fast_marching import fmm_idw
