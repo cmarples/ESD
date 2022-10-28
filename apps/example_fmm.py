@@ -26,8 +26,9 @@ from leod.fmm_fast_marching import fmm_endpoint
 from leod.fmm_fast_marching import fmm_idw
 from leod.sphere_geodesics import great_circle_distance
 from leod.triaxial_geodesics import boundary_value_method
+from leod.triangulation_sphere import triangulate_sphere
 
-test_no = 2
+test_no = 4
 
 if test_no == 1: # Create ellipsoid grid using polar coordinates
     shape = EllipsoidShape(1.0, 1.0, 1.0)
@@ -181,3 +182,13 @@ if test_no == 3: # Test triaxial graph for obtuse angles - at the pole
         z = x[i] - y[i]
         if z != 0.0:
             print(i)
+            
+if test_no == 4: # FMM on sphere triangulation
+    
+    r = 1.0 # radius
+    n = 20  # number of triangular divisions
+    tic = time.perf_counter()
+    vertex = triangulate_sphere(r, n)
+    toc = time.perf_counter()
+    print(toc - tic)
+    no_obtuse = check_triangles(vertex)
