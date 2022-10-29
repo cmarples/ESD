@@ -30,7 +30,7 @@ test_no = 1
 if test_no == 1: # FMM on sphere triangulation
     
     r = 1.0 # radius
-    n = 4  # number of triangular divisions
+    n = 100  # number of triangular divisions
     tic = time.perf_counter()
     vertex = triangulate_sphere(r, n)
     toc = time.perf_counter()
