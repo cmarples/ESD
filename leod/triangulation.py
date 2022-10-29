@@ -8,14 +8,20 @@ Created on Mon Sep 26 12:31:45 2022
 import math
 import numpy as np
 
-# Sphere triangulation using a geodesic polyhedron
-
-# Icosahedron coordinates
-tau = 0.5 * (1.0 + math.sqrt(5.0)) # Golden ratio
-den = math.sqrt(tau*tau + 1.0)     # Divide by this to get unit circumradius
-
-ico_vertex = [ [0, 1, tau], [0, -1, tau], [0, 1, -tau], [0, -1, -tau],
-               [1, tau, 0], [-1, tau, 0], [1, -tau, 0], [-1, -tau, 0],
-               [tau, 0, 1], [-tau, 0, 1], [tau, 0, -1], [-tau, 0, -1] ]
-ico_vertex = np.array(ico_vertex) / den
+# Check that each triangle is valid by calculating each vertex angle
+def check_triangles(vertex):
+    no_obtuse = 0
+    # Check each vertex in turn
+    for i in range(len(vertex)):
+        for face_no in range(len(vertex[i].face)):
+            # Triangle vertices
+            j, k = vertex[i].face[face_no]
+            # Edge vectors
+            w1 = vertex[j].carts - vertex[i].carts
+            w2 = vertex[k].carts - vertex[i].carts
+            # Need angle between vectors w1 and w2 to be <= 90 degrees
+            cos_alpha = np.dot(w1, w2)
+            if cos_alpha < 0:
+                no_obtuse += 1  
+    return no_obtuse
 

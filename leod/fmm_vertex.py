@@ -17,16 +17,15 @@ class FmmVertex:
         self.index = index
         self.is_endpoint = is_endpoint
         self.carts = carts
-        self.neighbour = []
         self.face = []
-        self.distance_to_vertex = {}
+        self.distance_to_neighbour = {}
 
 
 
 # Get the Euclidean distance between vertices i and j, updating the distance
 # lists of both.
 def get_distance(vertex, i, j):
-    if j in vertex[i].distance_to_vertex:
+    if j in vertex[i].distance_to_vertex.keys() and vertex[i].distance_to_vertex[j] != -1.0:
         return vertex[i].distance_to_vertex[j]
     else:
         # Calculate distance if it has not already been found
@@ -34,6 +33,5 @@ def get_distance(vertex, i, j):
         vertex[i].distance_to_vertex[j] = math.sqrt( (vertex[i].carts[0]-vertex[j].carts[0])**2.0 +
                                                      (vertex[i].carts[1]-vertex[j].carts[1])**2.0 +
                                                      (vertex[i].carts[2]-vertex[j].carts[2])**2.0 )
-        if i in vertex[j].neighbour:
-            vertex[j].distance_to_vertex[i] = vertex[i].distance_to_vertex[j]
+        vertex[j].distance_to_vertex[i] = vertex[i].distance_to_vertex[j]
         return vertex[i].distance_to_vertex[j]        
