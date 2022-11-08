@@ -19,15 +19,18 @@ import numpy as np
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.fmm_vertex import FmmVertex
 from leod.fmm_fast_marching import fast_marching
-from leod.fmm_fast_marching import fmm_endpoint
 from leod.fmm_fast_marching import fmm_idw
+from leod.fmm_fast_marching import fmm_idw3
 from leod.sphere_geodesics import great_circle_distance
 from leod.triaxial_geodesics import boundary_value_method
 from leod.triangulation_sphere import triangulate_sphere
 
-import leod.triangulation as tri
+from leod.fmm_precalculation import precalculate_grid
 
-test_no = 1
+import leod.triangulation as tri
+import leod.fmm_polar_graph as pg
+
+test_no = 4
 
 if test_no == 1: # FMM on sphere triangulation
     
@@ -56,7 +59,146 @@ if test_no == 1: # FMM on sphere triangulation
     toc = time.perf_counter()
     print(toc - tic)
     
-    fmm = fast_marching(vertex, v_start, 1)
-    d = fmm.distance[v_end]
+    tic = time.perf_counter()
+    fmm = fast_marching(vertex, v_start, p_start, 1)
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    end_face = tri.find_face(vertex, p_end, v_end)
+    d = fmm_idw3( p_end, vertex[end_face[0]].carts, vertex[end_face[1]].carts, vertex[end_face[2]].carts,
+                  fmm.distance[end_face[0]], fmm.distance[end_face[1]], fmm.distance[end_face[2]] )
+    #carts = [vertex[v_end].carts]
+    #dist = [fmm.distance[v_end]]
+    #for i in vertex[v_end].distance_to_neighbour.keys():
+    #    dist.append(fmm.distance[i])
+    #    carts.append(vertex[i].carts)
+    #d = fmm_idw(p_end, carts, dist)
+    toc = time.perf_counter()
+    print(toc - tic)
     
     s = great_circle_distance(1.0, start_th, start_ph, end_th, end_ph)
+    
+elif test_no == 2: # Test anisotropic scaling of the icosahedral triangulation
+    r = 1.0 # radius
+    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    n = 50  # number of triangular divisions
+    tic = time.perf_counter()
+    vertex = triangulate_sphere(r, n)
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    # Scale vertices
+    for i in range(len(vertex)):
+        vertex[i].carts[0] *= shape.a_axis
+        vertex[i].carts[1] *= shape.b_axis
+        vertex[i].carts[2] *= shape.c_axis
+        
+    no_obtuse = pg.check_triangles(vertex)
+    
+elif test_no == 3: # Test triaxial graph for obtuse angles - at the pole
+    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    shape.normalise()
+    no_theta = 181
+    no_phi = 360
+    vertex = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    
+    # Check that these triangles are acute (and thus valid for the FMM)
+    no_obtuse_1 = pg.check_triangles(vertex)
+    p = pg.find_obtuse_angles(vertex, no_theta, no_phi, len(vertex))
+    
+    if no_obtuse_1 > 0:
+        pg.split_update_triangles(vertex, no_theta, no_phi, len(vertex))
+    
+    no_obtuse_2 = pg.check_triangles(vertex)
+    
+    no_removals = no_obtuse_1 - no_obtuse_2
+    
+    # Structured grid information
+    no_vertices = (no_theta - 2)*no_phi + 2
+    delta_theta = math.pi / (no_theta - 1)
+    delta_phi = 2.0*math.pi / no_phi
+    
+    # Compute lists of theta and phi values
+    theta_list = [0.0] * no_theta
+    phi_list = [0.0] * (no_phi+1)
+    for i in range(no_theta):
+        theta_list[i] = i *delta_theta
+    for i in range(no_phi+1):
+        phi_list[i] = i * delta_phi
+    
+    deg2rad = math.pi / 180.0
+    start_th = 10.0 * deg2rad
+    start_ph = 0.0  * deg2rad  
+    end_th = 5.0 * deg2rad
+    end_ph = 165.0 * deg2rad
+    start_vertex = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
+    end_vertex = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
+    start_point = shape.polar2cart(start_th, start_ph)
+    
+    fmm = fast_marching(vertex, start_vertex, start_point, 1)
+    d = fmm.distance[end_vertex]
+    
+    s = boundary_value_method(shape, start_th, start_ph, end_th, end_ph, tol=1e-12, Jacobi=False, n = 20000)
+    
+    vertex2 = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    fmm2 = fast_marching(vertex2, start_vertex, start_point, 1)
+    d2 = fmm2.distance[end_vertex]
+    
+    x = fmm.distance[1:361]
+    y = fmm2.distance[1:361]
+    for i in range(360):
+        z = x[i] - y[i]
+        if z != 0.0:
+            print(i)
+            
+elif test_no == 4: # Speed of FMM
+    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    shape.normalise()
+    no_theta = 181
+    no_phi = 360
+    tic = time.perf_counter()
+    
+    vertex = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    precalculate_grid(vertex)
+    toc = time.perf_counter()
+    print(toc - tic)
+
+    # Check that these triangles are acute (and thus valid for the FMM)
+    #no_obtuse_1 = pg.check_triangles(vertex)
+    
+    # Structured grid information
+    no_vertices = (no_theta - 2)*no_phi + 2
+    delta_theta = math.pi / (no_theta - 1)
+    delta_phi = 2.0*math.pi / no_phi
+    
+    # Compute lists of theta and phi values
+    theta_list = [0.0] * no_theta
+    phi_list = [0.0] * (no_phi+1)
+    for i in range(no_theta):
+        theta_list[i] = i *delta_theta
+    for i in range(no_phi+1):
+        phi_list[i] = i * delta_phi
+    
+    deg2rad = math.pi / 180.0
+    start_th = 90.0 * deg2rad
+    start_ph = 0.0  * deg2rad  
+    end_th = 50.0 * deg2rad
+    end_ph = 60.0 * deg2rad
+    start_vertex = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
+    end_vertex = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
+    start_point = shape.polar2cart(start_th, start_ph)
+    
+    tic = time.perf_counter()
+    
+    fmm = fast_marching(vertex, start_vertex, start_point, 1)
+    d = fmm.distance[end_vertex]
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
