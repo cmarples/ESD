@@ -9,6 +9,7 @@ import math
 import numpy as np
 import heapq
 
+from math import sqrt
 from leod.fmm_vertex import get_distance
 from leod.fmm_vertex import get_angle
 
@@ -71,29 +72,36 @@ def fast_marching(vertex, start_vertex, start_point, order):
     
 def fast_marching_update(visit, trial, vertex, fmm, order):
     if order > 0:
-        # Does an accepted third vertex exist?
+        # Does an accepted third vertex exist?       
         support = get_supporting_vertex(visit, trial, vertex, fmm)
+        
         if support == -1:
             fmm.update[visit] = trial
-            return get_distance(vertex, visit, trial) + fmm.distance[trial]
+            #return get_distance(vertex, visit, trial) + fmm.distance[trial]
+            return vertex[visit].neighbour[trial].distance + fmm.distance[trial]
         else:
             fmm.update[visit] = [trial, support]
             #v = fmm_first_order_update_general(visit, trial, support, vertex, vertex[visit].carts, fmm)
             v = fmm_first_order_update(visit, trial, support, vertex, fmm)
             if v[0] == -1:
-                v[0] = get_distance(vertex, visit, trial) + fmm.distance[trial]
+                #v[0] = get_distance(vertex, visit, trial) + fmm.distance[trial]
+                v[0] = vertex[visit].neighbour[trial].distance + fmm.distance[trial]
             return v[0]
     else:
         # Dijkstra's algorithm
         fmm.update[visit] = trial
-        return get_distance(vertex, visit, trial) + fmm.distance[trial]
+        #return get_distance(vertex, visit, trial) + fmm.distance[trial]
+        return vertex[visit].neighbour[trial].distance
     
     
     
 def get_supporting_vertex(visit, trial, vertex, fmm):
-    v3 = [key for key in vertex[visit].neighbour[trial].face_angle]
-    v1 = v3[0]
-    v2 = v3[1]
+    #v3 = [key for key in vertex[visit].neighbour[trial].face_angle]
+    #v1 = v3[0]
+    #v2 = v3[1]
+    
+    v1 = vertex[visit].neighbour[trial].face[0]
+    v2 = vertex[visit].neighbour[trial].face[1]
     # Are these vertices accepted?
     if fmm.accepted[v1] == True:
         if fmm.accepted[v2] == True:
@@ -149,26 +157,42 @@ def euclidean_distance(x, y):
 
 def fmm_first_order_update(visit, trial, support, vertex, fmm):
     
-    a = get_distance(vertex, visit, trial)
-    b = get_distance(vertex, visit, support)
+    cos_psi = vertex[visit].neighbour[trial].face_angle[support]
+    
+    #if cos_psi < 0.0:
+    #    return [-1, 0, 0, 0]
+    #else:
+        
+    #a = get_distance(vertex, visit, trial)
+    #b = get_distance(vertex, visit, support)
+    a = vertex[visit].neighbour[trial].distance
+    b = vertex[visit].neighbour[support].distance
+    
     #w1 = (vertex[trial].carts - vertex[visit].carts) / a
     #w2 = (vertex[support].carts - vertex[visit].carts) / b
     #cos_psi = np.dot(w1, w2)
-    cos_psi = get_angle(vertex, visit, trial, support)
+    #cos_psi = get_angle(vertex, visit, trial, support)
+    
+    
     u = fmm.distance[trial] - fmm.distance[support]
     
-    alpha = a*a + b*b - 2*a*b*cos_psi
-    beta = 2*b*u*(a*cos_psi - b)
-    gamma = b*b*(u*u - a*a*(1-cos_psi*cos_psi))
+    asq = a*a
+    bsq = b*b
+    b2 = 2.0*b
+    a_cos_psi = a*cos_psi
+    alpha = asq + bsq - b2*a_cos_psi
+    beta = b2*u*(a_cos_psi - b)
+    #gamma = b2*(u*u - a2*(1-cos_alpha*cos_alpha))
+    gamma = bsq*(u*u - asq + a_cos_psi*a_cos_psi)
     
     # Solve quadratic
     discr = beta*beta - 4.0*alpha*gamma
     if discr > 0.0:
-        t = ( -beta + math.sqrt(discr) ) / (2.0*alpha)
+        t = ( -beta + sqrt(discr) ) / (2.0*alpha)
 
         # Check upwinding condition
         x = b*(t-u)/t
-        if u < t and x > a*cos_psi and x < a/cos_psi:
+        if u < t and x > a_cos_psi and x < a/cos_psi:
             #return [t + fmm.distance[support], alpha, beta, gamma]
         #else:
             #return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]

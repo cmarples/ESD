@@ -125,15 +125,18 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         
         # North pole
         vertex[0].neighbour[1] = FmmNeighbour()
+        vertex[0].neighbour[1].face = [no_phi, 2]
         vertex[0].neighbour[1].face_angle[no_phi] = cos_alpha
         vertex[0].neighbour[1].face_angle[2] = cos_alpha               
         for k in range(1, no_phi-1):
             #vertex[0].neighbour.append(1+k)
             temp = 1+k
             vertex[0].neighbour[temp] = FmmNeighbour()
+            vertex[0].neighbour[temp].face = [k, 2+k]
             vertex[0].neighbour[temp].face_angle[k] = cos_alpha
             vertex[0].neighbour[temp].face_angle[2+k] = cos_alpha 
         vertex[0].neighbour[no_phi] = FmmNeighbour()
+        vertex[0].neighbour[no_phi].face = [no_phi-1, 1]
         vertex[0].neighbour[no_phi].face_angle[no_phi-1] = cos_alpha
         vertex[0].neighbour[no_phi].face_angle[1] = cos_alpha
             
@@ -141,6 +144,7 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         
         # South pole
         vertex[no_vertices-1].neighbour[k0] = FmmNeighbour()
+        vertex[no_vertices-1].neighbour[k0].face = [no_vertices-2, k0+1]
         vertex[no_vertices-1].neighbour[k0].face_angle[no_vertices-2] = cos_alpha
         vertex[no_vertices-1].neighbour[k0].face_angle[k0+1] = cos_alpha
         for k in range(1, no_phi-1):
@@ -148,9 +152,11 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
             #vertex[no_vertices-1].neighbour.append(no_vertices-1-no_phi+k)
             temp = k0+k
             vertex[no_vertices-1].neighbour[temp] = FmmNeighbour()
+            vertex[no_vertices-1].neighbour[temp].face = [temp-1, temp+1]
             vertex[no_vertices-1].neighbour[temp].face_angle[temp-1] = cos_alpha
             vertex[no_vertices-1].neighbour[temp].face_angle[temp+1] = cos_alpha  
         vertex[no_vertices-1].neighbour[no_vertices-2] = FmmNeighbour()
+        vertex[no_vertices-1].neighbour[no_vertices-2].face = [no_vertices-3, k0]
         vertex[no_vertices-1].neighbour[no_vertices-2].face_angle[no_vertices-3] = cos_alpha
         vertex[no_vertices-1].neighbour[no_vertices-2].face_angle[k0] = cos_alpha
         
@@ -240,63 +246,87 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
             # Find faces for 8-connectivity case
             if i <= no_phi:
                 # North pole adjacent
-                vertex[i].neighbour[j_up].face_angle[j_lt] = 2.0
-                vertex[i].neighbour[j_up].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_dnrt] = 2.0
-                vertex[i].neighbour[j_dnrt].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_dnrt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_dnlt] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_dnrt] = 2.0
-                vertex[i].neighbour[j_dnlt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_dnlt].face_angle[j_lt] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_dnlt] = 2.0
+                vertex[i].neighbour[j_up].face = [j_lt, j_rt]
+                vertex[i].neighbour[j_up].face_angle[j_lt] = cos_alpha
+                vertex[i].neighbour[j_up].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_rt].face = [j_up, j_dnrt]
+                vertex[i].neighbour[j_rt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_rt].face_angle[j_dnrt] = cos_alpha
+                vertex[i].neighbour[j_dnrt].face = [j_rt, j_dn]
+                vertex[i].neighbour[j_dnrt].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_dnrt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_dn].face = [j_dnlt, j_dnrt]
+                vertex[i].neighbour[j_dn].face_angle[j_dnlt] = cos_alpha
+                vertex[i].neighbour[j_dn].face_angle[j_dnrt] = cos_alpha
+                vertex[i].neighbour[j_dnlt].face = [j_dn, j_lt]
+                vertex[i].neighbour[j_dnlt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_dnlt].face_angle[j_lt] = cos_alpha
+                vertex[i].neighbour[j_lt].face = [j_up, j_dnlt]
+                vertex[i].neighbour[j_lt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_lt].face_angle[j_dnlt] = cos_alpha
                 
             elif i >= k0:
                 # South pole adjacent
-                vertex[i].neighbour[j_up].face_angle[j_uplt] = 2.0
-                vertex[i].neighbour[j_up].face_angle[j_uprt] = 2.0
-                vertex[i].neighbour[j_uprt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_uprt].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_uprt] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_lt] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_uplt] = 2.0
-                vertex[i].neighbour[j_uplt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_uplt].face_angle[j_lt] = 2.0
+                vertex[i].neighbour[j_up].face = [j_uplt, j_uprt]
+                vertex[i].neighbour[j_up].face_angle[j_uplt] = cos_alpha
+                vertex[i].neighbour[j_up].face_angle[j_uprt] = cos_alpha
+                vertex[i].neighbour[j_uprt].face = [j_up, j_rt]
+                vertex[i].neighbour[j_uprt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_uprt].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_rt].face = [j_uprt, j_dn]
+                vertex[i].neighbour[j_rt].face_angle[j_uprt] = cos_alpha
+                vertex[i].neighbour[j_rt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_dn].face = [j_lt, j_rt]
+                vertex[i].neighbour[j_dn].face_angle[j_lt] = cos_alpha
+                vertex[i].neighbour[j_dn].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_lt].face = [j_dn, j_uplt]
+                vertex[i].neighbour[j_lt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_lt].face_angle[j_uplt] = cos_alpha
+                vertex[i].neighbour[j_uplt].face = [j_up, j_lt]
+                vertex[i].neighbour[j_uplt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_uplt].face_angle[j_lt] = cos_alpha
                 
             else:
                 # Not pole adjacent
-                vertex[i].neighbour[j_up].face_angle[j_uplt] = 2.0
-                vertex[i].neighbour[j_up].face_angle[j_uprt] = 2.0
-                vertex[i].neighbour[j_uprt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_uprt].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_uprt] = 2.0
-                vertex[i].neighbour[j_rt].face_angle[j_dnrt] = 2.0
-                vertex[i].neighbour[j_dnrt].face_angle[j_rt] = 2.0
-                vertex[i].neighbour[j_dnrt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_dnlt] = 2.0
-                vertex[i].neighbour[j_dn].face_angle[j_dnrt] = 2.0
-                vertex[i].neighbour[j_dnlt].face_angle[j_dn] = 2.0
-                vertex[i].neighbour[j_dnlt].face_angle[j_lt] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_uplt] = 2.0
-                vertex[i].neighbour[j_lt].face_angle[j_dnlt] = 2.0
-                vertex[i].neighbour[j_uplt].face_angle[j_up] = 2.0
-                vertex[i].neighbour[j_uplt].face_angle[j_lt] = 2.0
+                vertex[i].neighbour[j_up].face = [j_uplt, j_uprt]
+                vertex[i].neighbour[j_up].face_angle[j_uplt] = cos_alpha
+                vertex[i].neighbour[j_up].face_angle[j_uprt] = cos_alpha
+                vertex[i].neighbour[j_uprt].face = [j_up, j_rt]
+                vertex[i].neighbour[j_uprt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_uprt].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_rt].face = [j_uprt, j_dnrt]
+                vertex[i].neighbour[j_rt].face_angle[j_uprt] = cos_alpha
+                vertex[i].neighbour[j_rt].face_angle[j_dnrt] = cos_alpha
+                vertex[i].neighbour[j_dnrt].face = [j_rt, j_dn]
+                vertex[i].neighbour[j_dnrt].face_angle[j_rt] = cos_alpha
+                vertex[i].neighbour[j_dnrt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_dn].face = [j_dnlt, j_dnrt]
+                vertex[i].neighbour[j_dn].face_angle[j_dnlt] = cos_alpha
+                vertex[i].neighbour[j_dn].face_angle[j_dnrt] = cos_alpha
+                vertex[i].neighbour[j_dnlt].face = [j_dn, j_lt]
+                vertex[i].neighbour[j_dnlt].face_angle[j_dn] = cos_alpha
+                vertex[i].neighbour[j_dnlt].face_angle[j_lt] = cos_alpha
+                vertex[i].neighbour[j_lt].face = [j_uplt, j_dnlt]
+                vertex[i].neighbour[j_lt].face_angle[j_uplt] = cos_alpha
+                vertex[i].neighbour[j_lt].face_angle[j_dnlt] = cos_alpha
+                vertex[i].neighbour[j_uplt].face = [j_up, j_lt]
+                vertex[i].neighbour[j_uplt].face_angle[j_up] = cos_alpha
+                vertex[i].neighbour[j_uplt].face_angle[j_lt] = cos_alpha
             
         else: 
             # Find faces for 4-connectivity case
-            vertex[i].neighbour[j_up].face[j_lt] = 2.0
-            vertex[i].neighbour[j_up].face[j_rt] = 2.0
-            vertex[i].neighbour[j_dn].face[j_lt] = 2.0
-            vertex[i].neighbour[j_dn].face[j_rt] = 2.0
-            vertex[i].neighbour[j_lt].face[j_up] = 2.0
-            vertex[i].neighbour[j_lt].face[j_dn] = 2.0
-            vertex[i].neighbour[j_rt].face[j_up] = 2.0
-            vertex[i].neighbour[j_rt].face[j_dn] = 2.0
+            vertex[i].neighbour[j_up].face = [j_lt, j_rt]
+            vertex[i].neighbour[j_up].face[j_lt] = cos_alpha
+            vertex[i].neighbour[j_up].face[j_rt] = cos_alpha
+            vertex[i].neighbour[j_dn].face = [j_lt, j_rt]
+            vertex[i].neighbour[j_dn].face[j_lt] = cos_alpha
+            vertex[i].neighbour[j_dn].face[j_rt] = cos_alpha
+            vertex[i].neighbour[j_lt].face = [j_up, j_dn]
+            vertex[i].neighbour[j_lt].face[j_up] = cos_alpha
+            vertex[i].neighbour[j_lt].face[j_dn] = cos_alpha
+            vertex[i].neighbour[j_rt].face = [j_up, j_dn]
+            vertex[i].neighbour[j_rt].face[j_up] = cos_alpha
+            vertex[i].neighbour[j_rt].face[j_dn] = cos_alpha
 
             
     #for j in vertex[i].neighbour:

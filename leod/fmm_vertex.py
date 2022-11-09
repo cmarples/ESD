@@ -23,6 +23,7 @@ class FmmVertex:
 class FmmNeighbour:
     def __init__(self):
         self.distance = -1.0
+        self.face = []
         self.face_angle = {}
 
 # Get the Euclidean distance between vertices i and j, updating the distance
