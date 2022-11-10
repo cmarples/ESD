@@ -145,6 +145,32 @@ def fmm_idw(end_carts, carts, dist):
         num += w[i] * dist[i]
     return num / den
 
+# Use FMM data to obtain a distance to an endpoint
+def endpoint_distance(vertex, fmm, end_th, end_ph, end_vertex, shape):
+    
+    # Find endpoint in Cartesian coordinates
+    end_carts = shape.polar2cart(end_th, end_ph)
+    
+    # Get closest vertex and neighbour information
+    carts = [vertex[end_vertex].carts]
+    dist = [fmm.distance[end_vertex]]
+    for j in vertex[end_vertex].neighbour.keys():
+        carts.append(vertex[j].carts)
+        dist.append(fmm.distance[j])
+    
+    # Interpolate the distance to the endpoint
+    d = fmm_idw(end_carts, carts, dist)
+    
+    return d
+    
+    
+    
+
+
+
+
+
+
 # Calculate Euclidean distance between two points x and y
 def euclidean_distance(x, y):
     return math.sqrt( (x[0] - y[0])**2.0 + (x[1] - y[1])**2.0 + (x[2] - y[2])**2.0 )

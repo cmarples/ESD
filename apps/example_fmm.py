@@ -21,6 +21,7 @@ from leod.fmm_vertex import FmmVertex
 from leod.fmm_fast_marching import fast_marching
 from leod.fmm_fast_marching import fmm_idw
 from leod.fmm_fast_marching import fmm_idw3
+from leod.fmm_fast_marching import endpoint_distance
 from leod.sphere_geodesics import great_circle_distance
 from leod.triaxial_geodesics import boundary_value_method
 from leod.triangulation_sphere import triangulate_sphere
@@ -29,6 +30,8 @@ from leod.fmm_precalculation import precalculate_grid
 
 import leod.triangulation as tri
 import leod.fmm_polar_graph as pg
+
+from leod.fmm_polar_graph import PolarGrid
 
 test_no = 4
 
@@ -165,7 +168,7 @@ elif test_no == 4: # Speed of FMM
     print(toc - tic)
     
     tic = time.perf_counter()
-    precalculate_grid(vertex)
+    max_angle = precalculate_grid(vertex)
     toc = time.perf_counter()
     print(toc - tic)
 
@@ -186,19 +189,21 @@ elif test_no == 4: # Speed of FMM
         phi_list[i] = i * delta_phi
     
     deg2rad = math.pi / 180.0
-    start_th = 90.0 * deg2rad
-    start_ph = 0.0  * deg2rad  
-    end_th = 50.0 * deg2rad
-    end_ph = 60.0 * deg2rad
-    start_vertex = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
-    end_vertex = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
+    start_th = 89.6 * deg2rad
+    start_ph = 0.25  * deg2rad  
+    end_th = 49.75 * deg2rad
+    end_ph = 60.4 * deg2rad
+    start_vertex, st_th, st_ph = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
+    end_vertex, end_th_index, end_ph_index = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
     start_point = shape.polar2cart(start_th, start_ph)
     
     tic = time.perf_counter()
     
     fmm = fast_marching(vertex, start_vertex, start_point, 1)
-    d = fmm.distance[end_vertex]
+    #d = fmm.distance[end_vertex]
+    d = endpoint_distance(vertex, fmm, end_th, end_ph, end_vertex, shape)
     
     toc = time.perf_counter()
     print(toc - tic)
     
+    s = boundary_value_method(shape, start_th, start_ph, end_th, end_ph, tol=1e-12, Jacobi=False, n = 20000)

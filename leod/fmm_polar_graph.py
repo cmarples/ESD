@@ -14,6 +14,23 @@ from .fmm_vertex import FmmVertex
 from .fmm_vertex import FmmNeighbour
 from .binary_search import binary_search
 
+class PolarGrid:
+    def __init__(self, no_theta, no_phi):
+        self.no_theta = no_theta
+        self.no_phi = no_phi
+        self.no_vertices = (no_theta - 2)*no_phi + 2
+        self.delta_theta = math.pi / (no_theta - 1)
+        self.delta_phi = 2.0*math.pi / no_phi
+        
+        # Compute lists of theta and phi values
+        self.theta_list = [0.0] * no_theta
+        self.phi_list = [0.0] * (no_phi + 1)
+        for i in range(no_theta):
+            self.theta_list[i] = i * self.delta_theta
+        for i in range(no_phi+1):
+            self.phi_list[i] = i * self.delta_phi
+    
+
 def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstra=False):
     
     # Create list of FmmVertex
@@ -110,7 +127,7 @@ def find_vertex_index(theta_list, phi_list, th, ph):
     th_index = find_theta_index(theta_list, th)
     ph_index = find_phi_index(phi_list, ph)
     no_vertices = (len(theta_list) - 2)*(len(phi_list)-1) + 2
-    return get_vertex_index(th_index, ph_index, no_vertices, len(theta_list), len(phi_list)-1)
+    return [get_vertex_index(th_index, ph_index, no_vertices, len(theta_list), len(phi_list)-1), th_index,ph_index]
     
 # Find indices of neighbouring vertices
 # Each pixel has four neighbours. For non-polar vertices, neighbours are
