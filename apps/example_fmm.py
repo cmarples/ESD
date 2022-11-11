@@ -189,17 +189,22 @@ elif test_no == 4: # Speed of FMM
         phi_list[i] = i * delta_phi
     
     deg2rad = math.pi / 180.0
-    start_th = 89.6 * deg2rad
-    start_ph = 0.25  * deg2rad  
-    end_th = 49.75 * deg2rad
-    end_ph = 60.4 * deg2rad
+    start_th = 90.0 * deg2rad
+    start_ph = 0.0  * deg2rad  
+    end_th = 50.0 * deg2rad
+    end_ph = 60.0 * deg2rad
     start_vertex, st_th, st_ph = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
     end_vertex, end_th_index, end_ph_index = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
     start_point = shape.polar2cart(start_th, start_ph)
     
+    end_dict = {}
+    end_dict[end_vertex] = False
+    for j in vertex[end_vertex].neighbour.keys():
+        end_dict[j] = False
+    
     tic = time.perf_counter()
     
-    fmm = fast_marching(vertex, start_vertex, start_point, 1)
+    fmm = fast_marching(vertex, start_vertex, start_point, 1, end_dict)
     #d = fmm.distance[end_vertex]
     d = endpoint_distance(vertex, fmm, end_th, end_ph, end_vertex, shape)
     

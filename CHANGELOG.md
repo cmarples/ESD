@@ -1,6 +1,78 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## [0.0.2] - 2022-10-04
+### Modified
+- FMM code restarted to allow use on general triangulations as well as on a theta-phi grid.
+
+## 2022-10-03
+### Added
+- Triangulation of a sphere (using faces of an icosahedron) implemented.
+
+## 2022-09-21
+### Added
+- Multiple endpoint FMM implemented.
+
+## 2022-09-13
+### Added
+- Dijkstra's Algorithm with 8 neighbours implemented.
+
+## 2022-09-12
+### Added
+- Boundary Value Method (of Panou 2013) implemented in LEOD for triaxial geodesics.
+
+## 2022-09-5
+### Added
+- GeographicLib calls for spheroid geodesics implemented within LEOD.
+
+## 2022-08-30
+### Added
+- Test example run with varying grid aspect ratio.
+
+## 2022-08-25
+### Added
+- Simple FMM on a flat grid implemented for testing purposes.
+
+## 2022-08-22
+### Modified
+- Conditions for grid downsampling revised.
+
+## 2022-08-19
+### Modified
+- Additional bugs in source refinement procedure fixed.
+
+## 2022-08-18
+### Modified
+- Bug in border pixel determination fixed.
+- Bug with refinement at low resolution fixed.
+
+## 2022-08-14
+### Added
+- Flags used to determine if a pixel is on the refined region border.
+### Modified
+- 'pixel' reimplemented as a dictioary (so only those needed for refinement are defined).
+
+## 2022-08-13
+### Modified
+- 'alive' and 'geo_distances' reimplemented as dictionaries for speed and simplicity.
+
+## 2022-08-07
+### Modified
+- Bug in theta finding fixed.
+- Incorrect handling of 'alive' in transfer fixed.
+
+## 2022-08-02
+### Modified
+- Refined pixel finding sped up.
+
+## 2022-07-28
+### Modified
+- Neighbour search (when creating refined region) sped up.
+
+## 2022-07-27
+### Added
+- Source refined FMM implementation.
+
 ## 2022-07-22
 ### Added
 - Mapping from refined grid to main grid (transfer_grid).

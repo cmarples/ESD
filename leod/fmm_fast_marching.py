@@ -21,7 +21,7 @@ class FmmResult:
         self.accepted = [False] * no_vertices
         self.update = [0] * no_vertices
         
-def fast_marching(vertex, start_vertex, start_point, order):
+def fast_marching(vertex, start_vertex, start_point, order, end_dict={}):
     # Initialise output object
     no_vertices = len(vertex)
     fmm = FmmResult(no_vertices)
@@ -45,6 +45,9 @@ def fast_marching(vertex, start_vertex, start_point, order):
         
     
     no_accepted = 0
+
+    no_ends = len(end_dict)
+    no_ends_accepted = 0
     
     # Perform wavefront propagation
     while no_accepted != no_vertices:
@@ -57,6 +60,11 @@ def fast_marching(vertex, start_vertex, start_point, order):
         # Add trial vertex to accepted set
         fmm.accepted[trial] = True
         no_accepted += 1
+        if no_ends > 0 and trial in end_dict.keys():
+            end_dict[trial] = True
+            no_ends_accepted += 1
+            if no_ends_accepted == no_ends:
+                break
         
         # Visit neighbours of trial vertex
         for visit in vertex[trial].neighbour.keys():
@@ -149,27 +157,23 @@ def fmm_idw(end_carts, carts, dist):
 def endpoint_distance(vertex, fmm, end_th, end_ph, end_vertex, shape):
     
     # Find endpoint in Cartesian coordinates
-    end_carts = shape.polar2cart(end_th, end_ph)
+    end_carts = np.array(shape.polar2cart(end_th, end_ph))
+    carts = vertex[end_vertex].carts
     
-    # Get closest vertex and neighbour information
-    carts = [vertex[end_vertex].carts]
-    dist = [fmm.distance[end_vertex]]
-    for j in vertex[end_vertex].neighbour.keys():
-        carts.append(vertex[j].carts)
-        dist.append(fmm.distance[j])
+    # If closest vertex and endpoint are the same, output its distance...
+    diff = carts - end_carts
+    diff = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]
+    if diff < 1e-12:
+        return fmm.distance[end_vertex]
+    else:
+        # Otherwise, find neighbour information and interpolate
+        dist = [fmm.distance[end_vertex]]
+        for j in vertex[end_vertex].neighbour.keys():
+            carts.append(vertex[j].carts)
+            dist.append(fmm.distance[j])
+        return fmm_idw(end_carts, carts, dist)
     
-    # Interpolate the distance to the endpoint
-    d = fmm_idw(end_carts, carts, dist)
     
-    return d
-    
-    
-    
-
-
-
-
-
 
 # Calculate Euclidean distance between two points x and y
 def euclidean_distance(x, y):
