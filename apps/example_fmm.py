@@ -33,7 +33,9 @@ import leod.fmm_polar_graph as pg
 
 from leod.fmm_polar_graph import PolarGrid
 
-test_no = 4
+from leod.fmm_callers import calculate_pair_distance
+
+test_no = 5
 
 if test_no == 1: # FMM on sphere triangulation
     
@@ -162,7 +164,7 @@ elif test_no == 4: # Speed of FMM
     no_phi = 360
     tic = time.perf_counter()
     
-    vertex = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    vertex, grid = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
     
     toc = time.perf_counter()
     print(toc - tic)
@@ -189,10 +191,10 @@ elif test_no == 4: # Speed of FMM
         phi_list[i] = i * delta_phi
     
     deg2rad = math.pi / 180.0
-    start_th = 90.0 * deg2rad
-    start_ph = 0.0  * deg2rad  
-    end_th = 50.0 * deg2rad
-    end_ph = 60.0 * deg2rad
+    start_th = 70.0 * deg2rad
+    start_ph = 80.0  * deg2rad  
+    end_th = 40.0 * deg2rad
+    end_ph = 340.0 * deg2rad
     start_vertex, st_th, st_ph = pg.find_vertex_index(theta_list, phi_list, start_th, start_ph)
     end_vertex, end_th_index, end_ph_index = pg.find_vertex_index(theta_list, phi_list, end_th, end_ph)
     start_point = shape.polar2cart(start_th, start_ph)
@@ -212,3 +214,40 @@ elif test_no == 4: # Speed of FMM
     print(toc - tic)
     
     s = boundary_value_method(shape, start_th, start_ph, end_th, end_ph, tol=1e-12, Jacobi=False, n = 20000)
+
+
+elif test_no == 5: # Test pair routine
+    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    shape.normalise()
+    no_theta = 181
+    no_phi = 360
+    tic = time.perf_counter()
+    
+    vertex, polar_grid = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    max_angle = precalculate_grid(vertex)
+    toc = time.perf_counter()
+    print(toc - tic)
+
+    start_th = 120.0
+    start_ph = 40.0  
+    end_th = 60.0
+    end_ph = 220.0
+    
+    tic = time.perf_counter()
+    
+    d, fmm = calculate_pair_distance(shape, vertex, [start_th, start_ph], [end_th, end_ph],
+                                    1, graph_type="polar", grid=polar_grid, is_radians=False)
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    conv = math.pi / 180.0
+    s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
+    toc = time.perf_counter()
+    print(toc - tic)

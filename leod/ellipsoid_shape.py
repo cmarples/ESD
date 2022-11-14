@@ -20,6 +20,12 @@ class EllipsoidShape:
         else:
             return False
         
+    def is_spheroid(self):
+        if self.a_axis == self.b_axis and self.a_axis != self.c_axis:
+            return True
+        else:
+            return False
+        
     def set_axes(self, a, b, c, normalise=False):
         # Check that the inputs are valid
         if not (isinstance(a, (int, float)) and a > 0):

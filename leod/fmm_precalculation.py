@@ -46,10 +46,3 @@ def precalculate_grid(vertex):
     
     return max_angle
                 
-                
-# Determine all possible faces for each vertex and calculate dot products of
-# the edge vectors (i.e. the cosines of the vertex angles)
-#def precalcualte_face_angles(vertex):
-    #n = len(vertex)
-    #for i in range(n):
-        

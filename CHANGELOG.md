@@ -1,6 +1,71 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-14
+### Added
+- Beginnings of a script to compute geodesics on a set of test examples.
+- Finding obtuse angles relevant to a given pair distance.
+### Modified
+- Single endpoint fast marching calculation now performed within separate routine.
+
+## 2022-11-11
+### Added
+- Early termination of FMM if all endpoints reached (closest vertex and neighbours accepted).
+
+## 2022-11-10
+### Added
+- Interpolation of endpoint distance, using inverse distance weights.
+
+## 2022-11-9
+### Modified
+- Optimisation of FMM by precalculating all grid data (neighbour distances, faces and face angles)
+
+## [0.0.3] - 2022-11-8
+### Modified
+- Triangulation approach likely to be long, both in implementation and in run-time.
+  Thus the theta-phi grid has been returned in the hope that obtuse angles have little effect.
+- Started optimisation of the fats marching code.
+
+
+## 2022-10-31
+### Added
+- Routine for finding closest vertex on a triangulation to a given point (using a descending direction approach)
+
+## 2022-10-29
+### Modified
+- Sphere triangulation completed.
+
+## 2022-10-28
+### Added
+- Started implementation of FMM on a general triangulation.
+### Modified
+- Removed some old code (placed in seperate directory).
+
+## 2022-10-25
+### Added
+- Attempt at obtuse angle splitting on triaxial ellipsoid (theta-phi grid).
+
+## 2022-10-18
+### Added
+- First order fast marching update in two forms: 'trigonometric form' and 'linear algebra' form.
+- Both forms debugged and giving the same answers.
+
+## 2022-10-10
+### Added
+- Function for finding distance between neighbours.
+
+## 2022-10-09
+### Modified
+- Improved face finding procedure.
+
+## 2022-10-08
+### Added
+- Face finding for 4 or 8 neighbours.
+
+## 2022-10-05
+### Modified
+- Grid class removed. Using a list of 'vertex' objects instead.
+
 ## [0.0.2] - 2022-10-04
 ### Modified
 - FMM code restarted to allow use on general triangulations as well as on a theta-phi grid.

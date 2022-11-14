@@ -18,6 +18,8 @@ class PolarGrid:
     def __init__(self, no_theta, no_phi):
         self.no_theta = no_theta
         self.no_phi = no_phi
+        
+        # Structured grid information
         self.no_vertices = (no_theta - 2)*no_phi + 2
         self.delta_theta = math.pi / (no_theta - 1)
         self.delta_phi = 2.0*math.pi / no_phi
@@ -36,50 +38,29 @@ def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstr
     # Create list of FmmVertex
     vertex = []
     
-    # Structured grid information
-    no_vertices = (no_theta - 2)*no_phi + 2
-    delta_theta = math.pi / (no_theta - 1)
-    delta_phi = 2.0*math.pi / no_phi
-    
-    # Compute lists of theta and phi values
-    theta_list = [0.0] * no_theta
-    phi_list = [0.0] * (no_phi + 1)
-    for i in range(no_theta):
-        theta_list[i] = i *delta_theta
-    for i in range(no_phi+1):
-        phi_list[i] = i * delta_phi
+    grid = PolarGrid(no_theta, no_phi)
     
     # Construct the vertex array in the FmmGrid
     polar_index = []
-    for i in range(no_vertices):
+    for i in range(grid.no_vertices):
         
         # theta and phi indices
-        th_index = get_theta_index(i, no_vertices, no_theta, no_phi)
+        th_index = get_theta_index(i, grid.no_vertices, no_theta, no_phi)
         ph_index = get_phi_index(i, th_index, no_phi)
         polar_index.append([th_index, ph_index])
         
         # Cartesian coordinates
-        carts = np.array( shape.polar2cart(theta_list[th_index], phi_list[ph_index]) )
+        carts = np.array( shape.polar2cart(grid.theta_list[th_index], grid.phi_list[ph_index]) )
         
         # Create new vertex
         vertex.append(FmmVertex(i, carts))
         
     # Find neighbouring vertices and update the graph
-    for i in range(no_vertices):    
+    for i in range(grid.no_vertices):    
         find_neighbour_indices(vertex, i, polar_index[i][0], polar_index[i][1], 
-                               no_theta, no_phi, no_vertices, is_connect_8)
+                               no_theta, no_phi, grid.no_vertices, is_connect_8)
     
-    # Find Fast Marching update triangles
-    #if is_Dijkstra == False:
-    #    for i in range(no_vertices):
-    #        find_update_triangles(vertex, i, no_theta, no_phi, no_vertices, is_connect_8)
-    
-    
-    
-    
-    
-    
-    return vertex
+    return vertex, grid
 
 ############################# Define subroutines #############################
 

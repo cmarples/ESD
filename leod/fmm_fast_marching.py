@@ -19,7 +19,8 @@ class FmmResult:
     def __init__(self, no_vertices):
         self.distance = [math.inf] * no_vertices
         self.accepted = [False] * no_vertices
-        self.update = [0] * no_vertices
+        self.update = [[-1]] * no_vertices
+        self.no_obtuse = 0
         
 def fast_marching(vertex, start_vertex, start_point, order, end_dict={}):
     # Initialise output object
@@ -84,7 +85,7 @@ def fast_marching_update(visit, trial, vertex, fmm, order):
         support = get_supporting_vertex(visit, trial, vertex, fmm)
         
         if support == -1:
-            fmm.update[visit] = trial
+            fmm.update[visit] = [trial]
             #return get_distance(vertex, visit, trial) + fmm.distance[trial]
             return vertex[visit].neighbour[trial].distance + fmm.distance[trial]
         else:
@@ -92,12 +93,11 @@ def fast_marching_update(visit, trial, vertex, fmm, order):
             #v = fmm_first_order_update_general(visit, trial, support, vertex, vertex[visit].carts, fmm)
             v = fmm_first_order_update(visit, trial, support, vertex, fmm)
             if v[0] == -1:
-                #v[0] = get_distance(vertex, visit, trial) + fmm.distance[trial]
                 v[0] = vertex[visit].neighbour[trial].distance + fmm.distance[trial]
             return v[0]
     else:
         # Dijkstra's algorithm
-        fmm.update[visit] = trial
+        fmm.update[visit] = [trial]
         #return get_distance(vertex, visit, trial) + fmm.distance[trial]
         return vertex[visit].neighbour[trial].distance
     
@@ -154,24 +154,15 @@ def fmm_idw(end_carts, carts, dist):
     return num / den
 
 # Use FMM data to obtain a distance to an endpoint
-def endpoint_distance(vertex, fmm, end_th, end_ph, end_vertex, shape):
-    
-    # Find endpoint in Cartesian coordinates
-    end_carts = np.array(shape.polar2cart(end_th, end_ph))
-    carts = vertex[end_vertex].carts
-    
-    # If closest vertex and endpoint are the same, output its distance...
-    diff = carts - end_carts
-    diff = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]
-    if diff < 1e-12:
-        return fmm.distance[end_vertex]
-    else:
-        # Otherwise, find neighbour information and interpolate
-        dist = [fmm.distance[end_vertex]]
-        for j in vertex[end_vertex].neighbour.keys():
-            carts.append(vertex[j].carts)
-            dist.append(fmm.distance[j])
-        return fmm_idw(end_carts, carts, dist)
+def endpoint_distance(vertex, fmm, end_carts, end_vertex, shape):
+
+    # Find neighbour information and interpolate
+    dist = [fmm.distance[end_vertex]]
+    carts = [vertex[end_vertex].carts]
+    for j in vertex[end_vertex].neighbour.keys():
+        carts.append(vertex[j].carts)
+        dist.append(fmm.distance[j])
+    return fmm_idw(end_carts, carts, dist)
     
     
 
@@ -189,53 +180,45 @@ def fmm_first_order_update(visit, trial, support, vertex, fmm):
     
     cos_psi = vertex[visit].neighbour[trial].face_angle[support]
     
-    #if cos_psi < 0.0:
-    #    return [-1, 0, 0, 0]
-    #else:
+    if cos_psi < 0.0:
+        fmm.no_obtuse += 1
+    
+    if cos_psi < 0.0:
         
-    #a = get_distance(vertex, visit, trial)
-    #b = get_distance(vertex, visit, support)
-    a = vertex[visit].neighbour[trial].distance
-    b = vertex[visit].neighbour[support].distance
+        fmm.update[visit] = [trial, -1]
+        return [-1, 0, 0, 0]
     
-    #w1 = (vertex[trial].carts - vertex[visit].carts) / a
-    #w2 = (vertex[support].carts - vertex[visit].carts) / b
-    #cos_psi = np.dot(w1, w2)
-    #cos_psi = get_angle(vertex, visit, trial, support)
-    
-    
-    u = fmm.distance[trial] - fmm.distance[support]
-    
-    asq = a*a
-    bsq = b*b
-    b2 = 2.0*b
-    a_cos_psi = a*cos_psi
-    alpha = asq + bsq - b2*a_cos_psi
-    beta = b2*u*(a_cos_psi - b)
-    #gamma = b2*(u*u - a2*(1-cos_alpha*cos_alpha))
-    gamma = bsq*(u*u - asq + a_cos_psi*a_cos_psi)
-    
-    # Solve quadratic
-    discr = beta*beta - 4.0*alpha*gamma
-    if discr > 0.0:
-        t = ( -beta + sqrt(discr) ) / (2.0*alpha)
-
-        # Check upwinding condition
-        x = b*(t-u)/t
-        if u < t and x > a_cos_psi and x < a/cos_psi:
-            #return [t + fmm.distance[support], alpha, beta, gamma]
-        #else:
-            #return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
-    #else:
-        #return [get_distance(vertex, visit, trial) + fmm.distance[trial], alpha, beta, gamma]
-            fmm.update[visit] = [trial, support]
-            return [t + fmm.distance[support], alpha, beta, gamma]
-        else:
-            fmm.update[visit] = trial
-            return [-1, alpha, beta, gamma]
     else:
-        fmm.update[visit] = trial
-        return [-1, alpha, beta, gamma]
+        
+        a = vertex[visit].neighbour[trial].distance
+        b = vertex[visit].neighbour[support].distance
+        
+        u = fmm.distance[trial] - fmm.distance[support]
+        
+        asq = a*a
+        bsq = b*b
+        b2 = 2.0*b
+        a_cos_psi = a*cos_psi
+        alpha = asq + bsq - b2*a_cos_psi
+        beta = b2*u*(a_cos_psi - b)
+        gamma = bsq*(u*u - asq + a_cos_psi*a_cos_psi)
+        
+        # Solve quadratic
+        discr = beta*beta - 4.0*alpha*gamma
+        if discr > 0.0:
+            t = ( -beta + sqrt(discr) ) / (2.0*alpha)
+    
+            # Check upwinding condition
+            x = b*(t-u)/t
+            if u < t and x > a_cos_psi and x < a/cos_psi:
+                fmm.update[visit] = [trial, support]
+                return [t + fmm.distance[support], alpha, beta, gamma]
+            else:
+                fmm.update[visit] = [trial]
+                return [-1, alpha, beta, gamma]
+        else:
+            fmm.update[visit] = [trial]
+            return [-1, alpha, beta, gamma]
     
     
     
@@ -283,8 +266,8 @@ def fmm_first_order_update_general(visit, trial, support, vertex, visit_carts, f
             fmm.update[visit] = [trial, support]
             return [u, alpha, beta, gamma]
         else:
-            fmm.update[visit] = trial
+            fmm.update[visit] = [trial]
             return [-1, alpha, beta, gamma]
     else:
-        fmm.update[visit] = trial
+        fmm.update[visit] = [trial]
         return [-1, alpha, beta, gamma]
