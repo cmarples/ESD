@@ -1,6 +1,11 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-15
+### Modified
+- Icosahedron based triangulation updated for compatibility with newest FMM code.
+- Bug in bottom left vertex of triangular faces fixed.
+
 ## 2022-11-14
 ### Added
 - Beginnings of a script to compute geodesics on a set of test examples.

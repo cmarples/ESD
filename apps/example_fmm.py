@@ -35,7 +35,7 @@ from leod.fmm_polar_graph import PolarGrid
 
 from leod.fmm_callers import calculate_pair_distance
 
-test_no = 5
+test_no = 6
 
 if test_no == 1: # FMM on sphere triangulation
     
@@ -217,7 +217,7 @@ elif test_no == 4: # Speed of FMM
 
 
 elif test_no == 5: # Test pair routine
-    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    shape = EllipsoidShape(1.0, 1.0, 1.0)
     shape.normalise()
     no_theta = 181
     no_phi = 360
@@ -233,10 +233,10 @@ elif test_no == 5: # Test pair routine
     toc = time.perf_counter()
     print(toc - tic)
 
-    start_th = 120.0
-    start_ph = 40.0  
-    end_th = 60.0
-    end_ph = 220.0
+    start_th = 90.0
+    start_ph = 0.0  
+    end_th = 50.0
+    end_ph = 60.0
     
     tic = time.perf_counter()
     
@@ -248,6 +248,57 @@ elif test_no == 5: # Test pair routine
     
     tic = time.perf_counter()
     conv = math.pi / 180.0
-    s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
+    if shape.is_sphere() == True:
+        s = great_circle_distance(shape.a_axis, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv)
+    else:
+        s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
     toc = time.perf_counter()
     print(toc - tic)
+    
+    
+    
+elif test_no == 6: # Test pair routine (triangulation)
+    shape = EllipsoidShape(3.0, 2.0, 1.0)
+    shape.normalise()
+    no_theta = 181
+    no_phi = 360
+    tic = time.perf_counter()
+    
+    n = 100  # number of triangular divisions
+    vertex = triangulate_sphere(1.0, n)
+    # Scale to ellipsoid
+    for i in range(len(vertex)):
+        vertex[i].carts[0] *= shape.a_axis
+        vertex[i].carts[1] *= shape.b_axis
+        vertex[i].carts[2] *= shape.c_axis
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    max_angle = precalculate_grid(vertex)
+    toc = time.perf_counter()
+    print(toc - tic)
+
+    start_th = 50.0
+    start_ph = 60.0  
+    end_th = 90.0
+    end_ph = 0.0
+    
+    tic = time.perf_counter()
+    
+    d, fmm = calculate_pair_distance(shape, vertex, [start_th, start_ph], [end_th, end_ph],
+                                     1, graph_type="tri", grid=-1, is_radians=False)
+    
+    toc = time.perf_counter()
+    print(toc - tic)
+    
+    tic = time.perf_counter()
+    conv = math.pi / 180.0
+    if shape.is_sphere() == True:
+        s = great_circle_distance(shape.a_axis, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv)
+    else:
+        s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
+    toc = time.perf_counter()
+    print(toc - tic)
+    

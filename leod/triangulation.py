@@ -19,7 +19,7 @@ def find_closest_vertex(vertex, p, v=0):
             d2[v] = np.dot(vec, vec)
         u = v # Index of locally closest vertex
         d_min = d2[v]
-        for j in vertex[v].distance_to_neighbour.keys():
+        for j in vertex[v].neighbour.keys():
             if j not in d2.keys():
                 vec = vertex[j].carts - p
                 d2[j] = np.dot(vec, vec)

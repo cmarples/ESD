@@ -11,6 +11,7 @@ import math
 import numpy as np
 import copy
 from .fmm_vertex import FmmVertex
+from .fmm_vertex import FmmNeighbour
 
 # Sphere triangulation using a geodesic polyhedron
 def triangulate_sphere(radius=1.0, n=10):
@@ -65,6 +66,7 @@ def triangulate_sphere(radius=1.0, n=10):
     def process_corner_vertex(vertex_no, index):
         if ico_index[vertex_no] == -1:
             vertex.append(FmmVertex(index, ico_vertex[vertex_no]))
+            vertex[-1].face = []
             if j == 0:
                 vertex_map[(j, 0)] = index
             else:
@@ -87,6 +89,7 @@ def triangulate_sphere(radius=1.0, n=10):
             vertex_index = ico_edge_index[(vx, vy)][n-1-jk]                   
         if vertex_index == -1:
             vertex.append(FmmVertex(index, (v01*(j-k) + v02*k) / j))
+            vertex[-1].face = []
             vertex_map[(j, k)] = index
             if x_lt_y == True:
                 ico_edge_index[(vx, vy)][jk-1] = index
@@ -107,8 +110,6 @@ def triangulate_sphere(radius=1.0, n=10):
                 ico_edge_index[(i, j)] = [-1] * (n-1)
     index = 0
     
-    
-            
     # Determine vertices, faces and neighbours of the triangulation
     for i in range(20):
         
@@ -149,6 +150,7 @@ def triangulate_sphere(radius=1.0, n=10):
                         else:
                             # Vertex is within the icosahedral face
                             vertex.append(FmmVertex(index, (v01*(j-k) + v02*k) / j))
+                            vertex[-1].face = []
                             vertex_map[(j, k)] = index
                             index += 1
                 
@@ -157,64 +159,82 @@ def triangulate_sphere(radius=1.0, n=10):
         for j in range(n+1):
             if j == 0: # Vertex v0
                 v = vertex_map[(j, 0)]
-                vertex[v].distance_to_neighbour[vertex_map[(1, 0)]] = -1.0
-                vertex[v].distance_to_neighbour[vertex_map[(1, 1)]] = -1.0
+                vertex[v].neighbour[vertex_map[(1, 0)]] = FmmNeighbour()
+                vertex[v].neighbour[vertex_map[(1, 1)]] = FmmNeighbour()
                 vertex[v].face.append([vertex_map[(1, 1)], vertex_map[(1, 0)]])
             else:
                 for k in range(j+1):
                     v = vertex_map[(j, k)]
                     if j == n:
                         if k == 0: # Vertex v1 
-                            vertex[v].distance_to_neighbour[vertex_map[(n-1, 0)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(n, 0)]] = -1.0
-                            vertex[v].face.append([vertex_map[(n-1, 0)], vertex_map[(n, 0)]])
+                            vertex[v].neighbour[vertex_map[(n-1, 0)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(n, 1)]] = FmmNeighbour()
+                            vertex[v].face.append([vertex_map[(n-1, 0)], vertex_map[(n, 1)]])
                         elif k == j: # Vertex v2
-                            vertex[v].distance_to_neighbour[vertex_map[(n-1, n-1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(n, n-1)]] = -1.0
+                            vertex[v].neighbour[vertex_map[(n-1, n-1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(n, n-1)]] = FmmNeighbour()
                             vertex[v].face.append([vertex_map[(n-1, n-1)], vertex_map[(n, n-1)]])
                         else:
                             # Vertex along v1-v2 line
-                            vertex[v].distance_to_neighbour[vertex_map[(n-1, k)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(n, k+1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(n, k-1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(n-1, k-1)]] = -1.0
+                            vertex[v].neighbour[vertex_map[(n-1, k)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(n, k+1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(n, k-1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(n-1, k-1)]] = FmmNeighbour()
                             vertex[v].face.append([vertex_map[(n-1, k)], vertex_map[(n, k+1)]])
                             vertex[v].face.append([vertex_map[(n, k-1)], vertex_map[(n-1, k-1)]])
                             vertex[v].face.append([vertex_map[(n-1, k-1)], vertex_map[(n-1, k)]])
                     else:
                         if k == 0:
                             # Vertex along v0-v1 line
-                            vertex[v].distance_to_neighbour[vertex_map[(j-1, 0)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j, 1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, 1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, 0)]] = -1.0
+                            vertex[v].neighbour[vertex_map[(j-1, 0)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j, 1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j+1, 1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j+1, 0)]] = FmmNeighbour()
                             vertex[v].face.append([vertex_map[(j-1, 0)], vertex_map[(j, 1)]])
                             vertex[v].face.append([vertex_map[(j, 1)], vertex_map[(j+1, 1)]])
                             vertex[v].face.append([vertex_map[(j+1, 1)], vertex_map[(j+1, 0)]])
                         elif k == j:
                             # Vertex along v0-v2 line
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, j+1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, j)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j, j-1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j-1, j-1)]] = -1.0
+                            vertex[v].neighbour[vertex_map[(j+1, j+1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j+1, j)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j, j-1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j-1, j-1)]] = FmmNeighbour()
                             vertex[v].face.append([vertex_map[(j+1, j+1)], vertex_map[(j+1, j)]])
                             vertex[v].face.append([vertex_map[(j+1, j)], vertex_map[(j, j-1)]])
                             vertex[v].face.append([vertex_map[(j, j-1)], vertex_map[(j-1, j-1)]])
                         else:
                             # Vertex is within the icosahedral face
-                            vertex[v].distance_to_neighbour[vertex_map[(j-1, k)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j, k+1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, k+1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j+1, k)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j, k-1)]] = -1.0
-                            vertex[v].distance_to_neighbour[vertex_map[(j-1, k-1)]] = -1.0
+                            vertex[v].neighbour[vertex_map[(j-1, k)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j, k+1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j+1, k+1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j+1, k)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j, k-1)]] = FmmNeighbour()
+                            vertex[v].neighbour[vertex_map[(j-1, k-1)]] = FmmNeighbour()
                             vertex[v].face.append([vertex_map[(j-1, k)], vertex_map[(j, k+1)]])
                             vertex[v].face.append([vertex_map[(j, k+1)], vertex_map[(j+1, k+1)]])
                             vertex[v].face.append([vertex_map[(j+1, k+1)], vertex_map[(j+1, k)]])
                             vertex[v].face.append([vertex_map[(j+1, k)], vertex_map[(j, k-1)]])
                             vertex[v].face.append([vertex_map[(j, k-1)], vertex_map[(j-1, k-1)]])
                             vertex[v].face.append([vertex_map[(j-1, k-1)], vertex_map[(j-1, k)]])
-                
+    
+    # Find possible faces for each neighbouring pair
+    cos_alpha = 2.0 # Initialisation for face angles
+    for i in range(len(vertex)):
+        for j in vertex[i].neighbour.keys():
+            k_list = []
+            for face_i in vertex[i].face:
+                if j in face_i:
+                    if face_i[0] == j:
+                        k_list.append(face_i[1])
+                    else:
+                        k_list.append(face_i[0])
+            vertex[i].neighbour[j].face = k_list
+            vertex[i].neighbour[j].face_angle[k_list[0]] = cos_alpha
+            vertex[i].neighbour[j].face_angle[k_list[1]] = cos_alpha
+                    
+                            
+                            
+                            
     # Project onto sphere surface
     for i in range(len(vertex)):
         vertex[i].carts *= radius / np.linalg.norm(vertex[i].carts)
