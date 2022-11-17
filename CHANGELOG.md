@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-16
+### Added
+- Plot of icosahedral triangulation, with face colours according to the largest angle.
+
 ## 2022-11-15
 ### Modified
 - Icosahedron based triangulation updated for compatibility with newest FMM code.
