@@ -1,6 +1,11 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-17
+### Added
+- Edge splitting on the icosahedral triangulation implemented.
+- One-sided neighbours caused by these splits cause a bug in the FMM code that needs fixing.
+
 ## 2022-11-16
 ### Added
 - Plot of icosahedral triangulation, with face colours according to the largest angle.

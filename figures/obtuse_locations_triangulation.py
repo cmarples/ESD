@@ -11,6 +11,7 @@ locations of any obtuse angles.
 from leod.ellipsoid_shape import EllipsoidShape
 from leod.triangulation_sphere import triangulate_sphere
 from leod.fmm_precalculation import precalculate_grid
+from leod.fmm_precalculation import find_obtuse_angles
 
 from math import acos
 from math import pi
@@ -25,7 +26,7 @@ shape = EllipsoidShape(3.0, 2.0, 1.0)
 shape.normalise()
 
 # Generate triangulation for the unit sphere.
-n = 5  # number of triangular divisions.
+n = 2  # number of triangular divisions.
 vertex = triangulate_sphere(1.0, n)
 
 # Scale vertices to the surface of the ellipsoid.
@@ -35,7 +36,8 @@ for i in range(len(vertex)):
     vertex[i].carts[2] *= shape.c_axis
 
 # Calculate face angles.
-max_angle = precalculate_grid(vertex)
+max_cos_angle = precalculate_grid(vertex)
+[no_obtuse, max_angle] = find_obtuse_angles(vertex)
 
 # Plot faces of the triangulation
 fig = plt.figure(figsize=plt.figaspect(1)*2)
@@ -72,7 +74,7 @@ for i in range(len(vertex)):
                         
                     else:
                         #face_col = [1, 1 - (alpha_max-90.0)/90.0, 1]
-                        face_col = [1 - (alpha_max-90.0)/90.0, 1 - (alpha_max-90.0)/90.0, 1]
+                        face_col = [1 - (alpha_max-75.0)/90.0, 1 - (alpha_max-75.0)/90.0, 1]
                         srf = Poly3DCollection(verts, alpha=1.0, facecolor=face_col, edgecolor='k')
                         ax.add_collection3d(srf)
                     

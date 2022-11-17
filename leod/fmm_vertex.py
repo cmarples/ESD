@@ -18,6 +18,7 @@ class FmmVertex:
         self.is_endpoint = is_endpoint
         self.carts = carts
         self.neighbour = {}
+        self.neighbour_set = set()
 
 # This class gives information relating to a neighbour, j, of vertex i.
 class FmmNeighbour:

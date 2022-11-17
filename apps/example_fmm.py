@@ -27,6 +27,8 @@ from leod.triaxial_geodesics import boundary_value_method
 from leod.triangulation_sphere import triangulate_sphere
 
 from leod.fmm_precalculation import precalculate_grid
+from leod.fmm_precalculation import split_obtuse_angles
+from leod.fmm_precalculation import find_obtuse_angles
 
 import leod.triangulation as tri
 import leod.fmm_polar_graph as pg
@@ -277,6 +279,9 @@ elif test_no == 6: # Test pair routine (triangulation)
     
     tic = time.perf_counter()
     max_angle = precalculate_grid(vertex)
+    [ob1, m1] = find_obtuse_angles(vertex)
+    split_obtuse_angles(vertex)
+    [ob2, m2] = find_obtuse_angles(vertex)
     toc = time.perf_counter()
     print(toc - tic)
 
