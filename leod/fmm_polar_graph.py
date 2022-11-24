@@ -59,6 +59,11 @@ def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstr
     for i in range(grid.no_vertices):    
         find_neighbour_indices(vertex, i, polar_index[i][0], polar_index[i][1], 
                                no_theta, no_phi, grid.no_vertices, is_connect_8)
+        
+    # Define outgoing neighbours
+    for i in range(len(vertex)):
+        for j in vertex[i].neighbour.keys():
+            vertex[i].neighbour_set.add(j)   
     
     return vertex, grid
 

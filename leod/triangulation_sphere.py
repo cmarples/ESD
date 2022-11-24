@@ -232,7 +232,10 @@ def triangulate_sphere(radius=1.0, n=10):
             vertex[i].neighbour[j].face_angle[k_list[0]] = cos_alpha
             vertex[i].neighbour[j].face_angle[k_list[1]] = cos_alpha
                     
-                            
+    # Define outgoing neighbours
+    for i in range(len(vertex)):
+        for j in vertex[i].neighbour.keys():
+            vertex[i].neighbour_set.add(j)                        
                             
                             
     # Project onto sphere surface

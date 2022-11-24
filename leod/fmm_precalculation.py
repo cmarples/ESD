@@ -71,12 +71,12 @@ def split_obtuse_angles(vertex):
                 (s,) = temp_set
                 # Add new neighbour
                 vertex[i].neighbour[s] = FmmNeighbour()
+                # Add outgoing neighbour
+                vertex[s].neighbour_set.add(i)
                 # Calculate distance
                 vertex[i].neighbour[s].distance = sqrt( (vertex[i].carts[0]-vertex[s].carts[0])**2.0 +
                                                         (vertex[i].carts[1]-vertex[s].carts[1])**2.0 +
                                                         (vertex[i].carts[2]-vertex[s].carts[2])**2.0 )
-                
-                
                 # Update face completion lists
                 for v in range(2):
                     if vertex[i].neighbour[j].face[v] == k:
@@ -103,7 +103,7 @@ def split_obtuse_angles(vertex):
 # Find number of obtuse angles and the largest angle in the triangulation
 def find_obtuse_angles(vertex):
     no_obtuse = 0
-    max_angle = 0.0
+    max_angle = 1.0 # Initialise cos(angle) at the largest possible value.
     for i in range(len(vertex)):
         for j in vertex[i].neighbour.keys():
             for k in vertex[i].neighbour[j].face_angle.keys():

@@ -221,19 +221,21 @@ elif test_no == 4: # Speed of FMM
 elif test_no == 5: # Test pair routine
     shape = EllipsoidShape(1.0, 1.0, 1.0)
     shape.normalise()
-    no_theta = 181
-    no_phi = 360
+    no_theta = 101
+    no_phi = 200
     tic = time.perf_counter()
     
     vertex, polar_grid = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
     
     toc = time.perf_counter()
-    print(toc - tic)
+    t1 = toc - tic
+    print(t1)
     
     tic = time.perf_counter()
     max_angle = precalculate_grid(vertex)
     toc = time.perf_counter()
-    print(toc - tic)
+    t2 = toc - tic
+    print(t2)
 
     start_th = 90.0
     start_ph = 0.0  
@@ -246,7 +248,8 @@ elif test_no == 5: # Test pair routine
                                     1, graph_type="polar", grid=polar_grid, is_radians=False)
     
     toc = time.perf_counter()
-    print(toc - tic)
+    t3 = toc - tic
+    print(t3)
     
     tic = time.perf_counter()
     conv = math.pi / 180.0
@@ -255,18 +258,18 @@ elif test_no == 5: # Test pair routine
     else:
         s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
     toc = time.perf_counter()
-    print(toc - tic)
+    t4 = toc - tic
+    print(t4)
     
-    
+    print('t_FMM = ', t1+t2+t3)
     
 elif test_no == 6: # Test pair routine (triangulation)
     shape = EllipsoidShape(3.0, 2.0, 1.0)
     shape.normalise()
-    no_theta = 181
-    no_phi = 360
+    
     tic = time.perf_counter()
     
-    n = 100  # number of triangular divisions
+    n = 4  # number of triangular divisions
     vertex = triangulate_sphere(1.0, n)
     # Scale to ellipsoid
     for i in range(len(vertex)):

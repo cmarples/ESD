@@ -1,6 +1,11 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## [0.0.3] - 2022-11-24
+### Added
+- Accuracy as a function of resolution started.
+- Alternate methods applied for resolution comparison.
+
 ## 2022-11-17
 ### Added
 - Edge splitting on the icosahedral triangulation implemented.
