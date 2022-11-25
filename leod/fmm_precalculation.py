@@ -19,7 +19,6 @@ from math import pi
 # each face.
 def precalculate_grid(vertex):
     n = len(vertex)
-    max_angle = 1.0 # Minimum value of cos(psi)
     #for i, vi in enumerate(vertex):
     for i in range(n):
         for j in vertex[i].neighbour:
@@ -44,10 +43,7 @@ def precalculate_grid(vertex):
                     b = vertex[i].neighbour[k].distance
                     vertex[i].neighbour[j].face_angle[k] = (w1[0]*w2[0] + w1[1]*w2[1] + w1[2]*w2[2]) / (a*b)
                     vertex[i].neighbour[k].face_angle[j] = vertex[i].neighbour[j].face_angle[k]
-                    if vertex[i].neighbour[j].face_angle[k] < max_angle:
-                        max_angle = vertex[i].neighbour[j].face_angle[k]
-    
-    return max_angle
+
 
 
 def split_obtuse_angles(vertex):

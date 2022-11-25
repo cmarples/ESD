@@ -37,7 +37,7 @@ def calculate_pair_distance(shape, vertex, start_point, end_point, order, graph_
         start_vertex, start_th_index, st_ph_index = find_vertex_index(grid.theta_list, grid.phi_list, start_point_temp[0], start_point_temp[1])
         end_vertex, end_th_index, end_ph_index = find_vertex_index(grid.theta_list, grid.phi_list, end_point_temp[0], end_point_temp[1])
     else:
-        # Use triangulation (to be implemented!)
+        # Use triangulation
         start_vertex = find_closest_vertex(vertex, array(start_carts))
         end_vertex = find_closest_vertex(vertex, array(end_carts))
     

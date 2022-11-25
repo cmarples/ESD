@@ -33,7 +33,7 @@ class PolarGrid:
             self.phi_list[i] = i * self.delta_phi
     
 
-def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False, is_Dijkstra=False):
+def generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False):
     
     # Create list of FmmVertex
     vertex = []
@@ -319,17 +319,17 @@ def find_neighbour_indices(vertex, i, th, ph, no_theta, no_phi, no_vertices, is_
         else: 
             # Find faces for 4-connectivity case
             vertex[i].neighbour[j_up].face = [j_lt, j_rt]
-            vertex[i].neighbour[j_up].face[j_lt] = cos_alpha
-            vertex[i].neighbour[j_up].face[j_rt] = cos_alpha
+            vertex[i].neighbour[j_up].face_angle[j_lt] = cos_alpha
+            vertex[i].neighbour[j_up].face_angle[j_rt] = cos_alpha
             vertex[i].neighbour[j_dn].face = [j_lt, j_rt]
-            vertex[i].neighbour[j_dn].face[j_lt] = cos_alpha
-            vertex[i].neighbour[j_dn].face[j_rt] = cos_alpha
+            vertex[i].neighbour[j_dn].face_angle[j_lt] = cos_alpha
+            vertex[i].neighbour[j_dn].face_angle[j_rt] = cos_alpha
             vertex[i].neighbour[j_lt].face = [j_up, j_dn]
-            vertex[i].neighbour[j_lt].face[j_up] = cos_alpha
-            vertex[i].neighbour[j_lt].face[j_dn] = cos_alpha
+            vertex[i].neighbour[j_lt].face_angle[j_up] = cos_alpha
+            vertex[i].neighbour[j_lt].face_angle[j_dn] = cos_alpha
             vertex[i].neighbour[j_rt].face = [j_up, j_dn]
-            vertex[i].neighbour[j_rt].face[j_up] = cos_alpha
-            vertex[i].neighbour[j_rt].face[j_dn] = cos_alpha
+            vertex[i].neighbour[j_rt].face_angle[j_up] = cos_alpha
+            vertex[i].neighbour[j_rt].face_angle[j_dn] = cos_alpha
 
             
     #for j in vertex[i].neighbour:

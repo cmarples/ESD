@@ -99,7 +99,7 @@ def fast_marching_update(visit, trial, vertex, fmm, order):
         # Dijkstra's algorithm
         fmm.update[visit] = [trial]
         #return get_distance(vertex, visit, trial) + fmm.distance[trial]
-        return vertex[visit].neighbour[trial].distance
+        return vertex[visit].neighbour[trial].distance + fmm.distance[trial]
     
     
     
@@ -210,7 +210,7 @@ def fmm_first_order_update(visit, trial, support, vertex, fmm):
     
             # Check upwinding condition
             x = b*(t-u)/t
-            if u < t and x > a_cos_psi and x < a/cos_psi:
+            if u < t and ((cos_psi >= 0.0 and cos_psi < 1.0e-12) or (x > a_cos_psi and x < a/cos_psi)):
                 fmm.update[visit] = [trial, support]
                 return [t + fmm.distance[support], alpha, beta, gamma]
             else:

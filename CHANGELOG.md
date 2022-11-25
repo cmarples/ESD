@@ -1,10 +1,20 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-25
+### Added
+- Started on script to plot the resolution date (figure_resolution.py)
+### Modified
+- Bug in Dijkstra's algorithm fixed (not adding distance to trial point).
+
 ## [0.0.3] - 2022-11-24
 ### Added
 - Accuracy as a function of resolution started.
 - Alternate methods applied for resolution comparison.
+### Modified
+- Attempts at refinement and 2nd order FMM abandoned due to complexity and time required for only marginal accuracy gains.
+- Precalculation routine no longer outputs a maximum angle.
+- Polar grid generation routine no longer takes a 'Dijkstra method flag' as an input (as unnecessary).
 
 ## 2022-11-17
 ### Added

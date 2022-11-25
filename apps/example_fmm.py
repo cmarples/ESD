@@ -37,7 +37,7 @@ from leod.fmm_polar_graph import PolarGrid
 
 from leod.fmm_callers import calculate_pair_distance
 
-test_no = 6
+test_no = 5
 
 if test_no == 1: # FMM on sphere triangulation
     
@@ -221,31 +221,31 @@ elif test_no == 4: # Speed of FMM
 elif test_no == 5: # Test pair routine
     shape = EllipsoidShape(1.0, 1.0, 1.0)
     shape.normalise()
-    no_theta = 101
-    no_phi = 200
+    no_theta = 181
+    no_phi = 360
     tic = time.perf_counter()
     
-    vertex, polar_grid = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True, is_Dijkstra=False)
+    vertex, polar_grid = pg.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=False)
     
     toc = time.perf_counter()
     t1 = toc - tic
     print(t1)
     
     tic = time.perf_counter()
-    max_angle = precalculate_grid(vertex)
+    precalculate_grid(vertex)
     toc = time.perf_counter()
     t2 = toc - tic
     print(t2)
 
-    start_th = 90.0
-    start_ph = 0.0  
-    end_th = 50.0
-    end_ph = 60.0
+    start_th = 50.0
+    start_ph = 60.0  
+    end_th = 90.0
+    end_ph = 0.0
     
     tic = time.perf_counter()
     
     d, fmm = calculate_pair_distance(shape, vertex, [start_th, start_ph], [end_th, end_ph],
-                                    1, graph_type="polar", grid=polar_grid, is_radians=False)
+                                     0, graph_type="polar", grid=polar_grid, is_radians=False)
     
     toc = time.perf_counter()
     t3 = toc - tic
@@ -269,7 +269,7 @@ elif test_no == 6: # Test pair routine (triangulation)
     
     tic = time.perf_counter()
     
-    n = 4  # number of triangular divisions
+    n = 100  # number of triangular divisions
     vertex = triangulate_sphere(1.0, n)
     # Scale to ellipsoid
     for i in range(len(vertex)):
