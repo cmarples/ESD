@@ -37,7 +37,7 @@ from leod.fmm_polar_graph import PolarGrid
 
 from leod.fmm_callers import calculate_pair_distance
 
-test_no = 5
+test_no = 6
 
 if test_no == 1: # FMM on sphere triangulation
     
@@ -264,12 +264,13 @@ elif test_no == 5: # Test pair routine
     print('t_FMM = ', t1+t2+t3)
     
 elif test_no == 6: # Test pair routine (triangulation)
-    shape = EllipsoidShape(3.0, 2.0, 1.0)
-    shape.normalise()
+    #shape = EllipsoidShape(1.0, 1.0, 2.0)
+    shape = EllipsoidShape(6378137.0, 6378137.0, 6356752.3142)
+    #shape.normalise()
     
     tic = time.perf_counter()
     
-    n = 100  # number of triangular divisions
+    n = 50  # number of triangular divisions
     vertex = triangulate_sphere(1.0, n)
     # Scale to ellipsoid
     for i in range(len(vertex)):
@@ -281,7 +282,7 @@ elif test_no == 6: # Test pair routine (triangulation)
     print(toc - tic)
     
     tic = time.perf_counter()
-    max_angle = precalculate_grid(vertex)
+    precalculate_grid(vertex)
     [ob1, m1] = find_obtuse_angles(vertex)
     split_obtuse_angles(vertex)
     [ob2, m2] = find_obtuse_angles(vertex)
@@ -303,10 +304,12 @@ elif test_no == 6: # Test pair routine (triangulation)
     
     tic = time.perf_counter()
     conv = math.pi / 180.0
+    '''
     if shape.is_sphere() == True:
         s = great_circle_distance(shape.a_axis, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv)
     else:
         s = boundary_value_method(shape, start_th*conv, start_ph*conv, end_th*conv, end_ph*conv, tol=1e-12, Jacobi=False, n = 20000)
+    '''
     toc = time.perf_counter()
     print(toc - tic)
     

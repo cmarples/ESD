@@ -1,9 +1,15 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2022-11-30
+### Added
+- Taxicab distances on a spheroid (not yet fully tested).
+### Modified
+- Progress made on plotting resolution data, including taxicab distance.
+
 ## 2022-11-25
 ### Added
-- Started on script to plot the resolution date (figure_resolution.py)
+- Started on script to plot the resolution data (figure_resolution.py)
 ### Modified
 - Bug in Dijkstra's algorithm fixed (not adding distance to trial point).
 

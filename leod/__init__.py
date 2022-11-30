@@ -6,6 +6,7 @@ import leod.fmm_precalculation
 import leod.fmm_callers
 import leod.sphere_geodesics
 import leod.triaxial_geodesics
+import leod.taxicab_distance
 # Import GeographicLib, if it has been installed
 try:
     from geographiclib.geodesic import Geodesic

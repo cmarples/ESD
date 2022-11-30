@@ -20,6 +20,8 @@ import csv
 import sys
 import os
 
+save_flag = True
+
 modulename = 'leod.spheroid_geodesics'
 if modulename in sys.modules:
     geo_flag = True
@@ -48,6 +50,7 @@ end_point = [90.0, 0.0]
 conv = math.pi / 180.0 # Degrees to radians.
 
 dist = []
+taxicab = []
 run_time = []
 # Compute the distance on each shape in turn, for each alternate method.
 for i in range(len(shape)):
@@ -56,9 +59,11 @@ for i in range(len(shape)):
     d_true = 'N/A'
     d_geo = 'N/A'
     d_bvm = 'N/A'
+    d_taxi = 'N/A'
     t_true = 'N/A'
     t_geo = 'N/A'
     t_bvm = 'N/A'
+    t_taxi = 'N/A'
     if shape[i].is_sphere() == True:
         # Sphere (can calculate true value and call GeographicLib).
         tic = time.perf_counter()
@@ -66,6 +71,12 @@ for i in range(len(shape)):
                                        end_point[0]*conv, end_point[1]*conv)
         toc = time.perf_counter()
         t_true = toc - tic
+        # Sphere taxicab distance
+        tic = time.perf_counter()
+        d_taxi = leod.taxicab_distance.taxicab_sphere(1.0, start_point[0]*conv, start_point[1]*conv,
+                                       end_point[0]*conv, end_point[1]*conv)
+        toc = time.perf_counter()
+        t_taxi = toc - tic
         if geo_flag == True:
             tic = time.perf_counter()
             d_geo = leod.spheroid_geodesics.spheroid_geo_distance(shape[i], start_point[0]*conv, start_point[1]*conv,
@@ -81,6 +92,12 @@ for i in range(len(shape)):
                                                                       end_point[0]*conv, end_point[1]*conv)
                 toc = time.perf_counter()
                 t_geo = toc - tic
+            # Spheroid taxicab distance
+            tic = time.perf_counter()
+            d_taxi = leod.taxicab_distance.taxicab_spheroid(shape[i].a_axis, shape[i].c_axis, start_point[0]*conv, start_point[1]*conv,
+                                                            end_point[0]*conv, end_point[1]*conv)
+            toc = time.perf_counter()
+            t_taxi = toc - tic
         # Triaxial (Boundary Value Method only).
         tic = time.perf_counter()
         d_bvm = leod.triaxial_geodesics.boundary_value_method(shape[i], start_point[0]*conv, start_point[1]*conv,
@@ -89,19 +106,20 @@ for i in range(len(shape)):
         d_bvm = d_bvm[0]
         toc = time.perf_counter()
         t_bvm = toc - tic
-    dist[i] = [d_true, d_geo, d_bvm]
-    run_time[i] = [t_true, t_geo, t_bvm]
+    dist[i] = [d_true, d_geo, d_bvm, d_taxi]
+    run_time[i] = [t_true, t_geo, t_bvm, t_taxi]
     
                 
 # Write alternate method results and shape information to a file
-file_name = 'data/resolution/resolution_comparison.txt'
-with open(file_name, mode="w", newline='') as f:
-    
-    writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    
-    top_row = ['Shape', 'a', 'b', 'c', 'True', 'GeographicLib', 'Boundary Value', 't_True', 't_Geo', 't_BV']
-    writer.writerow(top_row)
-    
-    for i in range(len(shape)):
-        row = [shape_name[i], shape[i].a_axis, shape[i].b_axis, shape[i].c_axis, dist[i][0], dist[i][1], dist[i][2], run_time[i][0], run_time[i][1], run_time[i][2]]
-        writer.writerow(row)
+if save_flag == True:
+    file_name = 'data/resolution/resolution_comparison.txt'
+    with open(file_name, mode="w", newline='') as f:
+        
+        writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        
+        top_row = ['Shape', 'a', 'b', 'c', 'True', 'GeographicLib', 'Boundary Value', 't_True', 't_Geo', 't_BV']
+        writer.writerow(top_row)
+        
+        for i in range(len(shape)):
+            row = [shape_name[i], shape[i].a_axis, shape[i].b_axis, shape[i].c_axis, dist[i][0], dist[i][1], dist[i][2], dist[i][3], run_time[i][0], run_time[i][1], run_time[i][2], run_time[i][3]]
+            writer.writerow(row)
