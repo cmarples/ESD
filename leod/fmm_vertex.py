@@ -19,6 +19,7 @@ class FmmVertex:
         self.carts = carts
         self.neighbour = {}
         self.neighbour_set = set()
+        self.ico = []
 
 # This class gives information relating to a neighbour, j, of vertex i.
 class FmmNeighbour:
@@ -26,6 +27,7 @@ class FmmNeighbour:
         self.distance = -1.0
         self.face = []
         self.face_angle = {}
+        self.ico_face = []
 
 # Get the Euclidean distance between vertices i and j, updating the distance
 # lists of both.

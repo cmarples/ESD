@@ -63,39 +63,51 @@ def triangulate_sphere(radius=1.0, n=10):
                         if j in ico_face[k]:
                             ico_edge_face[(i, j)].append(k)
     
-    def process_corner_vertex(vertex_no, index):
+    # vertex_no : icosahedral vertex index
+    def process_corner_vertex(vertex_no, index, ico_vertex_face):
         if ico_index[vertex_no] == -1:
             vertex.append(FmmVertex(index, ico_vertex[vertex_no]))
             vertex[-1].face = []
+            vertex[-1].ico_face = []
             if j == 0:
                 vertex_map[(j, 0)] = index
             else:
                 vertex_map[(j, k)] = index
             ico_index[vertex_no] = index
+            vertex[index].ico = ico_vertex_face[vertex_no] # Record icosahedral face that this vertex belongs to.
             index += 1
+            
         else:
             if j == 0:
                 vertex_map[(j, 0)] = ico_index[vertex_no]
             else:
                 vertex_map[(j, k)] = ico_index[vertex_no]
+        
         return index
     
-    def process_edge_vertex(vx, vy, jk, index):
+    # vx, vy : icosahedral vertex indices
+    def process_edge_vertex(vx, vy, jk, index, ico_edge_face):
         if vx < vy:
             x_lt_y = True
+            edge = ico_edge_face[(vx, vy)]
             vertex_index = ico_edge_index[(vx, vy)][jk-1]
         else:
             x_lt_y = False
+            edge = ico_edge_face[(vy, vx)]
             vertex_index = ico_edge_index[(vx, vy)][n-1-jk]                   
         if vertex_index == -1:
             vertex.append(FmmVertex(index, (v01*(j-k) + v02*k) / j))
             vertex[-1].face = []
+            vertex[-1].ico_face = []
             vertex_map[(j, k)] = index
             if x_lt_y == True:
                 ico_edge_index[(vx, vy)][jk-1] = index
             else:
                 ico_edge_index[(vx, vy)][n-1-jk] = index
+            
+            vertex[index].ico = [edge[0], edge[1]] # Record icosahedral face that this vertex belongs to.
             index += 1 
+            
         else:
             vertex_map[(j, k)] = vertex_index
         return index
@@ -127,32 +139,35 @@ def triangulate_sphere(radius=1.0, n=10):
             v02 = (v0*(n-j) + v2*(j)) / n
             
             if j == 0: # Vertex v0 may have already been defined.
-                index = process_corner_vertex(ico_face[i][0], index)
+                index = process_corner_vertex(ico_face[i][0], index, ico_vertex_face)
             else:
                 for k in range(j+1):
                     if j == n:
                         if k == 0:
                             # Vertex v1 may have already been defined.
-                            index = process_corner_vertex(ico_face[i][1], index) 
+                            index = process_corner_vertex(ico_face[i][1], index, ico_vertex_face)
                         elif k == j:
                             # Vertex v2 may have already been defined.
-                            index = process_corner_vertex(ico_face[i][2], index)
+                            index = process_corner_vertex(ico_face[i][2], index, ico_vertex_face)
                         else:
                             # Vertex along v1-v2 line may have already been defined
-                            index = process_edge_vertex(ico_face[i][1], ico_face[i][2], k, index)
+                            index = process_edge_vertex(ico_face[i][1], ico_face[i][2], k, index, ico_edge_face)
                     else:
                         if k == 0:
                             # Vertex along v0-v1 line may have already been defined
-                            index = process_edge_vertex(ico_face[i][0], ico_face[i][1], j, index)    
+                            index = process_edge_vertex(ico_face[i][0], ico_face[i][1], j, index, ico_edge_face)    
                         elif k == j:
                             # Vertex along v0-v2 line may have already been defined
-                            index = process_edge_vertex(ico_face[i][0], ico_face[i][2], j, index)
+                            index = process_edge_vertex(ico_face[i][0], ico_face[i][2], j, index, ico_edge_face)
                         else:
                             # Vertex is within the icosahedral face
                             vertex.append(FmmVertex(index, (v01*(j-k) + v02*k) / j))
                             vertex[-1].face = []
+                            vertex[-1].ico_face = []
                             vertex_map[(j, k)] = index
+                            vertex[index].ico = [i] # Record icosahedral face that this vertex belongs to.
                             index += 1
+                    
                 
                        
         # Find neighbours and faces for each vertex
@@ -226,8 +241,10 @@ def triangulate_sphere(radius=1.0, n=10):
                 if j in face_i:
                     if face_i[0] == j:
                         k_list.append(face_i[1])
+                        
                     else:
                         k_list.append(face_i[0])
+            
             vertex[i].neighbour[j].face = k_list
             vertex[i].neighbour[j].face_angle[k_list[0]] = cos_alpha
             vertex[i].neighbour[j].face_angle[k_list[1]] = cos_alpha

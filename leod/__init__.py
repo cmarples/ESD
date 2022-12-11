@@ -11,7 +11,5 @@ import leod.taxicab_distance
 try:
     from geographiclib.geodesic import Geodesic
     import leod.spheroid_geodesics
-    print("GeographicLib is installed and imported.")
-except ModuleNotFoundError:
-    print("GeographicLib is not installed. Functions involving this library will not be run.")
-print(" ")
+except:
+    print("GeographicLib not installed.")

@@ -117,7 +117,7 @@ if save_flag == True:
         
         writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         
-        top_row = ['Shape', 'a', 'b', 'c', 'True', 'GeographicLib', 'Boundary Value', 't_True', 't_Geo', 't_BV']
+        top_row = ['Shape', 'a', 'b', 'c', 'True', 'GeographicLib', 'Boundary Value', 'Taxicab', 't_True', 't_Geo', 't_BV', 't_Taxi']
         writer.writerow(top_row)
         
         for i in range(len(shape)):

@@ -160,7 +160,7 @@ for i in range(len(no_vertices)):
                                                                            order=0, graph_type="polar", grid=polar_grid, is_radians=False)
         toc = time.perf_counter()
         t_dijkstra_8[i][j] = toc - tic
-        # Fast marching on the 4-neighbour grid.
+        # Fast marching on the 8-neighbour grid.
         tic = time.perf_counter()
         d_fmm_8[i][j], fmm = leod.fmm_callers.calculate_pair_distance(shape[j], vertex, start_point, end_point,
                                                                       order=1, graph_type="polar", grid=polar_grid, is_radians=False)

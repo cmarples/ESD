@@ -7,30 +7,45 @@ Created on Mon Sep 26 12:31:45 2022
 
 import math
 import numpy as np
+import random
 
 # Find closest vertex to input point
-def find_closest_vertex(vertex, p, v=0):
+def find_closest_vertex(vertex, p, c=1.0, v=0):
 
     d2 = {}
     is_min_found = False
-    while is_min_found == False:
-        if v not in d2.keys():
-            vec = vertex[v].carts - p
-            d2[v] = np.dot(vec, vec)
-        u = v # Index of locally closest vertex
-        d_min = d2[v]
-        for j in vertex[v].neighbour.keys():
-            if j not in d2.keys():
-                vec = vertex[j].carts - p
-                d2[j] = np.dot(vec, vec)
-            if d2[j] < d_min:
-                d_min = d2[j]
-                u = j
-        if u == v:
-            is_min_found = True
-        else:
-            v = u
     
+    def perform_loop(vertex, p, v, c, d2, is_min_found):
+        while is_min_found == False:
+            if v not in d2.keys():
+                vec = vertex[v].carts - p
+                d2[v] = np.dot(vec, vec)
+            u = v # Index of locally closest vertex
+            d_min = d2[v]
+            for j in vertex[v].neighbour.keys():
+                if j not in d2.keys():
+                    vec = vertex[j].carts - p
+                    d2[j] = np.dot(vec, vec)
+                if d2[j] < d_min:
+                    d_min = d2[j]
+                    u = j
+            if u == v:
+                is_min_found = True
+            else:
+                v = u
+        return v, d_min
+    
+    d_min = c
+    while d_min > 0.5*c:
+        v, d_min = perform_loop(vertex, p, v, c, d2, is_min_found)
+        if d_min < 0.5*c:
+            break
+        else:
+            # Select a random vertex for which d2 has not been calculated.
+            while v in d2.keys():
+                v = random.randint(0, len(vertex)-1)
+            
+            
     return v
     
     

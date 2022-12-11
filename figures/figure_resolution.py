@@ -9,6 +9,8 @@ Data generated in:
     - apps/run_geodesic_resolution.py
     - apps/run_geodesic_resolution_comparison.py
 Note that array sizes are hardcoded in this script.
+
+This generates Figures 4 and 5 of the Geodesic Paper.
 """
 
 import math
@@ -21,8 +23,9 @@ from figure_size import set_size
 os.chdir("..")
 
 save_on = True
-plt.style.use('tex_symmetry')
+plt.style.use('tex')
 fig_width = 345.0
+
 
 # Read shape and alternate method data.
 a = [0] * 5
@@ -77,7 +80,6 @@ d_fmm_tri = np.zeros([len(no_vertices), len(shape)])
 d_dijkstra_split = np.zeros([len(no_vertices), len(shape)])
 d_fmm_split = np.zeros([len(no_vertices), len(shape)])
 
-
 t_polar_gen_4 = np.zeros([len(no_vertices), len(shape)])
 t_dijkstra_4 = np.zeros([len(no_vertices), len(shape)])
 t_fmm_4 = np.zeros([len(no_vertices), len(shape)])
@@ -120,54 +122,140 @@ for j in range(len(shape)):
         d_dijkstra_split[i][j] = rows[i][6]
         d_fmm_split[i][j] = rows[i][7]
 
+# Convert Earth data from m to km
+d_dijkstra_4[:, 1] /= 1000.0
+d_fmm_4[:, 1] /= 1000.0
+d_dijkstra_8[:, 1] /= 1000.0
+d_fmm_8[:, 1] /= 1000.0
+d_dijkstra_tri[:, 1] /= 1000.0
+d_fmm_tri[:, 1] /= 1000.0
+d_dijkstra_split[:, 1] /= 1000.0
+d_fmm_split[:, 1] /= 1000.0
+d_geo[1] /= 1000.0
+d_bvm[1] /= 1000.0
+d_taxi[1] /= 1000.0
 
-fig = [0] * 5
-ax = [0] * 5
+
+m = [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1]]
+ms = 9
+lw = 1
+og = [[1, 0.65, 0]]
+
+fig_da, ax_da = plt.subplots(3, 2, figsize=set_size(fig_width, height=1.0, subplots=(3,2)))
+fig_fmm, ax_fmm = plt.subplots(3, 2, figsize=set_size(fig_width, height=1.0, subplots=(3,2)))
+shape_name = ["Sphere", "WGS84", "Oblate", "Prolate", "Triaxial"]
+shape_label = ["(a)", "(b)", "(c)", "(d)", "(e)"]
 
 # Plot distance data
-for j in range(5):
+for j in range(5): 
     
-    fig[j], ax[j] = plt.subplots(1, 1, figsize=set_size(fig_width, height=1.0))  
+    # Plot non-wavefront distances.            
+    if j == 0:
+        ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_true[j]]*25, 'k', linestyle="dotted", linewidth=1.5)
+        ax_fmm[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_true[j]]*25, 'k', linestyle="dotted", linewidth=1.5)
+    elif j > 0:
+        if j < 4:
+            ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_geo[j]]*25, 'k', linestyle="solid", linewidth=lw)
+            ax_fmm[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_geo[j]]*25, 'k', linestyle="solid", linewidth=lw)
+        ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_bvm[j]]*25, 'k', linestyle="dashed", linewidth=lw)
+        ax_fmm[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_bvm[j]]*25, 'k', linestyle="dashed", linewidth=lw)
+    if j < 4:
+        ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_taxi[j]]*25, 'k', linestyle="dashdot", linewidth=lw)
+        
+    ax_da[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_dijkstra_4[:, j], c="none", edgecolor="c", marker="s", s=ms)
+    ax_da[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_dijkstra_8[:, j], c="none", edgecolor="b", marker="o", s=ms)
     
-    ax[j].scatter(np.log10(no_vertices_polar), d_dijkstra_4[:, j], c="none", edgecolor="c", marker="s")
-    ax[j].scatter(np.log10(no_vertices_polar), d_dijkstra_8[:, j], c="none", edgecolor="b", marker="o")
-    
-    
-    ax[j].scatter(np.log10(no_vertices_polar), d_fmm_4[:, j], c="c", edgecolor="c", marker="s")
-    ax[j].scatter(np.log10(no_vertices_polar), d_fmm_8[:, j], c="b", edgecolor="b", marker="o")
+    ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_fmm_4[:, j], c="c", edgecolor="c", marker="s", s=ms)
+    ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_fmm_8[:, j], c="b", edgecolor="b", marker="o", s=ms)
     
     if j < 2: # Sphere or WGS84
-        ax[j].scatter(np.log10(no_vertices_polar), d_dijkstra_tri[:, j], c="none", edgecolor="k", marker="^")
-        ax[j].scatter(np.log10(no_vertices_polar), d_fmm_tri[:, j], c="k", edgecolor="k", marker="^")
+        ax_da[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_dijkstra_tri[:, j], c="none", edgecolor=og, marker="^", s=ms)
+        ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_fmm_tri[:, j], c=og, edgecolor=og, marker="^", s=ms)
     else:
         # Plot icosahedral triangulation distances, avoiding repetition when splitting has no effect.
         for i in range(25):
-            ax[j].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor="k", marker="v")
-            ax[j].scatter(np.log10(no_vertices_polar[i]), d_fmm_split[i, j], c="k", edgecolor="k", marker="v")
+            ax_da[m[j][0]][m[j][1]].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor=og, marker="^", s=ms)
+            ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_split[i, j], c="r", edgecolor="r", marker="v", s=ms)
             if d_dijkstra_tri[i, j] != d_dijkstra_split[i, j]:
-                ax[j].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor="k", marker="v")
+                ax_da[m[j][0]][m[j][1]].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor="r", marker="v", s=ms)
             if d_fmm_tri[i, j] != d_fmm_split[i, j]:    
-                ax[j].scatter(np.log10(no_vertices_polar[i]), d_fmm_tri[i, j], c="k", edgecolor="k", marker="^")
+                ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_tri[i, j], c=og, edgecolor=og, marker="^", s=ms)
     
-    # Plot alternate distances.            
-    if j == 0:
-        ax[j].plot(np.log10(no_vertices), [d_true[j]]*25, 'k', linestyle="dotted")
-    elif j > 0:
-        if j < 4:
-            ax[j].plot(np.log10(no_vertices), [d_geo[j]]*25, 'k', linestyle="solid")
-        ax[j].plot(np.log10(no_vertices), [d_bvm[j]]*25, 'k', linestyle="dashed")
-    if j < 4:
-        ax[j].plot(np.log10(no_vertices), [d_taxi[j]]*25, 'k', linestyle="dashdot")
+    
     # Set x-axis tick labels (number of vertices).  
-    ax[j].set_xticks([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0])
-    ax[j].set_xticklabels(["$10^2$", "$10^{2.5}$", "$10^3$", "$10^{3.5}$", "$10^4$", "$10^{4.5}$", "$10^5$"])    
-        
-       
-        
-       
-        
-        
+    ax_da[m[j][0]][m[j][1]].set_xticks([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0])
+    ax_da[m[j][0]][m[j][1]].set_xticklabels(["$10^2$", "$10^{2.5}$", "$10^3$", "$10^{3.5}$", "$10^4$", "$10^{4.5}$", "$10^5$"])  
+    ax_fmm[m[j][0]][m[j][1]].set_xticks([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0])
+    ax_fmm[m[j][0]][m[j][1]].set_xticklabels(["$10^2$", "$10^{2.5}$", "$10^3$", "$10^{3.5}$", "$10^4$", "$10^{4.5}$", "$10^5$"])    
+      
+    # Axis labels.
+    ax_da[m[j][0]][m[j][1]].set_xlabel('Number of vertices')
+    ax_fmm[m[j][0]][m[j][1]].set_xlabel('Number of vertices')
+    if j == 1:
+        ax_da[m[j][0]][m[j][1]].set_ylabel('Distance (km)')
+        ax_fmm[m[j][0]][m[j][1]].set_ylabel('Distance (km)')
+    else:
+        ax_da[m[j][0]][m[j][1]].set_ylabel('Distance')
+        ax_fmm[m[j][0]][m[j][1]].set_ylabel('Distance')
     
+    # Label using shape names.
+    ax_da[m[j][0]][m[j][1]].text(0.5,-0.42, shape_label[j], ha="center",  transform=ax_da[m[j][0]][m[j][1]].transAxes)
+    ax_fmm[m[j][0]][m[j][1]].text(0.5, -0.42, shape_label[j], ha="center",  transform=ax_fmm[m[j][0]][m[j][1]].transAxes)
+    ax_da[m[j][0]][m[j][1]].text(0.5, 1.05, shape_name[j], ha="center",  transform=ax_da[m[j][0]][m[j][1]].transAxes)
+    ax_fmm[m[j][0]][m[j][1]].text(0.5, 1.05, shape_name[j], ha="center",  transform=ax_fmm[m[j][0]][m[j][1]].transAxes)
+    
+    ax_da[m[j][0]][m[j][1]].spines['top'].set_visible(False)
+    ax_fmm[m[j][0]][m[j][1]].spines['top'].set_visible(False)  
+    ax_da[m[j][0]][m[j][1]].spines['right'].set_visible(False)
+    ax_fmm[m[j][0]][m[j][1]].spines['right'].set_visible(False)   
+       
+# Add legend in final ax slot.
+x = -1
+y = -1
+j = 5
+
+ax_da[m[j][0]][m[j][1]].scatter(x, y, c="none", edgecolor="c", marker="s", s = ms, label = "Dijkstra (polar 4)")
+ax_da[m[j][0]][m[j][1]].scatter(x, y, c="none", edgecolor="b", marker="o", s = ms, label = "Dijkstra (polar 8)")
+ax_da[m[j][0]][m[j][1]].scatter(x, y, c="none", edgecolor=og, marker="^", s = ms, label = "Dijkstra (icosahedral)")
+ax_da[m[j][0]][m[j][1]].scatter(x, y, c="none", edgecolor="r", marker="v", s = ms, label = "Dijkstra (split icosahedral)")
+ax_da[m[j][0]][m[j][1]].plot([-2, -1], [-2, -1], 'k', linestyle="dotted", label = "True distance")
+ax_da[m[j][0]][m[j][1]].plot(x, y, 'k', linestyle="solid", label = "GeographicLib")
+ax_da[m[j][0]][m[j][1]].plot(x, y, 'k', linestyle="dashed", label = "Boundary value method")
+ax_da[m[j][0]][m[j][1]].plot(x, y, 'k', linestyle="dashdot", label = "Taxicab distance")
+
+ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c="c", edgecolor="c", marker="s", s = ms, label = "FMM (polar 4)")
+ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c="b", edgecolor="b", marker="o", s = ms, label = "FMM (polar 8)")
+ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c=og, edgecolor=og, marker="^", s = ms, label = "FMM (icosahedral)")
+ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c="r", edgecolor="r", marker="v", s = ms, label = "FMM (split icosahedral)")
+ax_fmm[m[j][0]][m[j][1]].plot([-2, -1], [-2, -1], 'k', linestyle="dotted", label = "True distance")
+ax_fmm[m[j][0]][m[j][1]].plot(x, y, 'k', linestyle="solid", label = "GeographicLib")
+ax_fmm[m[j][0]][m[j][1]].plot(x, y, 'k', linestyle="dashed", label = "Boundary value method")
+
+
+ax_da[m[j][0]][m[j][1]].legend(loc="center left")   
+ax_fmm[m[j][0]][m[j][1]].legend(loc="center left")
+
+ax_da[m[j][0]][m[j][1]].axis('off') 
+ax_fmm[m[j][0]][m[j][1]].axis('off')  
+
+plt.figure(fig_da.number)  
+plt.legend(frameon=False)
+plt.xlim([0, 1])  
+plt.ylim([0, 1]) 
+plt.subplots_adjust(hspace=0.7, wspace=0.5)
+
+plt.figure(fig_fmm.number)  
+plt.legend(frameon=False)
+plt.xlim([0, 1])  
+plt.ylim([0, 1]) 
+plt.subplots_adjust(hspace=0.7, wspace=0.5)
+ 
+
+    
+
+if save_on == True:
+    fig_da.savefig("figures/im_distance_dijkstra_vs_resolution.pdf", format='pdf', bbox_inches='tight')   
+    fig_fmm.savefig("figures/im_distance_fmm_vs_resolution.pdf", format='pdf', bbox_inches='tight') 
     
     
 

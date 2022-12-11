@@ -104,10 +104,6 @@ def fast_marching_update(visit, trial, vertex, fmm, order):
     
     
 def get_supporting_vertex(visit, trial, vertex, fmm):
-    #v3 = [key for key in vertex[visit].neighbour[trial].face_angle]
-    #v1 = v3[0]
-    #v2 = v3[1]
-    #print([visit, trial])
     v1 = vertex[visit].neighbour[trial].face[0]
     v2 = vertex[visit].neighbour[trial].face[1]
     # Are these vertices accepted?

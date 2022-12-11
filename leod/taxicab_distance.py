@@ -25,13 +25,13 @@ def taxicab_sphere(r, theta_0, phi_0, theta_1, phi_1):
 
 # Calculate taxicab distance between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a spheroid of axes a and b (with b the distinct axis).
-def taxicab_spheroid(a, b, theta_0, phi_0, theta_1, phi_1):
+def taxicab_spheroid(a, c, theta_0, phi_0, theta_1, phi_1):
     pi_by_2 = math.pi/2.0
-    if b > a: # Prolate
-        k2 = 1 - a*a/(b*b)
-        d_theta = b * math.fabs((ellipeinc(theta_1-pi_by_2, k2) - ellipeinc(theta_0-pi_by_2, k2)))
+    if c > a: # Prolate
+        k2 = 1 - a*a/(c*c)
+        d_theta = c * math.fabs((ellipeinc(theta_1-pi_by_2, k2) - ellipeinc(theta_0-pi_by_2, k2)))
     else: # Oblate
-        k2 = 1 - b*b/(a*a)
+        k2 = 1 - c*c/(a*a)
         d_theta = a * math.fabs((ellipeinc(theta_1, k2) - ellipeinc(theta_0, k2)))
     
     if math.fabs(theta_0 - pi_by_2) > math.fabs(theta_1 - pi_by_2):
@@ -45,7 +45,7 @@ def taxicab_spheroid(a, b, theta_0, phi_0, theta_1, phi_1):
 
 
 import leod
-s = leod.ellipsoid_shape.EllipsoidShape(2.0, 2.0, 1.0)
+s = leod.ellipsoid_shape.EllipsoidShape(1.0, 1.0, 1.0)
 s.normalise()
 start_point = [50.0, 60.0]
 end_point = [90.0, 0.0]
