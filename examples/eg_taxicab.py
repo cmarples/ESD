@@ -12,33 +12,33 @@ import os
 
 os.chdir("..")
 
-dijkstra_flag = True
+dijkstra_flag = False
 
 conv = math.pi / 180.0 # Degrees to radians.
 start_point = [50.0*conv, 60.0*conv]
 end_point = [90.0*conv, 0.0*conv]
 
-### Sphere
-
-# Taxicab
-sphere = leod.shape.EllipsoidShape(1.0)
-d_taxi_sphere = leod.geo.taxicab.sphere_td(sphere.a_axis, start_point, end_point)
+### Taxicab distances
+# Sphere
+sphere = leod.shape.EllipsoidShape(1.0, 1.0, 1.0)
+d_taxi_sphere = leod.geo.taxicab.sphere_td(sphere.a_axis, start_point, end_point, True)
 print("")
-print("Sphere:             taxicab distance =", d_taxi_sphere)
+print("Sphere:             taxicab distance =", d_taxi_sphere[0])
 
-### Spheroid
+# Spheroid
 sph = leod.shape.EllipsoidShape(2.0, 2.0, 1.0)
 sph.normalise()
-d_taxi_spheroid = leod.geo.taxicab.spheroid_td(sph.a_axis, sph.c_axis, start_point, end_point)
-print("Oblate spheroid:    taxicab distance =", d_taxi_spheroid)
+d_taxi_spheroid = leod.geo.taxicab.spheroid_td(sph.a_axis, sph.c_axis, start_point, end_point, True)
+print("Oblate spheroid:    taxicab distance =", d_taxi_spheroid[0])
 
-### Triaxial
+# Triaxial
 tri = leod.shape.EllipsoidShape(3.0, 2.0, 1.0)
 tri.normalise()
-d_taxi_triaxial = leod.geo.taxicab.triaxial_td(tri.a_axis, tri.b_axis, tri.c_axis, start_point, end_point)
-print("Triaxial ellipsoid: taxicab distance =", d_taxi_triaxial)
+d_taxi_tri = leod.geo.taxicab.triaxial_td(tri, start_point, end_point)
+print("Triaxial ellipsoid: taxicab distance =", d_taxi_tri)
 print("")
 
+### Dijkstra's algorithm (optional)
 if dijkstra_flag == True:
     
     no_theta = 91
