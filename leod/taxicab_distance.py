@@ -45,7 +45,7 @@ def taxicab_spheroid(a, c, theta_0, phi_0, theta_1, phi_1):
 
 
 import leod
-s = leod.ellipsoid_shape.EllipsoidShape(1.0, 1.0, 1.0)
+s = leod.shape.EllipsoidShape(2.0, 2.0, 1.0)
 s.normalise()
 start_point = [50.0, 60.0]
 end_point = [90.0, 0.0]

@@ -196,7 +196,7 @@ def plot_map_ellipsoid(ax, d_mat, d2, a, b, c, cmap, norm):
     ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=cmap, linewidth=0, antialiased=True,
                            facecolors=cmap(norm(strength)))
     ax.scatter(a+0.1, 0, 0, color='k', marker='*', s=12)
-    ax.set_box_aspect((a, b, c))
+    ax.set_box_aspect((1,1,1))
     ax.set_axis_off()
 
 

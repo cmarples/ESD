@@ -83,6 +83,7 @@ lim = 1.4
 ax[0].set_xlim([-lim, lim])
 ax[0].set_ylim([-lim, lim])
 ax[0].set_zlim([-lim, lim])
+ax[0].set_box_aspect((1.0, 1.0, 1.0))
 
 ax[0].axis('off')
 #ax[0].title.set_text('(a)', y=-0.01)
@@ -158,10 +159,12 @@ for i in range(len(vertex)):
                         
                     ax[2].add_collection3d(srf)
                     ico_index += 1
+
 limit = 0.9
 ax[2].set_xlim([-limit, limit])
 ax[2].set_ylim([-limit, limit])
 ax[2].set_zlim([-limit, limit])
+ax[2].set_box_aspect((1.0, 1.0, 1.0))
 ax[2].axis('off')
 ax[2].set_title('(c)', y=-0.01, fontsize=10)
 
@@ -196,10 +199,11 @@ for i in range(len(vertex)):
                     ax[3].add_collection3d(srf)
                     ico_index += 1
                     
-limit = 1.6
+limit = 1.7
 ax[3].set_xlim([-limit, limit])
 ax[3].set_ylim([-limit, limit])
 ax[3].set_zlim([-limit, limit])
+ax[3].set_box_aspect((1.0, 1.0, 1.0))
 ax[3].axis('off')
 ax[3].set_title('(d)', y=-0.01, fontsize=10)
 

@@ -162,18 +162,23 @@ for i in range(no_vertices):
             
             
     
-    ax[1].scatter(vertex[i].carts[0], vertex[i].carts[1], vertex[i].carts[2], color='b', s=6)
+    ax[1].scatter(vertex[i].carts[0], vertex[i].carts[1], vertex[i].carts[2], color='b', s=9)
     
+# Include axis directions
+lim = a + 1.0
+ax[1].plot([-lim, lim], [0, 0], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[1].plot([0, 0], [-lim, lim], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[1].plot([0, 0], [0, 0], [-2.7, 2.5], color=[0.7,0.7,0.7], linestyle='-')
         
-        
-ax[1].view_init(elev=40., azim=61)
+ax[1].view_init(elev=30, azim=60)
 # Set axis limits - make all of them the same to get same scaling
 #m = max([a, b, c])
-m = 1.6
+m = 1.8
 ax[1].set_xlim3d(-m, m)
 ax[1].set_ylim3d(-m, m)
 ax[1].set_zlim3d(-m, m)
 
+ax[1].set_box_aspect((1,1,1))
 # Remove axes
 ax[1].axis('off')
 ax[1].set_title('(b)', y=-0.2, fontsize=10)

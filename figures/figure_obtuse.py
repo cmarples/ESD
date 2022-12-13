@@ -121,10 +121,17 @@ for i in range(no_vertices):
                 srf = Poly3DCollection(verts, alpha=1.0, facecolor=face_col, edgecolor='k')
                 ax[0].add_collection3d(srf)
 
-limit = 1.6
+# Include axis directions
+ax[0].plot([-3.8, 4.0], [0, 0], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[0].plot([0, 0], [-3.2, 3.2], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[0].plot([0, 0], [0, 0], [-2.0, 1.8], color=[0.7,0.7,0.7], linestyle='-')
+
+limit = 1.7
 ax[0].set_xlim([-limit, limit])
 ax[0].set_ylim([-limit, limit])
 ax[0].set_zlim([-limit, limit])
+ax[0].set_box_aspect((1, 1, 1))
+ax[0].view_init(elev=23, azim=-45)
 ax[0].set_title('(a)', y=-0.01, fontsize=10)
 ax[0].set_axis_off()
 
@@ -218,11 +225,18 @@ for i in range(len(vertex2)):
                         face_col = [1 - (alpha_max-75.0)/90.0, 1 - (alpha_max-75.0)/90.0, 1]
                         srf = Poly3DCollection(verts, alpha=1.0, facecolor=face_col, edgecolor='k')
                         ax[2].add_collection3d(srf)
+
+# Include axis directions
+ax[2].plot([-3.8, 4.0], [0, 0], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[2].plot([0, 0], [-3.2, 3.2], [0, 0], color=[0.7,0.7,0.7], linestyle='-')
+ax[2].plot([0, 0], [0, 0], [-2.0, 1.8], color=[0.7,0.7,0.7], linestyle='-')
                     
-limit = 1.6
+limit = 1.7
 ax[2].set_xlim([-limit, limit])
 ax[2].set_ylim([-limit, limit])
 ax[2].set_zlim([-limit, limit])
+ax[2].set_box_aspect((1, 1, 1))
+ax[2].view_init(elev=23, azim=-45)
 ax[2].set_title('(b)', y=-0.01, fontsize=10)
 ax[2].set_axis_off()
 
