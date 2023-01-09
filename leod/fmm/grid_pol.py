@@ -16,7 +16,7 @@ from .classes import FmmGrid
 from ..binary_search import binary_search
 from ..shape import EllipsoidShape
 
-def gen_pol_grid(no_theta=91, no_phi=180, is_connect_8=True, shape=EllipsoidShape(), is_generic=False):
+def gen_pol_grid(no_theta=91, no_phi=180, shape=EllipsoidShape(), is_connect_8=True, is_generic=False):
     
     # Create FmmGrid object (includes empty vertex list).
     grid = FmmGrid()

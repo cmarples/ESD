@@ -36,7 +36,7 @@ d_geo = ['N/A'] * 5
 d_bvm = ['N/A'] * 5
 d_taxi = ['N/A'] * 5
 rows = ['N/A'] * 5
-file_comparison = 'data/resolution/resolution_comparison.txt'
+file_comparison = 'data/geodesics/resolution/resolution_comparison.txt'
 with open(file_comparison) as f:
     csv_reader = csv.reader(f, delimiter=',')
     i = 0
@@ -59,7 +59,7 @@ no_vertices = [0] * 25
 no_vertices_polar = [0] * 25
 no_vertices_icosahedral = [0] * 25
 shape = [0] * 5
-file_number = 'data/resolution/resolution_number_of_vertices.txt'
+file_number = 'data/geodesics/resolution/resolution_number_of_vertices.txt'
 with open(file_number) as f:
     csv_reader = csv.reader(f, delimiter=',')
     i = 0
@@ -102,7 +102,7 @@ t_fmm_split = np.zeros([len(no_vertices), len(shape)])
 
 shape_name = ['sphere', 'wgs84', 'oblate', 'prolate', 'triaxial']
 for j in range(len(shape)):
-    file_shape = 'data/resolution/resolution_' + shape_name[j] + '.txt'
+    file_shape = 'data/geodesics/resolution/resolution_' + shape_name[j] + '.txt'
     rows = ['N/A'] * 25
     with open(file_shape) as f:
         csv_reader = csv.reader(f, delimiter=',')
@@ -159,8 +159,7 @@ for j in range(5):
             ax_fmm[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_geo[j]]*25, 'k', linestyle="solid", linewidth=lw)
         ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_bvm[j]]*25, 'k', linestyle="dashed", linewidth=lw)
         ax_fmm[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_bvm[j]]*25, 'k', linestyle="dashed", linewidth=lw)
-    if j < 4:
-        ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_taxi[j]]*25, 'k', linestyle="dashdot", linewidth=lw)
+    ax_da[m[j][0]][m[j][1]].plot(np.log10(no_vertices), [d_taxi[j]]*25, 'k', linestyle="dashdot", linewidth=lw)
         
     ax_da[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_dijkstra_4[:, j], c="none", edgecolor="c", marker="s", s=ms)
     ax_da[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar), d_dijkstra_8[:, j], c="none", edgecolor="b", marker="o", s=ms)
@@ -174,12 +173,12 @@ for j in range(5):
     else:
         # Plot icosahedral triangulation distances, avoiding repetition when splitting has no effect.
         for i in range(25):
-            ax_da[m[j][0]][m[j][1]].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor=og, marker="^", s=ms)
-            ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_split[i, j], c="r", edgecolor="r", marker="v", s=ms)
+            ax_da[m[j][0]][m[j][1]].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_tri[i, j], c="none", edgecolor=og, marker="^", s=ms)
+            ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_tri[i, j], c=og, edgecolor=og, marker="^", s=ms)
             if d_dijkstra_tri[i, j] != d_dijkstra_split[i, j]:
                 ax_da[m[j][0]][m[j][1]].scatter(math.log10(no_vertices_polar[i]), d_dijkstra_split[i, j], c="none", edgecolor="r", marker="v", s=ms)
             if d_fmm_tri[i, j] != d_fmm_split[i, j]:    
-                ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_tri[i, j], c=og, edgecolor=og, marker="^", s=ms)
+                ax_fmm[m[j][0]][m[j][1]].scatter(np.log10(no_vertices_polar[i]), d_fmm_split[i, j], c="r", edgecolor="r", marker="v", s=ms)
     
     
     # Set x-axis tick labels (number of vertices).  

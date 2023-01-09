@@ -1,11 +1,23 @@
 var searchData=
 [
-  ['ico_61',['ico',['../classleod_1_1fmm__vertex_1_1FmmVertex.html#af4c802f27e687ea1328aedfd719d7dea',1,'leod::fmm_vertex::FmmVertex']]],
-  ['ico_5fface_62',['ico_face',['../classleod_1_1fmm__vertex_1_1FmmNeighbour.html#a5a4106f33255c80d18d177df0b319ada',1,'leod::fmm_vertex::FmmNeighbour']]],
-  ['index_63',['index',['../classleod_1_1fmm__vertex_1_1FmmVertex.html#a6784e1c334dfceb8f017667c0b0f6a3e',1,'leod::fmm_vertex::FmmVertex']]],
-  ['initial_5fpoint_64',['initial_point',['../namespaceleod_1_1tri__curve__tracing.html#ae9451434a95c8f20f62e86dee3e41227',1,'leod::tri_curve_tracing']]],
-  ['is_5fendpoint_65',['is_endpoint',['../classleod_1_1fmm__vertex_1_1FmmVertex.html#a6c713c8f7c934c24e7db3a9db10c366a',1,'leod::fmm_vertex::FmmVertex']]],
-  ['is_5fprojection_5fin_5ftriangle_66',['is_projection_in_triangle',['../namespaceleod_1_1triangulation.html#a85b2e49af22af1d0e15f2e8c6c71e8e5',1,'leod::triangulation']]],
-  ['is_5fsphere_67',['is_sphere',['../classleod_1_1ellipsoid__shape_1_1EllipsoidShape.html#a3d84f03110730d44aa8ed8bb410e86c9',1,'leod::ellipsoid_shape::EllipsoidShape']]],
-  ['is_5fspheroid_68',['is_spheroid',['../classleod_1_1ellipsoid__shape_1_1EllipsoidShape.html#a3f25bb1fb2c2bdd6d37801e2ce75ed84',1,'leod::ellipsoid_shape::EllipsoidShape']]]
+  ['binary_5fsearch_69',['binary_search',['../namespaceleod_1_1binary__search.html',1,'leod']]],
+  ['callers_70',['callers',['../namespaceleod_1_1fmm_1_1callers.html',1,'leod::fmm']]],
+  ['classes_71',['classes',['../namespaceleod_1_1fmm_1_1classes.html',1,'leod::fmm']]],
+  ['fast_5fmarching_72',['fast_marching',['../namespaceleod_1_1fmm_1_1fast__marching.html',1,'leod::fmm']]],
+  ['fmm_73',['fmm',['../namespaceleod_1_1fmm.html',1,'leod']]],
+  ['geo_74',['geo',['../namespaceleod_1_1geo.html',1,'leod']]],
+  ['grid_5fico_75',['grid_ico',['../namespaceleod_1_1fmm_1_1grid__ico.html',1,'leod::fmm']]],
+  ['grid_5fpol_76',['grid_pol',['../namespaceleod_1_1fmm_1_1grid__pol.html',1,'leod::fmm']]],
+  ['grid_5fpre_77',['grid_pre',['../namespaceleod_1_1fmm_1_1grid__pre.html',1,'leod::fmm']]],
+  ['intersection_78',['intersection',['../namespaceleod_1_1intersection.html',1,'leod']]],
+  ['leod_79',['leod',['../namespaceleod.html',1,'']]],
+  ['newton_5fraphson_80',['newton_raphson',['../namespaceleod_1_1newton__raphson.html',1,'leod']]],
+  ['shape_81',['shape',['../namespaceleod_1_1shape.html',1,'leod']]],
+  ['sphere_82',['sphere',['../namespaceleod_1_1geo_1_1sphere.html',1,'leod::geo']]],
+  ['spheroid_83',['spheroid',['../namespaceleod_1_1geo_1_1spheroid.html',1,'leod::geo']]],
+  ['taxicab_84',['taxicab',['../namespaceleod_1_1geo_1_1taxicab.html',1,'leod::geo']]],
+  ['taxicab_5fdistance_85',['taxicab_distance',['../namespaceleod_1_1taxicab__distance.html',1,'leod']]],
+  ['triangulation_86',['triangulation',['../namespaceleod_1_1triangulation.html',1,'leod']]],
+  ['triaxial_87',['triaxial',['../namespaceleod_1_1geo_1_1triaxial.html',1,'leod::geo']]],
+  ['vertex_88',['vertex',['../namespaceleod_1_1fmm_1_1vertex.html',1,'leod::fmm']]]
 ];

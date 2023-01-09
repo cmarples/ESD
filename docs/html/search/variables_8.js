@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['phi_5flist_237',['phi_list',['../classleod_1_1fmm__polar__graph_1_1PolarGrid.html#acfea76d8f4dbb95fe7aca8a4fe23d90a',1,'leod::fmm_polar_graph::PolarGrid']]]
+  ['s_241',['s',['../namespaceleod_1_1taxicab__distance.html#a3691308f2a4c2f6983f2880d32e29c84',1,'leod::taxicab_distance']]],
+  ['start_5fpoint_242',['start_point',['../namespaceleod_1_1taxicab__distance.html#abedb882e383f0b362845f0aea13ad1e9',1,'leod::taxicab_distance']]]
 ];

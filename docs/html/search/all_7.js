@@ -1,13 +1,17 @@
 var searchData=
 [
-  ['generate_5fpolar_5fgraph_50',['generate_polar_graph',['../namespaceleod_1_1fmm__polar__graph.html#acf4129490e9e82d565813e5cbf79d680',1,'leod::fmm_polar_graph']]],
-  ['get_5fadjacent_5fphi_51',['get_adjacent_phi',['../namespaceleod_1_1fmm__polar__graph.html#a17e40b06e7ab33ae8e5ac181d1b1897c',1,'leod::fmm_polar_graph']]],
-  ['get_5fangle_52',['get_angle',['../namespaceleod_1_1fmm__vertex.html#a58e1eda632a541b70435379045ce9054',1,'leod::fmm_vertex']]],
-  ['get_5fdistance_53',['get_distance',['../namespaceleod_1_1fmm__vertex.html#a5ca1d936727c786534b50aa43ce204cd',1,'leod::fmm_vertex']]],
-  ['get_5fphi_5findex_54',['get_phi_index',['../namespaceleod_1_1fmm__polar__graph.html#ae65fe5c4cb41aa3db0d0a6fa579bac10',1,'leod::fmm_polar_graph']]],
-  ['get_5fsupporting_5fvertex_55',['get_supporting_vertex',['../namespaceleod_1_1fmm__fast__marching.html#a869b5f1d43603d9fc240d50391ebab35',1,'leod::fmm_fast_marching']]],
-  ['get_5ftheta_5findex_56',['get_theta_index',['../namespaceleod_1_1fmm__polar__graph.html#a411a5e4b99f1952d1b015eb344edf743',1,'leod::fmm_polar_graph']]],
-  ['get_5fvertex_5findex_57',['get_vertex_index',['../namespaceleod_1_1fmm__polar__graph.html#a1f688eb37f697c09748e661028e2fda3',1,'leod::fmm_polar_graph']]],
-  ['great_5fcircle_5fdistance_58',['great_circle_distance',['../namespaceleod_1_1sphere__geodesics.html#a2ee88e6b110ef9cd708aef5712647cff',1,'leod::sphere_geodesics']]],
-  ['great_5fcircle_5fpath_59',['great_circle_path',['../namespaceleod_1_1sphere__geodesics.html#a20c11d601f81ff56f554d9da648380e8',1,'leod::sphere_geodesics']]]
+  ['gc_5fdist_47',['gc_dist',['../namespaceleod_1_1geo_1_1sphere.html#a10e5f46e3121a0cc0592c3b7f6f33aab',1,'leod::geo::sphere']]],
+  ['gc_5fpath_48',['gc_path',['../namespaceleod_1_1geo_1_1sphere.html#af29aa83325f4d0aa1d93c5b9aea9d176',1,'leod::geo::sphere']]],
+  ['gen_5fico_5fgrid_49',['gen_ico_grid',['../namespaceleod_1_1fmm_1_1grid__ico.html#acde0fb38d67d3146319b27ccabccbfd4',1,'leod::fmm::grid_ico']]],
+  ['gen_5fpol_5fgrid_50',['gen_pol_grid',['../namespaceleod_1_1fmm_1_1grid__pol.html#a92b32d0610fc3150cdd075190f3c6f90',1,'leod::fmm::grid_pol']]],
+  ['geo_5fdist_51',['geo_dist',['../namespaceleod_1_1geo_1_1spheroid.html#a6526eedc0e44fed9b366a431720b3dd0',1,'leod::geo::spheroid']]],
+  ['get_5fadjacent_5fphi_52',['get_adjacent_phi',['../namespaceleod_1_1fmm_1_1grid__pol.html#ae0d84edb5282bd3ab40f23c931e61ab7',1,'leod::fmm::grid_pol']]],
+  ['get_5fphi_5findex_53',['get_phi_index',['../namespaceleod_1_1fmm_1_1grid__pol.html#ad20c294eaa7cbd7ca6f4265015b4e325',1,'leod::fmm::grid_pol']]],
+  ['get_5fsupporting_5fvertex_54',['get_supporting_vertex',['../namespaceleod_1_1fmm_1_1fast__marching.html#af293c1e200146e46cd073e13e8c0f638',1,'leod::fmm::fast_marching']]],
+  ['get_5ftheta_5findex_55',['get_theta_index',['../namespaceleod_1_1fmm_1_1grid__pol.html#a08c6947eb36f64129dc3989bc02d41a8',1,'leod::fmm::grid_pol']]],
+  ['get_5fvertex_5findex_56',['get_vertex_index',['../namespaceleod_1_1fmm_1_1grid__pol.html#aaaf8c912fafc6b0fafd36a0a759e685b',1,'leod::fmm::grid_pol']]],
+  ['grid_5fico_2epy_57',['grid_ico.py',['../grid__ico_8py.html',1,'']]],
+  ['grid_5fpol_2epy_58',['grid_pol.py',['../grid__pol_8py.html',1,'']]],
+  ['grid_5fpre_2epy_59',['grid_pre.py',['../grid__pre_8py.html',1,'']]],
+  ['grid_5fprecalculate_60',['grid_precalculate',['../namespaceleod_1_1fmm_1_1grid__pre.html#aa9d17f8f65f1690003bf5b75b3669ca0',1,'leod::fmm::grid_pre']]]
 ];

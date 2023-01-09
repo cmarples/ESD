@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Dec  2 16:15:35 2022
-
-@author: Callum Marples
-
-Generate figure showing the definition of the theta-phi mesh.
-
-This is Figure 1 of the Geodesic Paper.
-"""
+##
+# ellipsoid_shape.py
+#
+# Generate figure showing the definition of the theta-phi mesh.
+# This is Figure 1 of the Geodesic Paper.
+#
+# - Created by Callum Marples on 02/12/2022.
+# - Last modified on 14/12/2022.
 
 import leod
 import numpy as np
@@ -17,7 +15,7 @@ from figure_size import set_size
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-save_on = True
+save_on = False
 plt.style.use('tex')
 fig_width = 345.0
 
@@ -119,42 +117,42 @@ Z = c * np.cos(TH)
 
 #ax[1].plot_surface(X, Y, Z, color='k', linewidth=0, alpha=0.1)
 
-shape = leod.ellipsoid_shape.EllipsoidShape(a, b, c)
+shape = leod.shape.EllipsoidShape(a, b, c)
 no_theta = 15
 no_phi = 16
-vertex, polar_grid = leod.fmm_polar_graph.generate_polar_graph(shape, no_theta, no_phi, is_connect_8=True)
-no_vertices = len(vertex)
+grid = leod.fmm.grid_pol.gen_pol_grid(no_theta, no_phi, is_connect_8=True, shape=shape)
+no_vertices = grid.no_vertices
 
-for i in range(no_vertices):
+for i in range(grid.no_vertices):
     
-    if i == 0 or i == len(vertex)-1:
-        for j in vertex[i].neighbour.keys():
+    if i == 0 or i == grid.no_vertices-1:
+        for j in grid.vertex[i].neighbour.keys():
 
-            for k in vertex[i].neighbour[j].face:
+            for k in grid.vertex[i].neighbour[j].face:
 
-                x = [vertex[i].carts[0], vertex[j].carts[0], vertex[k].carts[0]]
-                y = [vertex[i].carts[1], vertex[j].carts[1], vertex[k].carts[1]]
-                z = [vertex[i].carts[2], vertex[j].carts[2], vertex[k].carts[2]]
+                x = [grid.vertex[i].carts[0], grid.vertex[j].carts[0], grid.vertex[k].carts[0]]
+                y = [grid.vertex[i].carts[1], grid.vertex[j].carts[1], grid.vertex[k].carts[1]]
+                z = [grid.vertex[i].carts[2], grid.vertex[j].carts[2], grid.vertex[k].carts[2]]
                 verts = [list(zip(x, y, z))]
                 
                 srf = Poly3DCollection(verts, alpha=1.0, facecolor=[0.9, 0.9, 0.9], edgecolor='k')
                 ax[1].add_collection3d(srf)
     
     else:
-        th = leod.fmm_polar_graph.get_theta_index(i, no_vertices, no_theta, no_phi)
+        th = leod.fmm.grid_pol.get_theta_index(i, grid.no_vertices, no_theta, no_phi)
         if th < no_theta - 2:
-            ph = leod.fmm_polar_graph.get_phi_index(i, th, no_phi)
+            ph = leod.fmm.grid_pol.get_phi_index(i, th, no_phi)
             ph_1 = ph + 1
             if ph_1 == no_phi:
                 ph_1 -= no_phi
             th_1 = th + 1
-            j = leod.fmm_polar_graph.get_vertex_index(th, ph_1, no_vertices, no_theta, no_phi)
-            k = leod.fmm_polar_graph.get_vertex_index(th_1, ph, no_vertices, no_theta, no_phi)
-            l = leod.fmm_polar_graph.get_vertex_index(th_1, ph_1, no_vertices, no_theta, no_phi)
+            j = leod.fmm.grid_pol.get_vertex_index(th, ph_1, grid.no_vertices, no_theta, no_phi)
+            k = leod.fmm.grid_pol.get_vertex_index(th_1, ph, grid.no_vertices, no_theta, no_phi)
+            l = leod.fmm.grid_pol.get_vertex_index(th_1, ph_1, grid.no_vertices, no_theta, no_phi)
             
-            x = [vertex[i].carts[0], vertex[j].carts[0], vertex[l].carts[0], vertex[k].carts[0]]
-            y = [vertex[i].carts[1], vertex[j].carts[1], vertex[l].carts[1], vertex[k].carts[1]]
-            z = [vertex[i].carts[2], vertex[j].carts[2], vertex[l].carts[2], vertex[k].carts[2]]
+            x = [grid.vertex[i].carts[0], grid.vertex[j].carts[0], grid.vertex[l].carts[0], grid.vertex[k].carts[0]]
+            y = [grid.vertex[i].carts[1], grid.vertex[j].carts[1], grid.vertex[l].carts[1], grid.vertex[k].carts[1]]
+            z = [grid.vertex[i].carts[2], grid.vertex[j].carts[2], grid.vertex[l].carts[2], grid.vertex[k].carts[2]]
             verts = [list(zip(x, y, z))]
             
             srf = Poly3DCollection(verts, alpha=1.0, facecolor=[0.9, 0.9, 0.9], edgecolor='k')
@@ -162,7 +160,7 @@ for i in range(no_vertices):
             
             
     
-    ax[1].scatter(vertex[i].carts[0], vertex[i].carts[1], vertex[i].carts[2], color='b', s=9)
+    ax[1].scatter(grid.vertex[i].carts[0], grid.vertex[i].carts[1], grid.vertex[i].carts[2], color='b', s=9)
     
 # Include axis directions
 lim = a + 1.0
@@ -186,4 +184,4 @@ ax[1].set_title('(b)', y=-0.2, fontsize=10)
 fig.subplots_adjust(hspace=0.5,wspace=0.1)
 
 if save_on:
-    fig.savefig('im_polar_mesh.pdf', format='pdf', bbox_inches='tight')
+    fig.savefig('im_grid_polar.pdf', format='pdf', bbox_inches='tight')

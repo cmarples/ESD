@@ -53,8 +53,8 @@ t_ellipsoid = [0] * n_ends
 ### Generate meshes
 
 # Shapes
-shape1 = leod.ellipsoid_shape.EllipsoidShape(1.0, 1.0, 1.0)
-shape2 = leod.ellipsoid_shape.EllipsoidShape(3.0, 2.0, 1.0)
+shape1 = leod.shape.EllipsoidShape(1.0, 1.0, 1.0)
+shape2 = leod.shape.EllipsoidShape(3.0, 2.0, 1.0)
 shape2.normalise()
 
 # Mesh resolution
@@ -76,71 +76,61 @@ no_vertices_polar = no_phi*(no_theta-2) + 2
 
 # Polar meshes
 tic = time.perf_counter()
-vertex_polar1, polar_grid1 = leod.fmm_polar_graph.generate_polar_graph(shape1, no_theta, no_phi, is_connect_8=True)
-leod.fmm_precalculation.precalculate_grid(vertex_polar1)
+grid_pol1 = leod.fmm.grid_pol.gen_pol_grid(no_theta, no_phi, shape1, is_connect_8=True)
 toc = time.perf_counter()
 t_polar1_gen = toc - tic
 print('Run-time (sphere polar generation) =', t_polar1_gen)
 
 tic = time.perf_counter()
-vertex_polar2, polar_grid2 = leod.fmm_polar_graph.generate_polar_graph(shape2, no_theta, no_phi, is_connect_8=True)
-leod.fmm_precalculation.precalculate_grid(vertex_polar2)
+grid_pol2 = leod.fmm.grid_pol.gen_pol_grid(no_theta, no_phi, shape2, is_connect_8=True)
 toc = time.perf_counter()
 t_polar2_gen = toc - tic
 print('Run-time (triaxial polar generation) =', t_polar2_gen)
 
 # Icosahedral meshes
 tic = time.perf_counter()
-vertex_ico1 = leod.triangulation_sphere.triangulate_sphere(1.0, no_divisions)
-leod.fmm_precalculation.precalculate_grid(vertex_ico1)
+grid_ico1 = leod.fmm.grid_ico.gen_ico_grid(no_divisions, shape1, is_generic=False)
 toc = time.perf_counter()
 t_ico1_gen = toc - tic
 print('Run-time (sphere icosahedral triangulation generation) =', t_ico1_gen)
 
 tic = time.perf_counter()
-vertex_ico2 = leod.triangulation_sphere.triangulate_sphere(1.0, no_divisions)
-for k in range(len(vertex_ico2)):
-    vertex_ico2[k].carts[0] *= shape2.a_axis
-    vertex_ico2[k].carts[1] *= shape2.b_axis
-    vertex_ico2[k].carts[2] *= shape2.c_axis
-leod.fmm_precalculation.precalculate_grid(vertex_ico2)
-leod.fmm_precalculation.split_obtuse_angles(vertex_ico2)                            
+grid_ico2 = leod.fmm.grid_ico.gen_ico_grid(no_divisions, shape2, is_generic=False)
+leod.fmm.grid_pre.split_obtuse_angles(grid_ico2.vertex)                           
 toc = time.perf_counter()
 t_ico2_gen = toc - tic
 print('Run-time (triaxial icosahedral triangulation generation) =', t_ico2_gen)
                             
 ### Sphere data (polar)
 tic = time.perf_counter()
-d_polar1, fmm_polar1 = leod.fmm_callers.calculate_distances(shape1, vertex_polar1, start_point, end_point, 1,
-                                                            graph_type="polar", grid=polar_grid1)
+d_polar1, fmm_polar1 = leod.fmm.callers.calculate_distances(shape1, grid_pol1, start_point, end_point, is_dijkstra=False)
 toc = time.perf_counter()
 t_polar1_fmm = toc - tic
 print('Run-time (sphere polar fmm) =', t_polar1_fmm)
 
 ### Sphere data (icosahedral)
 tic = time.perf_counter()
-d_ico1, fmm_ico1 = leod.fmm_callers.calculate_distances(shape1, vertex_ico1, start_point, end_point, 1)
+d_ico1, fmm_ico1 = leod.fmm.callers.calculate_distances(shape1, grid_ico1, start_point, end_point, is_dijkstra=False)
 toc = time.perf_counter()
 t_ico1_fmm = toc - tic
 print('Run-time (sphere icosahedral triangulation fmm) =', t_ico1_fmm)
 
 ### Ellipsoid data (polar)
 tic = time.perf_counter()
-d_polar2, fmm_polar2 = leod.fmm_callers.calculate_distances(shape2, vertex_polar2, start_point, end_point, 1,
-                                                            graph_type="polar", grid=polar_grid2)
+d_polar2, fmm_polar2 = leod.fmm.callers.calculate_distances(shape2, grid_pol2, start_point, end_point, is_dijkstra=False)
 toc = time.perf_counter()
 t_polar2_fmm = toc - tic
 print('Run-time (triaxial polar fmm) =', t_polar2_fmm)
 
 ### Ellipsoid data (icosahedral)
 tic = time.perf_counter()
-d_ico2, fmm_ico2 = leod.fmm_callers.calculate_distances(shape2, vertex_ico2, start_point, end_point, 1)
+d_ico2, fmm_ico2 = leod.fmm.callers.calculate_distances(shape2, grid_ico2, start_point, end_point, is_dijkstra=False)
 toc = time.perf_counter()
 t_ico2_fmm = toc - tic
 print('Run-time (triaxial icosahedral triangulation fmm) =', t_ico2_fmm)
 
 ### Write to file
-file_name = 'data/geodesics/single_source_fast_marching.txt'
+file_name = 'data/geodesics/single_source/single_source_fast_marching.txt'
 with open(file_name, mode="w", newline='') as f:
     writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for k in range(n_ends):

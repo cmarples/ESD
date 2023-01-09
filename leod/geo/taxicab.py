@@ -12,7 +12,7 @@ from ..intersection import ellipsoid_plane
 
 # Calculate taxicab distance between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a sphere of radius r.
-def sphere_td(r, start, end, out_flag=False):
+def sphere_tcd(r, start, end, out_flag=False):
     pi_by_2 = math.pi/2.0
     d_theta = r * math.fabs(end[0]-start[0])
     if math.fabs(start[0] - pi_by_2) > math.fabs(end[0] - pi_by_2):
@@ -27,15 +27,12 @@ def sphere_td(r, start, end, out_flag=False):
 
 # Calculate taxicab distance between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a spheroid of axes a and b (with b the distinct axis).
-def spheroid_td(a, c, start, end, out_flag=False):
+def spheroid_tcd(a, c, start, end, out_flag=False):
     pi_by_2 = math.pi/2.0
-    if c > a: # Prolate
-        k2 = 1.0 - a*a/(c*c)
-        d_theta = c * math.fabs((ellipeinc(end[0]-pi_by_2, k2) - ellipeinc(start[0]-pi_by_2, k2)))
-    else: # Oblate
-        k2 = 1.0 - c*c/(a*a)
-        d_theta = a * math.fabs((ellipeinc(end[0], k2) - ellipeinc(start[0], k2)))
-    
+
+    k2 = 1.0 - c*c/(a*a)
+    d_theta = a * math.fabs((ellipeinc(end[0], k2) - ellipeinc(start[0], k2)))
+
     if math.fabs(start[0] - pi_by_2) > math.fabs(end[0] - pi_by_2):
         sin_theta = math.sin(start[0])
     else:
@@ -46,7 +43,7 @@ def spheroid_td(a, c, start, end, out_flag=False):
     else:
         return d_theta + d_phi
 
-def triaxial_td(shape, start, end, out_flag=False):
+def triaxial_tcd(shape, start, end, out_flag=False):
     # Constant theta distance
     pi_by_2 = math.pi/2.0
     

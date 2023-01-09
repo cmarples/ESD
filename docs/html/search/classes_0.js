@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ellipsoidshape_121',['EllipsoidShape',['../classleod_1_1ellipsoid__shape_1_1EllipsoidShape.html',1,'leod::ellipsoid_shape']]]
+  ['ellipsoidshape_123',['EllipsoidShape',['../classleod_1_1shape_1_1EllipsoidShape.html',1,'leod::shape']]]
 ];

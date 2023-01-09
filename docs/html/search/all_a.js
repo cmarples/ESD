@@ -1,20 +1,10 @@
 var searchData=
 [
-  ['binary_5fsearch_69',['binary_search',['../namespaceleod_1_1binary__search.html',1,'leod']]],
-  ['ellipsoid_5fshape_70',['ellipsoid_shape',['../namespaceleod_1_1ellipsoid__shape.html',1,'leod']]],
-  ['fmm_5fcallers_71',['fmm_callers',['../namespaceleod_1_1fmm__callers.html',1,'leod']]],
-  ['fmm_5ffast_5fmarching_72',['fmm_fast_marching',['../namespaceleod_1_1fmm__fast__marching.html',1,'leod']]],
-  ['fmm_5fpolar_5fgraph_73',['fmm_polar_graph',['../namespaceleod_1_1fmm__polar__graph.html',1,'leod']]],
-  ['fmm_5fprecalculation_74',['fmm_precalculation',['../namespaceleod_1_1fmm__precalculation.html',1,'leod']]],
-  ['fmm_5fvertex_75',['fmm_vertex',['../namespaceleod_1_1fmm__vertex.html',1,'leod']]],
-  ['leod_76',['leod',['../namespaceleod.html',1,'']]],
-  ['newton_5fraphson_77',['newton_raphson',['../namespaceleod_1_1newton__raphson.html',1,'leod']]],
-  ['sphere_5fgeodesics_78',['sphere_geodesics',['../namespaceleod_1_1sphere__geodesics.html',1,'leod']]],
-  ['spheroid_5fgeodesics_79',['spheroid_geodesics',['../namespaceleod_1_1spheroid__geodesics.html',1,'leod']]],
-  ['taxicab_5fdistance_80',['taxicab_distance',['../namespaceleod_1_1taxicab__distance.html',1,'leod']]],
-  ['tri_5fcurve_5ftracing_81',['tri_curve_tracing',['../namespaceleod_1_1tri__curve__tracing.html',1,'leod']]],
-  ['triangulation_82',['triangulation',['../namespaceleod_1_1triangulation.html',1,'leod']]],
-  ['triangulation_5fedge_5fsplit_83',['triangulation_edge_split',['../namespaceleod_1_1triangulation__edge__split.html',1,'leod']]],
-  ['triangulation_5fsphere_84',['triangulation_sphere',['../namespaceleod_1_1triangulation__sphere.html',1,'leod']]],
-  ['triaxial_5fgeodesics_85',['triaxial_geodesics',['../namespaceleod_1_1triaxial__geodesics.html',1,'leod']]]
+  ['neighbour_89',['neighbour',['../classleod_1_1fmm_1_1classes_1_1FmmVertex.html#a31d7d2d390e54fc7f12aaaf8e3f3cb02',1,'leod::fmm::classes::FmmVertex']]],
+  ['neighbour_5fset_90',['neighbour_set',['../classleod_1_1fmm_1_1classes_1_1FmmVertex.html#ad8ac0e67070af052e19e0b52ed0e8ed3',1,'leod::fmm::classes::FmmVertex']]],
+  ['newton_5fraphson_91',['newton_raphson',['../namespaceleod_1_1newton__raphson.html#a5643b76beb6ae465ffd197dd886528d6',1,'leod::newton_raphson']]],
+  ['newton_5fraphson_2epy_92',['newton_raphson.py',['../newton__raphson_8py.html',1,'']]],
+  ['no_5fobtuse_93',['no_obtuse',['../classleod_1_1fmm_1_1fast__marching_1_1FmmResult.html#ab5f85c2a94d8d1d38eac07f9c1882069',1,'leod::fmm::fast_marching::FmmResult']]],
+  ['no_5fvertices_94',['no_vertices',['../classleod_1_1fmm_1_1classes_1_1FmmGrid.html#a0a82bba15ffc898928d3b1a95174ff66',1,'leod::fmm::classes::FmmGrid']]],
+  ['normalise_95',['normalise',['../classleod_1_1shape_1_1EllipsoidShape.html#a3a4800c16c3f05a256987927a3720dba',1,'leod::shape::EllipsoidShape']]]
 ];

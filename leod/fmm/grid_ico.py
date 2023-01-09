@@ -9,6 +9,7 @@ Generate sphere triangulation using the vertices of an icosahedron.
 
 import math
 import numpy as np
+import random
 from .classes import FmmVertex
 from .classes import FmmNeighbour
 from .classes import FmmGrid
@@ -277,3 +278,40 @@ def gen_ico_grid(n=50, shape=EllipsoidShape(), is_generic=False):
     grid.type = "ico"
     
     return grid
+
+# Find closest vertex to input point
+def find_closest_vertex(vertex, p, c, v=0):
+
+    d2 = {}
+    is_min_found = False
+    
+    def perform_loop(vertex, p, v, c, d2, is_min_found):
+        while is_min_found == False:
+            if v not in d2.keys():
+                vec = vertex[v].carts - p
+                d2[v] = np.dot(vec, vec)
+            u = v # Index of locally closest vertex
+            d_min = d2[v]
+            for j in vertex[v].neighbour.keys():
+                if j not in d2.keys():
+                    vec = vertex[j].carts - p
+                    d2[j] = np.dot(vec, vec)
+                if d2[j] < d_min:
+                    d_min = d2[j]
+                    u = j
+            if u == v:
+                is_min_found = True
+            else:
+                v = u
+        return v, d_min
+    
+    d_min = c*c
+    while d_min > (0.5*c*c): # REPLACE WITH MAX EDGE LENGTH!
+        v, d_min = perform_loop(vertex, p, v, c, d2, is_min_found)
+        if d_min < (0.5*c*c):
+            break
+        else:
+            # Select a random vertex for which d2 has not been calculated.
+            while v in d2.keys():
+                v = random.randint(0, len(vertex)-1)
+    return v

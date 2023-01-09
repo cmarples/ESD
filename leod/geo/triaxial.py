@@ -9,34 +9,11 @@ import math
 import numpy as np
 import scipy.integrate
 
-def solve_RK4(fun, z0, h, t, z_end, tol, n):
-    m = 0
-    diff = 1
-    # Solve for geodesic
-    while diff > tol and m < 25:
-
-        z = np.array((n+1) * [z0])
-
-        for i in range(n):
-
-            k1 = h * fun(z[i], t[i])
-            k2 = h * fun(z[i] + 0.5*k1, t[i] + 0.5*h)
-            k3 = h * fun(z[i] + 0.5*k2, t[i] + 0.5*h)
-            k4 = h * fun(z[i] + k3, t[i] + h)
-            
-            z[i+1] = z[i] + (k1 + 2*k2 + 2*k3 + k4)/6.0  
-            
-        m += 1
-        diff = z_end - z[n][0]
-        # Apply correction
-        z0[1] += diff / z[n][2]
-        # Absolute value of difference
-        diff = abs(diff)
-    
-    return z
-
-def boundary_value_method(shape, th_0, ph_0, th_1, ph_1, tol = 1e-12, Jacobi=False, n=10000):
-                    
+def bvm_dist(shape, start, end, tol = 1e-12, Jacobi=False, n=10000):
+    th_0 = start[0]
+    ph_0 = start[1]
+    th_1 = end[0]
+    ph_1 = end[1]                
     if th_0 == th_1 and ph_0 == ph_1:
         # Start and end points are hte same => distance = 0
         if Jacobi:
@@ -359,3 +336,29 @@ def boundary_value_method(shape, th_0, ph_0, th_1, ph_1, tol = 1e-12, Jacobi=Fal
             path_positions[i] = [X[i], Y[i], Z[i]]
         
         return s, path_positions
+    
+def solve_RK4(fun, z0, h, t, z_end, tol, n):
+    m = 0
+    diff = 1
+    # Solve for geodesic
+    while diff > tol and m < 25:
+
+        z = np.array((n+1) * [z0])
+
+        for i in range(n):
+
+            k1 = h * fun(z[i], t[i])
+            k2 = h * fun(z[i] + 0.5*k1, t[i] + 0.5*h)
+            k3 = h * fun(z[i] + 0.5*k2, t[i] + 0.5*h)
+            k4 = h * fun(z[i] + k3, t[i] + h)
+            
+            z[i+1] = z[i] + (k1 + 2*k2 + 2*k3 + k4)/6.0  
+            
+        m += 1
+        diff = z_end - z[n][0]
+        # Apply correction
+        z0[1] += diff / z[n][2]
+        # Absolute value of difference
+        diff = abs(diff)
+    
+    return z

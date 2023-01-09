@@ -10,13 +10,15 @@ input start/end points.
 
 from numpy import array
 from numpy import zeros
+import numpy as np
 from math import pi
 from leod.fmm.grid_pol import find_vertex_index
+from leod.fmm.grid_ico import find_closest_vertex
 from leod.fmm.fast_marching import fast_marching
 from leod.fmm.fast_marching import endpoint_distance
-from leod.triangulation import find_closest_vertex
 
-def distance_pair(shape, grid, start_point, end_point, is_radians=False, is_dijkstra=False):
+
+def distance_pair(shape, grid, start_point, end_point, is_dijkstra=False, is_radians=False):
     
     start_point_temp = [0.0, 0.0]
     end_point_temp = [0.0, 0.0]
@@ -39,8 +41,10 @@ def distance_pair(shape, grid, start_point, end_point, is_radians=False, is_dijk
         end_vertex, end_th_index, end_ph_index = find_vertex_index(grid.theta_list, grid.phi_list, end_point_temp[0], end_point_temp[1])
     else:
         # Use triangulation
-        start_vertex = find_closest_vertex(grid.vertex, array(start_carts))
-        end_vertex = find_closest_vertex(grid.vertex, array(end_carts))
+        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
+        c = np.min(abc)
+        start_vertex = find_closest_vertex(grid.vertex, array(start_carts), c)
+        end_vertex = find_closest_vertex(grid.vertex, array(end_carts), c)
     
     
     end_vertex_carts = grid.vertex[end_vertex].carts
@@ -93,7 +97,7 @@ def distance_pair(shape, grid, start_point, end_point, is_radians=False, is_dijk
 
 
 
-def calculate_distances(shape, vertex, start_point, end_point, order, graph_type="tri", grid=-1, is_radians=False):
+def calculate_distances(shape, grid, start_point, end_point, is_dijkstra=False, is_radians=False):
     
     n = len(end_point)
     
@@ -121,20 +125,22 @@ def calculate_distances(shape, vertex, start_point, end_point, order, graph_type
     
     ### Find start and end vertices
     end_vertex = [-1] * n
-    if graph_type == "polar": # Polar mesh
+    if grid.type == "pol": # Polar mesh
         start_vertex, start_th_index, st_ph_index = find_vertex_index(grid.theta_list, grid.phi_list, start_point_temp[0], start_point_temp[1])
         for i in range(n):
             end_vertex[i], end_th_index, end_ph_index = find_vertex_index(grid.theta_list, grid.phi_list, end_point_temp[i][0], end_point_temp[i][1])
     else: # Icosahedral triangulation
-        start_vertex = find_closest_vertex(vertex, array(start_carts))
+        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
+        c = np.min(abc)
+        start_vertex = find_closest_vertex(grid.vertex, array(start_carts), c)
         for i in range(n):
-            end_vertex[i] = find_closest_vertex(vertex, array(end_carts[i]))    
-    
+            end_vertex[i] = find_closest_vertex(grid.vertex, array(end_carts[i]), c)
+   
     ### Prepare end points
     end_vertex_carts = [0] * n
     is_end_interpolate = [0] * n
     for i in range(n):
-        end_vertex_carts[i] = vertex[end_vertex[i]].carts
+        end_vertex_carts[i] = grid.vertex[end_vertex[i]].carts
         # If closest vertex and endpoint are the same, no interpolation needed.
         end_diff = end_vertex_carts[i] - end_carts[i]
         end_diff = end_diff[0]*end_diff[0] + end_diff[1]*end_diff[1] + end_diff[2]*end_diff[2]
@@ -142,9 +148,17 @@ def calculate_distances(shape, vertex, start_point, end_point, order, graph_type
             is_end_interpolate[i] = True
         else:
             is_end_interpolate[i] = False    
-        
+    
+    # Find neighbours of the endpoints, to use in the stopping criterion
+    end_dict = {}
+    for i in range(n):
+        end_dict[end_vertex[i]] = False
+        if is_end_interpolate[i] == True:
+            for j in grid.vertex[end_vertex[i]].neighbour.keys():
+                end_dict[j] = False  
+            
     ### Call fast marching method
-    fmm = fast_marching(vertex, start_vertex, start_carts, order)
+    fmm = fast_marching(grid, start_vertex, start_carts, is_dijkstra, end_dict)
     
     ### Interpolate to find distance to endpoints
     d = [0.0] * n
@@ -153,7 +167,7 @@ def calculate_distances(shape, vertex, start_point, end_point, order, graph_type
             d[i] = 0.0
         else:
             if is_end_interpolate[i] == True:
-                d[i] = endpoint_distance(vertex, fmm, end_carts[i], end_vertex[i], shape)
+                d[i] = endpoint_distance(grid.vertex, fmm, end_carts[i], end_vertex[i], shape)
             else:
                 d[i] = fmm.distance[end_vertex[i]]
             

@@ -22,15 +22,19 @@ class EllipsoidShape:
     """
     def __init__(self, a=1.0, b=1.0, c=1.0):
         """! The EllipsoidShape initialiser.
-        @param a  The \f$a\f$-axis length, defaults to 1.0.
-        @param b  The \f$b\f$-axis length, defaults to 1.0.
-        @param c  The \f$c\f$-axis length, defaults to 1.0.
+        @param a : float (optional) \n
+            The \f$a\f$-axis length, defaults to 1.0.
+        @param b : float (optional) \n
+            The \f$b\f$-axis length, defaults to 1.0.
+        @param c : float (optional) \n
+            The \f$c\f$-axis length, defaults to 1.0.
         """
         self.set_axes(a, b, c)
 
     def is_sphere(self):
         """! Determines whether the shape is a sphere (i.e. \f$a=b=c\f$).
-        @return True if spherical, False if not.
+        @return bool \n
+            True if spherical, False otherwise.
         """
         if self.a_axis == self.b_axis and self.b_axis == self.c_axis:
             return True
@@ -39,7 +43,8 @@ class EllipsoidShape:
         
     def is_spheroid(self):
         """! Determines whether the shape is a spheroid (i.e. \f$a=b\f$).
-        @return True if spheroidal, False if not.
+        @return bool \n
+            True if spheroidal, False otherwise.
         """
         if self.a_axis == self.b_axis and self.a_axis != self.c_axis:
             return True
@@ -48,10 +53,14 @@ class EllipsoidShape:
         
     def set_axes(self, a, b, c, normalise=False):
         """! Set the axis lengths in the EllipsoidShape instance.
-        @param a  The \f$a\f$-axis length.
-        @param b  The \f$b\f$-axis length.
-        @param c  The \f$c\f$-axis length.
-        @param normalise  Flag to determine whether to normalise axes, defaults to False. 
+        @param a : float \n
+            The \f$a\f$-axis length.
+        @param b : float \n
+            The \f$b\f$-axis length.
+        @param c : float \n
+            The \f$c\f$-axis length.
+        @param normalise : bool (optional)
+            If True, normalise axes using the normalise() method. Defaults to False. 
         """
         # Check that the inputs are valid
         if not (isinstance(a, (int, float)) and a > 0):
@@ -80,9 +89,12 @@ class EllipsoidShape:
         
     def polar2cart(self, th, ph):
         """! Convert polar coordinates to Cartesians.
-        @param th  The \f$\theta\f$ coordinate.
-        @param ph  The \f$\phi\f$ coordinate.
-        @return  The Cartesian coordinates \f$[x,y,z]\f$ of the point.
+        @param th : float \n
+            The \f$\theta\f$ coordinate.
+        @param ph : float \n
+            The \f$\phi\f$ coordinate.
+        @return list \n
+            The Cartesian coordinates \f$[x,y,z]\f$ of the point.
         """
         x = self.a_axis * math.sin(th) * math.cos(ph)
         y = self.b_axis * math.sin(th) * math.sin(ph)
@@ -91,10 +103,14 @@ class EllipsoidShape:
     
     def cart2polar(self, x, y, z):
         """! Convert Cartesian coordinates to polars.
-        @param x  The \f$x\f$ coordinate.
-        @param y  The \f$y\f$ coordinate.
-        @param z  The \f$z\f$ coordinate.
-        @return  The polar coordinates \f$[\theta, \phi]\f$ of the point.
+        @param x : float \n
+            The \f$x\f$ coordinate.
+        @param y : float \n
+            The \f$y\f$ coordinate.
+        @param z : float \n
+            The \f$z\f$ coordinate.
+        @return list \n
+            The polar coordinates \f$[\theta, \phi]\f$ of the point.
         """
         th = math.acos(z / self.c_axis)
         ph = math.atan2(self.a_axis*y, self.b_axis*x)
@@ -102,9 +118,12 @@ class EllipsoidShape:
     
     def ellip2cart(self, be, lm):
         """! Convert ellipsoidal coordinates to Cartesians.
-        @param be  The \f$\beta\f$ coordinate.
-        @param lm  The \f$\lambda\f$ coordinate.
-        @return  The Cartesian coordinates \f$[x,y,z]\f$ of the point.
+        @param be : float \n
+            The \f$\beta\f$ coordinate.
+        @param lm : float \n
+            The \f$\lambda\f$ coordinate.
+        @return list \n
+            The Cartesian coordinates \f$[x,y,z]\f$ of the point.
         """
         a2 = self.a_axis * self.a_axis
         b2 = self.b_axis * self.b_axis
@@ -116,10 +135,14 @@ class EllipsoidShape:
     
     def cart2ellip(self, x, y, z):
         """! Convert Cartesian coordinates to ellipsoidal coordiantes.
-        @param x  The \f$x\f$ coordinate.
-        @param y  The \f$y\f$ coordinate.
-        @param z  The \f$z\f$ coordinate.
-        @return  The ellipsoidal coordinates \f$[\beta, \lambda]\f$ of the point.
+        @param x : float \n
+            The \f$x\f$ coordinate.
+        @param y : float \n
+            The \f$y\f$ coordinate.
+        @param z : float \n
+            The \f$z\f$ coordinate.
+        @return list \n
+            The ellipsoidal coordinates \f$[\beta, \lambda]\f$ of the point.
         """
         a2 = self.a_axis * self.a_axis
         b2 = self.b_axis * self.b_axis    # Axis lengths squared

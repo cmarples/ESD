@@ -17,12 +17,13 @@ import time
 import csv
 import os
 
-save_flag = True
+save_flag = False
 
 os.chdir("..")
 
 ### Start and end points
-start_point = [90.0, 0.0]
+conv = math.pi / 180.0 # Degrees to radians.
+start_point = [90.0*conv, 0.0*conv]
 
 # Use a polar grid to define a set of end points.
 n_th = 19
@@ -37,37 +38,35 @@ end_point = [0] * n_ends
 k = 0
 for i in range(n_th):
     if vals_theta[i] == 0.0 or vals_theta[i] == 180.0:
-        end_point[k] = [vals_theta[i], 0.0]
+        end_point[k] = [vals_theta[i]*conv, 0.0]
         k += 1
     else:
         for j in range(n_ph):
-            end_point[k] = [vals_theta[i], vals_phi[j]]
+            end_point[k] = [vals_theta[i]*conv, vals_phi[j]*conv]
             k += 1
 
-conv = math.pi / 180.0 # Degrees to radians.
+
 d_sphere = [0] * n_ends
 t_sphere = [0] * n_ends
 d_ellipsoid = [0] * n_ends
 t_ellipsoid = [0] * n_ends
 
 ### Sphere data
-shape1 = leod.ellipsoid_shape.EllipsoidShape(1.0, 1.0, 1.0)
+shape1 = leod.shape.EllipsoidShape(1.0, 1.0, 1.0)
 for i in range(n_ends):
     tic = time.perf_counter()
-    d_sphere[i] = leod.sphere_geodesics.great_circle_distance(1.0, start_point[0]*conv, start_point[1]*conv,
-                                                              end_point[i][0]*conv, end_point[i][1]*conv)
+    d_sphere[i] = leod.geo.sphere.gc_dist(shape1.a_axis, start_point, end_point[i])
     toc = time.perf_counter()
     t_sphere[i] = toc - tic
 
 ### Ellipsoid data
-shape2 = leod.ellipsoid_shape.EllipsoidShape(3.0, 2.0, 1.0)
+shape2 = leod.shape.EllipsoidShape(3.0, 2.0, 1.0)
 shape2.normalise()
 for i in range(n_ends):
     try:
         tic = time.perf_counter()
-        d = leod.triaxial_geodesics.boundary_value_method(shape2, start_point[0]*conv, start_point[1]*conv,
-                                                          end_point[i][0]*conv, end_point[i][1]*conv,
-                                                          tol=1e-12, Jacobi=False, n = 20000)
+        d = leod.geo.triaxial.bvm_dist(shape2, start_point, end_point[i],
+                                       tol=1e-12, Jacobi=False, n = 20000)
         d_ellipsoid[i] = d[0]
         toc = time.perf_counter()
         t_ellipsoid[i] = toc - tic
@@ -79,13 +78,13 @@ for i in range(n_ends):
         d_ellipsoid[i] = -1.0
 
 ### Write to files
-file_name_s = 'data/geodesics/single_source_sphere_true.txt'
+file_name_s = 'data/geodesics/single_source/single_source_sphere_true.txt'
 with open(file_name_s, mode="w", newline='') as f:
     writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for k in range(len(d_sphere)):
         writer.writerow([end_point[k][0], end_point[k][1], d_sphere[k], t_sphere[k]])
 
-file_name_e = 'data/geodesics/single_source_ellipsoid_bvm.txt'
+file_name_e = 'data/geodesics/single_source/single_source_ellipsoid_bvm.txt'
 with open(file_name_e, mode="w", newline='') as f:
     writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for k in range(len(d_ellipsoid)):

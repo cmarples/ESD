@@ -29,7 +29,7 @@ print("")
 print("Run the fast marching method on a polar mesh.")
 
 tic = time.perf_counter()
-grid = leod.fmm.grid_pol.gen_pol_grid(no_theta, no_phi, is_connect_8=False, shape=shape)
+grid = leod.fmm.grid_pol.gen_pol_grid(no_theta, no_phi, shape, is_connect_8=False)
 toc = time.perf_counter()
 t1 = toc - tic
 print("Run-time (generate_polar_graph) =", t1)
@@ -37,7 +37,7 @@ print("Run-time (generate_polar_graph) =", t1)
 ### Dijkstra's algorithm on the polar grid
 tic = time.perf_counter()
 d, fmm = leod.fmm.callers.distance_pair(shape, grid, start_point, end_point,
-                                        is_radians=False, is_dijkstra=True)
+                                        is_dijkstra=False, is_radians=False)
 toc = time.perf_counter()
 t2 = toc - tic
 print("Run-time (fast marching) =", t2)

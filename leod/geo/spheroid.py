@@ -14,11 +14,15 @@ import math
 #from .ellipsoid_shape import EllipsoidShape
 from geographiclib.geodesic import Geodesic
 
-
+# Call GeographicLib
 # Calculate shortest distance between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a spheroid of axis lengths (a, a, c), as given in an
 # EllipsoidShape object
-def spheroid_geo_distance(shape, theta_0, phi_0, theta_1, phi_1):
+def geo_dist(shape, start, end):
+    theta_0 = start[0]
+    phi_0 = start[1]
+    theta_1 = end[0]
+    phi_1 = end[1]
     flattening = (shape.a_axis - shape.c_axis) / shape.a_axis
     geo = Geodesic(shape.a_axis, flattening)
     lon_0 = phi_0 * 180.0 / math.pi

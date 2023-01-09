@@ -12,7 +12,7 @@ import numpy as np
 from math import sqrt
 from math import acos
 from math import pi
-
+from .classes import FmmNeighbour
         
 # Precalculate all neighbour-to-neighbour distances as well as cos(alpha) for
 # each face.

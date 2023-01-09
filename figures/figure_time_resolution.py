@@ -161,9 +161,9 @@ for j in range(5):
       
     # Axis labels.
     ax_fmm[m[j][0]][m[j][1]].set_xlabel('Number of vertices')
-    ax_fmm[m[j][0]][m[j][1]].set_ylabel('Run time (s)')
+    ax_fmm[m[j][0]][m[j][1]].set_ylabel('Run-time (s)')
     ax_gen[m[j][0]][m[j][1]].set_xlabel('Number of vertices')
-    ax_gen[m[j][0]][m[j][1]].set_ylabel('Run time (s)')
+    ax_gen[m[j][0]][m[j][1]].set_ylabel('Run-time (s)')
     
     # Titles and subfigures.
     ax_fmm[m[j][0]][m[j][1]].text(0.5, -0.42, shape_label[j], ha="center",  transform=ax_fmm[m[j][0]][m[j][1]].transAxes)
@@ -177,7 +177,7 @@ for j in range(5):
     ax_gen[m[j][0]][m[j][1]].spines['right'].set_visible(False) 
     
     ax_fmm[m[j][0]][m[j][1]].set_ylim(0, 2)
-    ax_gen[m[j][0]][m[j][1]].set_ylim(0, 16)
+    ax_gen[m[j][0]][m[j][1]].set_ylim(0, 17)
     
 # Add legend in final ax slot.
 x = -1
@@ -189,7 +189,7 @@ ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c="b", edgecolor="b", marker="o", s = ms,
 ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c=og, edgecolor=og, marker="^", s = ms, label = "FMM (icosahedral)")
 ax_fmm[m[j][0]][m[j][1]].scatter(x, y, c="r", edgecolor="r", marker="v", s = ms, label = "FMM (split icosahedral)")
 
-ax_gen[m[j][0]][m[j][1]].scatter(x, y, c="c", edgecolor="c", marker="s", s = ms, label = "4-neighbouur polar")
+ax_gen[m[j][0]][m[j][1]].scatter(x, y, c="c", edgecolor="c", marker="s", s = ms, label = "4-neighbour polar")
 ax_gen[m[j][0]][m[j][1]].scatter(x, y, c="b", edgecolor="b", marker="o", s = ms, label = "8-neighbour polar")
 ax_gen[m[j][0]][m[j][1]].scatter(x, y, c=og, edgecolor=og, marker="^", s = ms, label = "Icosahedral triangulation")
 ax_gen[m[j][0]][m[j][1]].scatter(x, y, c="r", edgecolor="r", marker="v", s = ms, label = "Icosahedral with splitiing")
