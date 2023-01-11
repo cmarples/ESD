@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2023-01-10
+### Added
+- Spherical surface sampling algorithms.
+
 ## 2022-11-30
 ### Added
 - Taxicab distances on a spheroid (not yet fully tested).
