@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['fmmgrid_124',['FmmGrid',['../classleod_1_1fmm_1_1classes_1_1FmmGrid.html',1,'leod::fmm::classes']]],
-  ['fmmneighbour_125',['FmmNeighbour',['../classleod_1_1fmm_1_1classes_1_1FmmNeighbour.html',1,'leod::fmm::classes']]],
-  ['fmmresult_126',['FmmResult',['../classleod_1_1fmm_1_1fast__marching_1_1FmmResult.html',1,'leod::fmm::fast_marching']]],
-  ['fmmvertex_127',['FmmVertex',['../classleod_1_1fmm_1_1classes_1_1FmmVertex.html',1,'leod::fmm::classes']]]
+  ['cook_190',['Cook',['../classleod_1_1sampling_1_1sphere_1_1Cook.html',1,'leod::sampling::sphere']]],
+  ['cubicreject_191',['CubicReject',['../classleod_1_1sampling_1_1sphere_1_1CubicReject.html',1,'leod::sampling::sphere']]]
 ];

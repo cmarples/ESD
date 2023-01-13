@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['s_241',['s',['../namespaceleod_1_1taxicab__distance.html#a3691308f2a4c2f6983f2880d32e29c84',1,'leod::taxicab_distance']]],
-  ['start_5fpoint_242',['start_point',['../namespaceleod_1_1taxicab__distance.html#abedb882e383f0b362845f0aea13ad1e9',1,'leod::taxicab_distance']]]
+  ['m_352',['M',['../classleod_1_1sampling_1_1ellipsoid_1_1AreaRejPol.html#aad05f78187c942f9dd521605fa81f1ba',1,'leod.sampling.ellipsoid.AreaRejPol.M()'],['../classleod_1_1sampling_1_1ellipsoid_1_1AreaRejMer.html#aad05f78187c942f9dd521605fa81f1ba',1,'leod.sampling.ellipsoid.AreaRejMer.M()']]]
 ];

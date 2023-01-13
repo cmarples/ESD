@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['polar2cart_208',['polar2cart',['../classleod_1_1shape_1_1EllipsoidShape.html#a568b0caa85866231a7410b0d233d27b1',1,'leod::shape::EllipsoidShape']]],
-  ['pre_5fpol_5fgrid_209',['pre_pol_grid',['../namespaceleod_1_1fmm_1_1grid__pol.html#a492d2a9ee77b2b6406bd4af063178a7a',1,'leod::fmm::grid_pol']]],
-  ['precalculate_210',['precalculate',['../classleod_1_1fmm_1_1classes_1_1FmmGrid.html#af8076d9e6df49d57cde06a61cdac7d8f',1,'leod::fmm::classes::FmmGrid']]]
+  ['newton_5fraphson_302',['newton_raphson',['../namespaceleod_1_1newton__raphson.html#a5643b76beb6ae465ffd197dd886528d6',1,'leod::newton_raphson']]],
+  ['normalise_303',['normalise',['../classleod_1_1shape_1_1EllipsoidShape.html#a3a4800c16c3f05a256987927a3720dba',1,'leod::shape::EllipsoidShape']]],
+  ['numerical_304',['numerical',['../namespaceleod_1_1area_1_1full.html#ae27531a183e6349e6943149805709f0e',1,'leod::area::full']]]
 ];

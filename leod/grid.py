@@ -34,90 +34,91 @@ class Grid:
             self.theta_list[i] = i * self.delta_theta
         for i in range(no_phi+1):
             self.phi_list[i] = i * self.delta_phi
-        # Methods
-        def get_vertex_index(theta_index, phi_index):
-            """! Get scalar vertex index, given vector index (theta, phi).
-            @param theta_index : int \n
-                \f$\theta\f$ index of the vertex.
-            @param phi_index : int \n
-                \f$\phi\f$ index of the vertex.
-            @return int \n
-                Scalar index of the vertex
-            """
-            if theta_index > 0 and theta_index < self.no_theta-1:
-                return 1 + phi_index + self.no_phi*(theta_index-1)
-            elif theta_index == 0:
-                return 0
-            else: # theta_index = no_theta - 1
-                return self.no_vertices - 1
             
-        def get_theta_index(vertex_index):
-            """! Get \f$\theta\f$ index, given the scalar vertex index.
-            @param vertex_index : int \n
-                Scalar index of the vertex.
-            @return int \n
-                \f$\theta\f$ index of the vertex.
-            """
-            if vertex_index > 0 and vertex_index < self.no_vertices-1:
-                return ceil(float(vertex_index)/float(no_phi))
-            elif vertex_index == 0:
-                return 0
-            elif vertex_index == self.no_vertices-1:
-                return self.no_theta-1
-            else:
-                return self.no_theta
-            
-        def get_phi_index(vertex_index, theta_index):
-            """! Get \f$\phi\f$ index, given the \f$\theta\f$ index and the scalar vertex index.
-            @param vertex_index : int \n
-                Scalar index of the vertex.
-            @param vertex_index : int \n
-                \f$\theta\f$ index of the vertex.
-            @return int \n
-                \f$\phi\f$ index of the vertex.
-            """
-            return ( vertex_index - 1 - self.no_phi*(theta_index-1) )
+    # Methods
+    def get_vertex_index(self, theta_index, phi_index):
+        """! Get scalar vertex index, given vector index (theta, phi).
+        @param theta_index : int \n
+            \f$\theta\f$ index of the vertex.
+        @param phi_index : int \n
+            \f$\phi\f$ index of the vertex.
+        @return int \n
+            Scalar index of the vertex
+        """
+        if theta_index > 0 and theta_index < self.no_theta-1:
+            return 1 + phi_index + self.no_phi*(theta_index-1)
+        elif theta_index == 0:
+            return 0
+        else: # theta_index = no_theta - 1
+            return self.no_vertices - 1
         
-        def find_theta_index(th):
-            """! Find the \f$\theta\f$ index closest to a given \f$\theta\f$ value,
-                 using the binary search method.
-            @param th : float \n
-                The \f$\theta\f$ value forwhich the closest index is required.
-            @return int \n
-                Closest \f$\theta\f$ index to the input \f$\theta\f$.
-            """
-            if th < pi:
-                return binary_search(self.theta_list, th)
-            else:
-                return len(self.theta_list)-1
+    def get_theta_index(self, vertex_index):
+        """! Get \f$\theta\f$ index, given the scalar vertex index.
+        @param vertex_index : int \n
+            Scalar index of the vertex.
+        @return int \n
+            \f$\theta\f$ index of the vertex.
+        """
+        if vertex_index > 0 and vertex_index < self.no_vertices-1:
+            return ceil(float(vertex_index)/float(self.no_phi))
+        elif vertex_index == 0:
+            return 0
+        elif vertex_index == self.no_vertices-1:
+            return self.no_theta-1
+        else:
+            return self.no_theta
         
-        def find_phi_index(phi_list, ph):
-            """! Find the \f$\phi\f$ index closest to a given \f$\phi\f$ value,
-                 using the binary search method.
-            @param ph : float \n
-                The \f$\phi\f$ value for which the closest index is required.
-            @return int \n
-                Closest \f$\phi\f$ index to the input \f$\phi\f$.
-            """
-            index = binary_search(self.phi_list, ph)
-            if index == len(self.phi_list)-1:
-                return 0
-            else:
-                return index
-        
-        def find_vertex_index(th, ph):
-            """! Find the scalar index of the vertex closest to a given point \f$(\theta, \phi)\f$,
-                 using the binary search method.
-             @param th : float \n
-                The \f$\theta\f$ value.
-            @param ph : float \n
-                The \f$\phi\f$ value.
-            @return int \n
-                Closest vertex to the point \f$(\theta, \phi)\f$.
-            """
-            th_index = find_theta_index(self.theta_list, th)
-            ph_index = find_phi_index(self.phi_list, ph)
-            return get_vertex_index(th_index, ph_index)
+    def get_phi_index(self, vertex_index, theta_index):
+        """! Get \f$\phi\f$ index, given the \f$\theta\f$ index and the scalar vertex index.
+        @param vertex_index : int \n
+            Scalar index of the vertex.
+        @param vertex_index : int \n
+            \f$\theta\f$ index of the vertex.
+        @return int \n
+            \f$\phi\f$ index of the vertex.
+        """
+        return ( vertex_index - 1 - self.no_phi*(theta_index-1) )
+    
+    def find_theta_index(self, th):
+        """! Find the \f$\theta\f$ index closest to a given \f$\theta\f$ value,
+             using the binary search method.
+        @param th : float \n
+            The \f$\theta\f$ value forwhich the closest index is required.
+        @return int \n
+            Closest \f$\theta\f$ index to the input \f$\theta\f$.
+        """
+        if th < pi:
+            return binary_search(self.theta_list, th)
+        else:
+            return len(self.theta_list)-1
+    
+    def find_phi_index(self, phi_list, ph):
+        """! Find the \f$\phi\f$ index closest to a given \f$\phi\f$ value,
+             using the binary search method.
+        @param ph : float \n
+            The \f$\phi\f$ value for which the closest index is required.
+        @return int \n
+            Closest \f$\phi\f$ index to the input \f$\phi\f$.
+        """
+        index = binary_search(self.phi_list, ph)
+        if index == len(self.phi_list)-1:
+            return 0
+        else:
+            return index
+    
+    def find_vertex_index(self, th, ph):
+        """! Find the scalar index of the vertex closest to a given point \f$(\theta, \phi)\f$,
+             using the binary search method.
+         @param th : float \n
+            The \f$\theta\f$ value.
+        @param ph : float \n
+            The \f$\phi\f$ value.
+        @return int \n
+            Closest vertex to the point \f$(\theta, \phi)\f$.
+        """
+        th_index = self.find_theta_index(self.theta_list, th)
+        ph_index = self.find_phi_index(self.phi_list, ph)
+        return self.get_vertex_index(th_index, ph_index)
 
 
 def binary_search(v, x):

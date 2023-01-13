@@ -29,7 +29,7 @@ a2 = leod.area.full.spheroid(sph)
 # Thomsen
 a3 = leod.area.full.thomsen(ell)
 
-##Legendre
+# Legendre
 a4 = leod.area.full.legendre(ell)
 
 # Numerical (Romberg)
@@ -51,6 +51,3 @@ b4 = leod.area.patch.ellipsoid(ell, 0.5*pi, 0.6*pi, 0.2*pi, 0.3*pi)
 b5 = leod.area.patch.ellipsoid(sphere, 0.5*pi, 0.6*pi, 0.2*pi, 0.3*pi)
 b6 = leod.area.patch.ellipsoid(sph, 0.5*pi, 0.6*pi, 0.2*pi, 0.3*pi)
 
-# Ellipsoid grid
-grid = leod.grid.Grid(181, 360)
-p = leod.area.patch.grid(ell, grid)

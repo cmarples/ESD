@@ -137,7 +137,7 @@ def ellipsoid(shape, th_0, th_1, ph_0, ph_1):
         def integrand(x):
             g = 1.0 + g_frac*x*x
             m = m_frac*(1.0 - x*x) / g
-            return g*(ellipeinc(ph_1, m) - ellipeinc(ph_0, m))
+            return sqrt(g)*(ellipeinc(ph_1, m) - ellipeinc(ph_0, m))
         return pre_fac*romberg(integrand, t1, t0)
     
     
@@ -157,8 +157,8 @@ def grid(shape, grid):
     patch_areas = [0.0] * grid.no_vertices
     patch_areas = array(patch_areas) 
     # Determine symmetry of the grid (i.e. no_theta odd and/or no_phi multiple of 4)
-    theta_end = (grid.no_theta - 1) / 2
-    phi_end = (grid.no_phi - 2) / 4
+    theta_end = int((grid.no_theta - 1) / 2)
+    phi_end = int((grid.no_phi - 2) / 4)
     if grid.no_theta % 2 == 0:
         is_theta_odd = False
     else:
@@ -167,7 +167,7 @@ def grid(shape, grid):
     if grid.no_phi % 4 == 0:
         is_phi_4 = True
         m = (grid.no_phi - 4) / 4 # Number of patches between a and b axes.
-        phi_end = m + 1
+        phi_end = int(m) + 1
     else:
         is_phi_4 = False
         
@@ -177,7 +177,7 @@ def grid(shape, grid):
         phi = 0.0 # phi value at current patch
         for j in range(phi_end + 1): # phi loop
             # Calculate patch area
-            if k == 0: 
+            if k == 0: # Polar cap areas
                 patch_areas[0] = 4.0*ellipsoid(shape, 0.0, 0.5*grid.delta_theta, 0.0, 0.5*pi)
                 patch_areas[grid.no_vertices - 1] = patch_areas[0]
                 k += 1
@@ -197,6 +197,10 @@ def grid(shape, grid):
                     ph_0 = 0.5*(pi - grid.delta_phi)
                     ph_1 = 0.5*pi
                     lmda *= 2.0
+                elif j == 0: ##### NEW!
+                    ph_0 = 0.0
+                    ph_1 = 0.5*grid.delta_phi
+                    lmda *= 2.0
                 else:
                     ph_0 = phi - 0.5*grid.delta_phi
                     ph_1 = phi + 0.5*grid.delta_phi
@@ -210,22 +214,28 @@ def grid(shape, grid):
                         patch_areas[grid.get_vertex_index(i, grid.no_phi/2)] = patch_areas[k]
                         if (is_theta_odd==False or i != theta_end):
                             patch_areas[grid.get_vertex_index(grid.no_theta - 1 - i, 0)] = patch_areas[k]
-                            patch_areas[grid.get_vertex_index(grid.no_theta - 1 - i, grid.no_phi/2)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta - 1 - i, int(grid.no_phi/2))] = patch_areas[k]
                     else:
                         patch_areas[grid.get_vertex_index(i, phi_end + j)] = patch_areas[k]
-                        patch_areas[grid.get_vertex_index(i, grid.no_phi/2 + j)] = patch_areas[k]
-                        patch_areas[grid.get_vertex_index(i, grid.no_phi/2 + phi_end + j)] = patch_areas[k]
+                        patch_areas[grid.get_vertex_index(i, int(grid.no_phi/2) + j)] = patch_areas[k]
+                        patch_areas[grid.get_vertex_index(i, int(grid.no_phi/2) + phi_end + j)] = patch_areas[k]
                         if (is_theta_odd == False or i != theta_end):
                             patch_areas[grid.get_vertex_index(grid.no_theta-1-i, j)] = patch_areas[k]
                             patch_areas[grid.get_vertex_index(grid.no_theta-1-i, phi_end + j)] = patch_areas[k]
-                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, grid.no_phi/2 + j)] = patch_areas[k]
-                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, grid.no_phi/2 + phi_end + j)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, int(grid.no_phi/2) + j)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, int(grid.no_phi/2) + phi_end + j)] = patch_areas[k]
                 else:
-                    if j == 0 or j == phi_end:
-                        patch_areas[grid.get_vertex_index(i, grid.no_phi/2)] = patch_areas[k]
+                    if j == 0:
+                        patch_areas[grid.get_vertex_index(i, int(grid.no_phi/2))] = patch_areas[k]
                         if (is_theta_odd==False or i != theta_end):
-                            patch_areas[grid.get_vertex_index(grid.no_theta - 1 - i, j)] = patch_areas[k]
-                            patch_areas[grid.get_vertex_index(grid.no_theta - 1 - i, grid.no_phi/2 + j)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, j)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, int(grid.no_phi/2) + j)] = patch_areas[k]
+                    elif j == phi_end: ### ADDED!
+                        patch_areas[grid.get_vertex_index(i, int(grid.no_phi/2) + j)] = patch_areas[k]
+                        if (is_theta_odd==False or i != theta_end):
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, j)] = patch_areas[k]
+                            patch_areas[grid.get_vertex_index(grid.no_theta-1-i, int(grid.no_phi/2) + j)] = patch_areas[k]
+                    
                     else:
                         patch_areas[grid.get_vertex_index(i, 2*phi_end-j)] = patch_areas[k]
                         patch_areas[grid.get_vertex_index(i, 2*phi_end+j)] = patch_areas[k]
