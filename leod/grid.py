@@ -92,7 +92,7 @@ class Grid:
         else:
             return len(self.theta_list)-1
     
-    def find_phi_index(self, phi_list, ph):
+    def find_phi_index(self, ph):
         """! Find the \f$\phi\f$ index closest to a given \f$\phi\f$ value,
              using the binary search method.
         @param ph : float \n
@@ -116,8 +116,8 @@ class Grid:
         @return int \n
             Closest vertex to the point \f$(\theta, \phi)\f$.
         """
-        th_index = self.find_theta_index(self.theta_list, th)
-        ph_index = self.find_phi_index(self.phi_list, ph)
+        th_index = self.find_theta_index(th)
+        ph_index = self.find_phi_index(ph)
         return self.get_vertex_index(th_index, ph_index)
 
 

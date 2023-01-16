@@ -15,7 +15,7 @@ import numpy as np
 import leod
 
 ### Define shape
-shape = leod.ellipsoid_shape.EllipsoidShape(3.0, 2.0, 1.0)
+shape = leod.shape.EllipsoidShape(3.0, 2.0, 1.0)
 shape.normalise()
 
 ### Start and end points

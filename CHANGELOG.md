@@ -1,6 +1,24 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2023-01-16
+### Modified
+- Removed obsolete code from fast marching files.
+- Use Grid class with polar mesh generation.
+- Now using 'grid' as a set of theta and phi points and 'mesh' as a set of surface vertices.
+
+## 2023-01-13
+### Modified
+- Fixed bugs in ellipsoid patch area calculation.
+
+## 2023-01-12
+### Added
+- Ellipsoid surface area routines.
+
+## 2023-01-11
+### Added
+- Ellipsoidal surface sampling algorithms.
+
 ## 2023-01-10
 ### Added
 - Spherical surface sampling algorithms.

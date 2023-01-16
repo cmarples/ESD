@@ -82,14 +82,16 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae3d1cdd88544145074ec83eef45d7463"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceleod_1_1fmm_1_1callers.html#ae3d1cdd88544145074ec83eef45d7463">calculate_distances</a> (shape, grid, start_point, end_point, is_dijkstra=False, is_radians=False)</td></tr>
-<tr class="separator:ae3d1cdd88544145074ec83eef45d7463"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8c8b9f2a42a29a56ba706a7b790b954"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceleod_1_1fmm_1_1callers.html#af8c8b9f2a42a29a56ba706a7b790b954">distance_pair</a> (shape, grid, start_point, end_point, is_dijkstra=False, is_radians=False)</td></tr>
-<tr class="separator:af8c8b9f2a42a29a56ba706a7b790b954"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab66e7bafd04cf6de262ef0ca22b299b8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceleod_1_1fmm_1_1callers.html#ab66e7bafd04cf6de262ef0ca22b299b8">calculate_distances</a> (shape, mesh, start_point, end_point, is_dijkstra=False, is_radians=False)</td></tr>
+<tr class="memdesc:ab66e7bafd04cf6de262ef0ca22b299b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the distance between given start and end points on an ellipsoid, with a given shape and mesh.  <a href="namespaceleod_1_1fmm_1_1callers.html#ab66e7bafd04cf6de262ef0ca22b299b8">More...</a><br /></td></tr>
+<tr class="separator:ab66e7bafd04cf6de262ef0ca22b299b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a1aca9c298de9ef48843ff0f2d9908a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceleod_1_1fmm_1_1callers.html#a2a1aca9c298de9ef48843ff0f2d9908a">distance_pair</a> (shape, mesh, start_point, end_point, is_dijkstra=False, is_radians=False)</td></tr>
+<tr class="memdesc:a2a1aca9c298de9ef48843ff0f2d9908a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the distance between given start and end points on an ellipsoid, with a given shape and mesh.  <a href="namespaceleod_1_1fmm_1_1callers.html#a2a1aca9c298de9ef48843ff0f2d9908a">More...</a><br /></td></tr>
+<tr class="separator:a2a1aca9c298de9ef48843ff0f2d9908a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ae3d1cdd88544145074ec83eef45d7463"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae3d1cdd88544145074ec83eef45d7463">&#9670;&nbsp;</a></span>calculate_distances()</h2>
+<a id="ab66e7bafd04cf6de262ef0ca22b299b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab66e7bafd04cf6de262ef0ca22b299b8">&#9670;&nbsp;</a></span>calculate_distances()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -104,7 +106,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>grid</em>, </td>
+          <td class="paramname"><em>mesh</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -138,10 +140,31 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Calculates the distance between given start and end points on an ellipsoid, with a given shape and mesh. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">shape</td><td>: EllipsoidShape <br  />
+ The ellipsoid. </td></tr>
+    <tr><td class="paramname">mesh</td><td>: FmmMesh <br  />
+ The mesh of vertices defined on the ellipsoid surface (can be polar or icosahedral). </td></tr>
+    <tr><td class="paramname">start_point</td><td>: list of floats (2 elements) <br  />
+ The start point, in \((\theta, \phi)\) coordinates. </td></tr>
+    <tr><td class="paramname">end_point</td><td>: list of list of floats ( \(n\) elements) <br  />
+ Set of \(n\) end points, in \((\theta, \phi)\) coordinates. </td></tr>
+    <tr><td class="paramname">is_dijkstra</td><td>: bool (optional) <br  />
+ If True, Dijkstra's algorithm is used. Otherwise, the fast marching method is used. Defaults to False. </td></tr>
+    <tr><td class="paramname">is_radians</td><td>: bool (optional) <br  />
+ Specifies whether the elements start_point and end_point are given in radians (True) or degrees (False). If False, a coordiante conversion to radians is performed. Defaults to False. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[list of floats, FmmResult] <br  />
+ The first element is a list of obtained distances from the start_point to all points in end_point. The second element contains more detailed information on the performed calculation. </dd></dl>
+
 </div>
 </div>
-<a id="af8c8b9f2a42a29a56ba706a7b790b954"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8c8b9f2a42a29a56ba706a7b790b954">&#9670;&nbsp;</a></span>distance_pair()</h2>
+<a id="a2a1aca9c298de9ef48843ff0f2d9908a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a1aca9c298de9ef48843ff0f2d9908a">&#9670;&nbsp;</a></span>distance_pair()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,7 +179,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>grid</em>, </td>
+          <td class="paramname"><em>mesh</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -189,6 +212,27 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Calculates the distance between given start and end points on an ellipsoid, with a given shape and mesh. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">shape</td><td>: EllipsoidShape <br  />
+ The ellipsoid. </td></tr>
+    <tr><td class="paramname">mesh</td><td>: FmmMesh <br  />
+ The mesh of vertices defined on the ellipsoid surface (can be polar or icosahedral). </td></tr>
+    <tr><td class="paramname">start_point</td><td>: list of floats (2 elements) <br  />
+ The start point, in \((\theta, \phi)\) coordinates. </td></tr>
+    <tr><td class="paramname">end_point</td><td>: list of floats (2 elements) <br  />
+ The end point, in \((\theta, \phi)\) coordinates. </td></tr>
+    <tr><td class="paramname">is_dijkstra</td><td>: bool (optional) <br  />
+ If True, Dijkstra's algorithm is used. Otherwise, the fast marching method is used. Defaults to False. </td></tr>
+    <tr><td class="paramname">is_radians</td><td>: bool (optional) <br  />
+ Specifies whether the elements start_point and end_point are given in radians (True) or degrees (False). If False, a coordiante conversion to radians is performed. Defaults to False. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[float, FmmResult] <br  />
+ The first element is the obtained distance from start_point to end_point. The second element contains more detailed information on the performed calculation. </dd></dl>
 
 </div>
 </div>

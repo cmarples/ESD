@@ -6,12 +6,11 @@ Created on Tue Oct 11 14:29:15 2022
 """
 
 import math
-import numpy as np
 import heapq
 
 from math import sqrt
 
-# This class contains information for a vertex in the grid used in the fast
+# This class contains information for a vertex in the mesh used in the fast
 # marching method.
 class FmmResult:
     def __init__(self, no_vertices):
@@ -20,14 +19,14 @@ class FmmResult:
         self.update = [[-1]] * no_vertices
         self.no_obtuse = 0
         
-def fast_marching(grid, start_vertex, start_carts, is_dijkstra=False, end_dict={}):
+def fast_marching(mesh, start_vertex, start_carts, is_dijkstra=False, end_dict={}):
     # Initialise output object
-    fmm = FmmResult(grid.no_vertices)
+    fmm = FmmResult(mesh.no_vertices)
     
     # Start point
-    d_start = ( (grid.vertex[start_vertex].carts[0] - start_carts[0])**2.0 +
-              (  grid.vertex[start_vertex].carts[1] - start_carts[1])**2.0 +
-              (  grid.vertex[start_vertex].carts[2] - start_carts[2])**2.0 )
+    d_start = ( (mesh.vertex[start_vertex].carts[0] - start_carts[0])**2.0 +
+              (  mesh.vertex[start_vertex].carts[1] - start_carts[1])**2.0 +
+              (  mesh.vertex[start_vertex].carts[2] - start_carts[2])**2.0 )
     if d_start < 1e-12: # Start point coincides with a vertex
         fmm.distance[start_vertex] = 0.0
         # Begin queue
@@ -36,8 +35,8 @@ def fast_marching(grid, start_vertex, start_carts, is_dijkstra=False, end_dict={
         d_start = math.sqrt(d_start)
         fmm.distance[start_vertex] = d_start
         queue = [(d_start, start_vertex)]
-        for j in grid.vertex[start_vertex].neighbour.keys():
-            dist = euclidean_distance(grid.vertex[j].carts, start_carts)
+        for j in mesh.vertex[start_vertex].neighbour.keys():
+            dist = euclidean_distance(mesh.vertex[j].carts, start_carts)
             fmm.distance[j] = dist
             heapq.heappush(queue, (dist, j))
         
@@ -48,7 +47,7 @@ def fast_marching(grid, start_vertex, start_carts, is_dijkstra=False, end_dict={
     no_ends_accepted = 0
     
     # Perform wavefront propagation
-    while no_accepted != grid.no_vertices:
+    while no_accepted != mesh.no_vertices:
         
         # Obtain index of vertex with smallest distance from the start
         trial_distance, trial = heapq.heappop(queue)
@@ -65,10 +64,10 @@ def fast_marching(grid, start_vertex, start_carts, is_dijkstra=False, end_dict={
                 break
         
         # Visit neighbours of trial vertex
-        for visit in grid.vertex[trial].neighbour_set:
+        for visit in mesh.vertex[trial].neighbour_set:
             if fmm.accepted[visit] == True:
                 continue
-            proposed_distance = fast_marching_update(visit, trial, grid.vertex, fmm, is_dijkstra)
+            proposed_distance = fast_marching_update(visit, trial, mesh.vertex, fmm, is_dijkstra)
             if proposed_distance < fmm.distance[visit]:
                 # Add visited vertex to the queue and update value in fmm.distance
                 fmm.distance[visit] = proposed_distance
@@ -125,17 +124,6 @@ def get_supporting_vertex(visit, trial, vertex, fmm):
 
 
 
-
-    
-
-
-def fmm_idw3(end_carts, carts_1, carts_2, carts_3, d1, d2, d3):
-    w1 = 1.0 / ( (end_carts[0] - carts_1[0])**2.0 + (end_carts[1] - carts_1[1])**2.0 + (end_carts[2] - carts_1[2])**2.0 )
-    w2 = 1.0 / ( (end_carts[0] - carts_2[0])**2.0 + (end_carts[1] - carts_2[1])**2.0 + (end_carts[2] - carts_2[2])**2.0 )
-    w3 = 1.0 / ( (end_carts[0] - carts_3[0])**2.0 + (end_carts[1] - carts_3[1])**2.0 + (end_carts[2] - carts_3[2])**2.0 )
-    return (w1*d1 + w2*d2 + w3*d3) / (w1 + w2 + w3)
-
-
 def fmm_idw(end_carts, carts, dist):
     w = []
     num = 0.0
@@ -162,11 +150,6 @@ def endpoint_distance(vertex, fmm, end_carts, end_vertex, shape):
 # Calculate Euclidean distance between two points x and y
 def euclidean_distance(x, y):
     return math.sqrt( (x[0] - y[0])**2.0 + (x[1] - y[1])**2.0 + (x[2] - y[2])**2.0 )
-
-
-
-
-
 
 
 def fmm_first_order_update(visit, trial, support, vertex, fmm):
@@ -213,54 +196,3 @@ def fmm_first_order_update(visit, trial, support, vertex, fmm):
             fmm.update[visit] = [trial]
             return [-1, alpha, beta, gamma]
     
-    
-    
-    
-    
-    
-    
-    
-    
-def fmm_first_order_update_general(visit, trial, support, vertex, visit_carts, fmm):
-    
-    # Vectors of triangle sides
-    p1 = (vertex[trial].carts - visit_carts)
-    p2 = (vertex[support].carts - visit_carts)
-    p11 = p1[0]*p1[0] + p1[1]*p1[1] + p1[2]*p1[2]
-    p12 = p1[0]*p2[0] + p1[1]*p2[1] + p1[2]*p2[2]
-    p22 = p2[0]*p2[0] + p2[1]*p2[1] + p2[2]*p2[2]
-    
-    if p12 < 0:
-        print('obtuse')
-    
-    # Find vectors a and b
-    a = np.array([1.0, 1.0])
-    b = np.array([-fmm.distance[trial], -fmm.distance[support]])
-    
-    # Set up the quadratic A^2 u + Bu + C = 0
-    #alpha = a[0]*(a[0]*p22 - a[1]*p12) + a[1]*(a[1]*p11 - a[0]*p12)
-    #beta = 2.0 * (a[0]*(b[0]*p22 - b[1]*p12) + a[1]*(b[1]*p11 - b[0]*p12))
-    alpha = p22 + p11 - 2.0*p12
-    beta = 2.0 * ( b[0]*p22 + b[1]*p11 - p12*(b[0] + b[1]) )
-    gamma = b[0]*(b[0]*p22 - b[1]*p12) + b[1]*(b[1]*p11 - b[0]*p12) - (p11*p22 - p12*p12)
-    
-    # Solve quadratic
-    discr = beta*beta - 4.0*alpha*gamma
-    if discr > 0:
-        u = ( -beta + math.sqrt(discr) ) / (2.0*alpha)
-        
-        # Check upwinding condition  
-        v1 = p22*(-b[0] - u) - p12*(-b[1] - u)
-        v2 = p11*(-b[1] - u) - p12*(-b[0] - u)
-        #v = math.sqrt(p11*p22)
-        #v1 = v*(-b[0] - u) - p12*(-b[1] - u)
-        #v2 = v*(-b[1] - u) - p12*(-b[0] - u)
-        if u > -b[0] and u > -b[1] and v1 < 0 and v2 < 0:
-            fmm.update[visit] = [trial, support]
-            return [u, alpha, beta, gamma]
-        else:
-            fmm.update[visit] = [trial]
-            return [-1, alpha, beta, gamma]
-    else:
-        fmm.update[visit] = [trial]
-        return [-1, alpha, beta, gamma]
