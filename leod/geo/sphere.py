@@ -5,13 +5,13 @@ Created on Tue Aug 16 11:25:04 2022
 @author: Callum Marples
 """
 
-import math
+from math import pi, sin, cos, tan, acos, atan2
 import numpy as np
 
 # Great circle distance.
 # Calculate shortest distance between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a sphere of radius r
-def gc_dist(r, start, end):
+def gc_dist(r, start, end, is_radians=False):
     """! Shortest distance on a sphere of radius \f$r\f$, using a great circle arc length.
     @param r : float \n
         The sphere radius.
@@ -19,15 +19,31 @@ def gc_dist(r, start, end):
         The start point in polar coordinates, \f$[\theta_0, \phi_0]\f$.
     @param end : list of floats \n
         The end point in polar coordinates, \f$[\theta_1, \phi_1]\f$.
+    @param is_radians : bool (optional) \n
+        Specifies whether the elements start_point and end_point are given in
+        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians is performed. Defaults to False.
     @return The shortest distance between start and end.
     """
-    return r * math.acos( math.cos(start[0])*math.cos(end[0]) +
-                          math.sin(start[0])*math.sin(end[0]) *
-                          math.cos(end[1] - start[1]) )
+    
+    start_temp = [0.0, 0.0]
+    end_temp = [0.0, 0.0]
+    # Convert to radians if input points given in degrees (assumed by default).
+    if is_radians == False:
+        conv = pi / 180.0
+    else:
+        conv = 1.0
+    for i in range(2):
+        start_temp[i] = start[i] * conv
+        end_temp[i] = end[i] * conv
+        
+    return r * acos( cos(start_temp[0])*cos(end_temp[0]) +
+                     sin(start_temp[0])*sin(end_temp[0]) *
+                     cos(end_temp[1] - start_temp[1]) )
 
 # Get shortest path between (theta_0, phi_0) and (theta_1, phi_1)
 # on the surface of a sphere of radius r
-def gc_path(r, start, end):
+def gc_path(r, start, end, is_radians=False):
     """! Shortest path on a sphere of radius \f$r\f$, using a great circle arc length.
     @param r : float \n
         The sphere radius.
@@ -35,17 +51,34 @@ def gc_path(r, start, end):
         The start point in polar coordinates, \f$[\theta_0, \phi_0]\f$.
     @param end : list of floats \n
         The end point in polar coordinates, \f$[\theta_1, \phi_1]\f$.
+    @param is_radians : bool (optional) \n
+        Specifies whether the elements start_point and end_point are given in
+        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians is performed. Defaults to False.
     @return The shortest path between start and end.
     """
-    theta_0 = start[0]
-    phi_0 = start[1]
-    theta_1 = end[0]
-    phi_1 = end[1]
+    
+    start_temp = [0.0, 0.0]
+    end_temp = [0.0, 0.0]
+    # Convert to radians if input points given in degrees (assumed by default).
+    if is_radians == False:
+        conv = pi / 180.0
+    else:
+        conv = 1.0
+    for i in range(2):
+        start_temp[i] = start[i] * conv
+        end_temp[i] = end[i] * conv
+        
+    theta_0 = start_temp[0]
+    phi_0 = start_temp[1]
+    theta_1 = end_temp[0]
+    phi_1 = end_temp[1]
+    
     phi_vals = np.linspace(phi_0, phi_1, 100)
     if abs(phi_1 - phi_0) > 1e-15:
-        T = math.tan(theta_1) / math.tan(theta_0)
-        phi_c = math.atan2(math.cos(phi_0) - T*math.cos(phi_1), T*math.sin(phi_1) - math.sin(phi_0))
-        a = 1 / (math.tan(theta_0) * math.cos(phi_0 - phi_c))
+        T = tan(theta_1) / tan(theta_0)
+        phi_c = atan2(cos(phi_0) - T*cos(phi_1), T*sin(phi_1) - sin(phi_0))
+        a = 1 / (tan(theta_0) * cos(phi_0 - phi_c))
         cot_th_vals = a * np.cos(phi_vals - phi_c)
         th_vals = np.arctan2(1, cot_th_vals)
     else:

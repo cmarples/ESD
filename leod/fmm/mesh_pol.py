@@ -18,7 +18,19 @@ from ..shape import EllipsoidShape
 from ..grid import Grid
 
 def gen_pol_mesh(no_theta=91, no_phi=180, shape=EllipsoidShape(), is_connect_8=True):
-    
+    """! @brief Generate a mesh approximating the surface of an ellipsoid, using polar coordinates.
+    @param no_theta : int (optional) \n
+        The number of \f$\theta\f$ used in the mesh. Defaults to 91.
+    @param no_phi : int (optional) \n
+        The number of \f$\phi\f$ used in the mesh. Defaults to 180.
+    @param shape : EllipsoidShape (optional) \n
+        The ellipsoid. Defaults to an EllipsoidShape representing the unit sphere.
+    @param is_connect_8 : bool (optional) \n
+        If True, give each mesh vertex 8 neighbours (if applicable). If False, 4 neighbours are used.
+        Defaults to True.
+    @return FmmMesh \n
+        The mesh representing the surface of the ellipsoid specified by the input shape.
+    """
     # Create FmmMesh object (includes empty vertex list).
     mesh = FmmMesh()
     
@@ -74,7 +86,22 @@ def gen_pol_mesh(no_theta=91, no_phi=180, shape=EllipsoidShape(), is_connect_8=T
 # Each pixel has four neighbours. For non-polar vertices, neighbours are
 # always ordered as "Up, Down, Left, Right".
 def find_neighbour_indices(vertex, i, th, ph, grid, is_connect_8=True):
-    
+    """! @brief Find and add neighbours for a given vertex. This is a subroutine of gen_pol_mesh.
+    @param vertex : FmmVertex \n
+        The vertex for which neighbours are to be found.
+    @param i : int \n
+        The scalar index of the vertex.
+    @param th : int \n
+        The \f$\theta\f$ index of the vertex.
+    @param ph : int \n
+        The \f$\phi\f$ index of the vertex.
+    @param grid : Grid \n
+        The \f$\theta\f$-\f$\phi\f$ grid used to generate the mesh.
+    @param is_connect_8 : bool (optional) \n
+        If True, give each mesh vertex 8 neighbours (if applicable). If False, 4 neighbours are used.
+        Defaults to True.
+    @see gen_pol_mesh
+    """
     k0 = grid.no_vertices-1-grid.no_phi # First vertex at south pole adjacent band  
     cos_alpha = 2.0 # Initialisation for face angles
     

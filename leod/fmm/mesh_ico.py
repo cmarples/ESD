@@ -17,7 +17,18 @@ from ..shape import EllipsoidShape
 
 # Sphere triangulation using a geodesic polyhedron
 def gen_ico_mesh(n=50, shape=EllipsoidShape(), is_split=False):
-    
+    """! @brief Generate a mesh approximating the surface of an ellipsoid, using the vertices of a regular icosahedron.
+    @param n : int (optional) \n
+        The number of points to take along each icosahedral edge. This parameter
+        measures the resoltion of the mesh. Defaults to 50.
+    @param shape : EllipsoidShape (optional) \n
+        The ellipsoid. Defaults to an EllipsoidShape representing the unit sphere.
+    @param is_split : bool (optional) \n
+        If True, split each obtuse angle by adding an additional edge.
+        Defaults to False.
+    @return FmmMesh \n
+        The mesh representing the surface of the ellipsoid specified by the input shape.
+    """
     # Create FmmGrid object (includes empty vertex list).
     mesh = FmmMesh()
     
@@ -284,7 +295,21 @@ def gen_ico_mesh(n=50, shape=EllipsoidShape(), is_split=False):
 
 # Find closest vertex to input point
 def find_closest_vertex(vertex, p, c, v=0):
-
+    """! @brief Find the closest vertex (in terms of Euclidean distance) to a given point.
+    @param n : list of FmmVertex objects \n
+        The list of vertices.
+    @param p : 3-element NumPy array \n
+        The point for which the closest vertex is to be found.
+    @param c : float \n
+        The \f$c\f$-axis length of the ellipsoid.
+    @param v : int (optional)
+        The starting vertex for the search. Defaults to 0.
+    @return int \n
+        The index of the vertex closest to point p.
+    @see gen_ico_mesh
+    @see distance_pair
+    @see calculate_distances
+    """
     d2 = {}
     is_min_found = False
     
@@ -320,6 +345,12 @@ def find_closest_vertex(vertex, p, c, v=0):
     return v
 
 def split_obtuse_angles(vertex):
+    """! @brief Split each obtuse angle in a triangular mesh by adding additional edges.
+    This routine updates the input vertex list and is a subroutine of gen_ico_mesh.
+    @param vertex : list of FmmVertex objects \n
+        The list of vertices.
+    @see gen_ico_mesh
+    """
     for i in range(len(vertex)):
         # Find faces to loop over
         face_set = set()

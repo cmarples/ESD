@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Thu Jan 12 12:26:35 2023
+@brief Example script for surface areas of a sphere/spheroid/ellipsoid.
+@file eg_area.py
+@author Callum Marples
 
-@author: Callum Marples
-
-Examples of using the area routines.
+- Created on 12/01/2023. 
+- Last modified on 17/01/2023.
 """
 
 from math import pi

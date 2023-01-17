@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Jan 10 12:32:28 2023
+@brief Example script for random sampling of the sphere/ellipsoid surface.
+@file eg_sampling.py
+@author Callum Marples
 
-@author: Callum Marples
-
-Examples of using the sampling routines.
+- Created on 10/01/2023. 
+- Last modified on 17/01/2023.
 """
 
 import leod
@@ -16,7 +16,7 @@ os.chdir("..")
 
 ## Cubic rejection
 S1 = leod.sampling.sphere.CubicReject()      # Create sampler
-p1 = S1.random_surface_point()        # Use sampler to generate random point
+p1 = S1.random_surface_point()               # Use sampler to generate random point
 
 ## Marsaglia's method
 S2 = leod.sampling.sphere.Marsaglia()        

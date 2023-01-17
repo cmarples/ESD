@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Jan 16 11:02:08 2023
-
-@author: Callum Marples
+@brief Example script for mesh generation and the single pair fast marching distance routine.
+@file eg_fmm_single_pair.py
+@author Callum Marples
 
 To use Dijkstra's algorithm, set is_dijkstra=True in the distance_pair function.
+
+- Created on 16/01/2023. 
+- Last modified on 17/01/2023.
 """
 
 from leod.shape import EllipsoidShape
@@ -35,7 +37,7 @@ start_point = [90.0, 0.0]
 end_point = [50.0, 60.0]
 
 ### Define ellipsoid
-shape = EllipsoidShape(3.0, 2.0, 1.0)
+shape = EllipsoidShape(1.0, 1.0, 1.0)
 shape.normalise()
 
 #### Polar grid with 4 neighbours

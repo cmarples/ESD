@@ -1,6 +1,12 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2023-01-17
+### Added
+- Example scripts for all user callable routines in the fmm, geo, area and sampling directories.
+- Routines for fast marching over a whole mesh and post wavefront distance calculations.
+- Radians flag and conversions for all geodesic routines.
+
 ## 2023-01-16
 ### Modified
 - Removed obsolete code from fast marching files.
@@ -22,6 +28,8 @@ This document tracks the notable changes to the LEOD project.
 ## 2023-01-10
 ### Added
 - Spherical surface sampling algorithms.
+
+ADD DECEMBER CODING!
 
 ## 2022-11-30
 ### Added

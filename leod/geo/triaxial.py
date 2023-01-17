@@ -9,13 +9,26 @@ import math
 import numpy as np
 import scipy.integrate
 
-def bvm_dist(shape, start, end, tol = 1e-12, Jacobi=False, n=10000):
-    th_0 = start[0]
-    ph_0 = start[1]
-    th_1 = end[0]
-    ph_1 = end[1]                
+def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, Jacobi=False, n=10000):
+    
+    start_temp = [0.0, 0.0]
+    end_temp = [0.0, 0.0]
+    # Convert to radians if input points given in degrees (assumed by default).
+    if is_radians == False:
+        conv = math.pi / 180.0
+    else:
+        conv = 1.0
+    for i in range(2):
+        start_temp[i] = start[i] * conv
+        end_temp[i] = end[i] * conv
+        
+    th_0 = start_temp[0]
+    ph_0 = start_temp[1]
+    th_1 = end_temp[0]
+    ph_1 = end_temp[1]
+                   
     if th_0 == th_1 and ph_0 == ph_1:
-        # Start and end points are hte same => distance = 0
+        # Start and end points are the same => distance = 0
         if Jacobi:
             x, y, z = shape.ellip2cart(th_0, ph_0)
         else:

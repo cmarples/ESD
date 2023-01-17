@@ -1,16 +1,10 @@
-"""! 
+""" 
 @brief Defines the ellipsoid shape class.
-@file shape.py
+@file ellipsoid_shape.py
 @author Callum Marples
+- Created by Callum Marples on 04/07/2022.
+- Last modified on 17/01/2022.
 """
-##
-# @ file ellipsoid_shape.py
-#
-# @ brief Defines the ellipsoid shape class.
-#
-# @ section
-# - Created by Callum Marples on 04/07/2022.
-# - Last modified on 12/12/2022.
 
 import math
 import numpy as np

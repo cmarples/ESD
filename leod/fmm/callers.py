@@ -86,7 +86,7 @@ def distance_pair(shape, mesh, start_point, end_point, is_dijkstra=False, is_rad
     fmm = fast_marching(mesh, start_vertex, start_carts, is_dijkstra, end_dict)
     
     if is_end_interpolate == True:
-        d = endpoint_distance(mesh.vertex, fmm, end_carts, end_vertex, shape)
+        d = endpoint_distance(shape, mesh.vertex, fmm, end_carts, end_vertex)
     else:
         d = fmm.distance[end_vertex]
     
@@ -116,7 +116,7 @@ def distance_pair(shape, mesh, start_point, end_point, is_dijkstra=False, is_rad
 
 
 
-def calculate_distances(shape, mesh, start_point, end_point, is_dijkstra=False, is_radians=False):
+def distance_multiple(shape, mesh, start_point, end_point=[], is_dijkstra=False, is_radians=False):
     """! @brief Calculates the distance between given start and end points on an
                 ellipsoid, with a given shape and mesh.
     @param shape : EllipsoidShape \n
@@ -125,7 +125,7 @@ def calculate_distances(shape, mesh, start_point, end_point, is_dijkstra=False, 
         The mesh of vertices defined on the ellipsoid surface (can be polar or icosahedral).
     @param start_point : list of floats (2 elements) \n
         The start point, in \f$(\theta, \phi)\f$ coordinates.
-    @param end_point : list of list of floats (\f$n\f$ elements) \n
+    @param end_point : \f$n\f$ element list of list of floats \n
         Set of \f$n\f$ end points, in \f$(\theta, \phi)\f$ coordinates.
     @param is_dijkstra : bool (optional) \n
         If True, Dijkstra's algorithm is used. Otherwise, the fast marching method
@@ -140,10 +140,9 @@ def calculate_distances(shape, mesh, start_point, end_point, is_dijkstra=False, 
     """
     
     n = len(end_point)
-    
+        
     ### Convert to radians if input points given in degrees (assumed by default).
     start_point_temp = [0.0, 0.0]
-    #end_point_temp = [[0.0, 0.0]] * n
     end_point_temp = zeros([n, 2])
     
     if is_radians == False:
@@ -157,7 +156,7 @@ def calculate_distances(shape, mesh, start_point, end_point, is_dijkstra=False, 
         for j in range(2):
             end_point_temp[i][j] = end_point[i][j] * conv
                 
-    ### Get Cartesian coordinatess of start and end points.
+    ### Get Cartesian coordinates of start and end points.
     start_carts = shape.polar2cart(start_point_temp[0], start_point_temp[1]) 
     end_carts = [[0.0, 0.0, 0.0]] * n
     for i in range(n):
@@ -207,8 +206,124 @@ def calculate_distances(shape, mesh, start_point, end_point, is_dijkstra=False, 
             d[i] = 0.0
         else:
             if is_end_interpolate[i] == True:
-                d[i] = endpoint_distance(mesh.vertex, fmm, end_carts[i], end_vertex[i], shape)
+                d[i] = endpoint_distance(shape, mesh.vertex, fmm, end_carts[i], end_vertex[i])
             else:
                 d[i] = fmm.distance[end_vertex[i]]
             
     return d, fmm
+
+
+
+def distance_all(shape, mesh, start_point, is_dijkstra=False, is_radians=False):
+    """! @brief Calculates the distance between given a start point and all
+    vertices on an ellipsoid, with a given shape and mesh.
+    @param shape : EllipsoidShape \n
+        The ellipsoid.
+    @param mesh : FmmMesh \n
+        The mesh of vertices defined on the ellipsoid surface (can be polar or icosahedral).
+    @param start_point : list of floats (2 elements) \n
+        The start point, in \f$(\theta, \phi)\f$ coordinates.
+    @param is_dijkstra : bool (optional) \n
+        If True, Dijkstra's algorithm is used. Otherwise, the fast marching method
+        is used. Defaults to False.
+    @param is_radians : bool (optional) \n
+        Specifies whether the elements start_point and end_point are given in
+        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians is performed. Defaults to False.
+    @return [list of floats, FmmResult] \n
+        The first element is a list of obtained distances from the start_point to all points in end_point.
+        The second element contains more detailed information on the performed calculation.
+    """
+        
+    ### Convert to radians if input points given in degrees (assumed by default).
+    start_point_temp = [0.0, 0.0]
+    
+    if is_radians == False:
+        conv = pi / 180.0
+    else:
+        conv = 1.0
+        
+    for j in range(2):
+        start_point_temp[j] = start_point[j] * conv
+                
+    ### Get Cartesian coordinates of start point.
+    start_carts = shape.polar2cart(start_point_temp[0], start_point_temp[1]) 
+    
+    ### Find start vertex
+    if mesh.type == "pol": # Polar mesh
+        start_vertex = mesh.grid.find_vertex_index(start_point_temp[0], start_point_temp[1])
+    else: # Icosahedral triangulation
+        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
+        c = np.min(abc)
+        start_vertex = find_closest_vertex(mesh.vertex, array(start_carts), c) 
+            
+    ### Call fast marching method
+    fmm = fast_marching(mesh, start_vertex, start_carts, is_dijkstra, end_dict={})
+    
+    return fmm
+
+
+
+def distance_end(shape, mesh, fmm, end_point, is_radians=False):
+    """! @brief Interpolates the distance to a given end point on an ellipsoid 
+    for which the FmmResult object has already been generated via distance_all.
+    @param shape : EllipsoidShape \n
+        The ellipsoid.
+    @param mesh : FmmMesh \n
+        The mesh of vertices defined on the ellipsoid surface (can be polar or icosahedral).
+    @param fmm : FmmResult \n
+        An output of the distance_all routine.
+    @param end_point : list of floats (2 elements) \n
+        The end point, in \f$(\theta, \phi)\f$ coordinates.
+    @param is_radians : bool (optional) \n
+        Specifies whether the elements start_point and end_point are given in
+        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians is performed. Defaults to False.
+    @return float \n
+        Interpolated distance to the specified end point.
+    @see distance_all
+    """
+    end_point_temp = [0.0, 0.0]
+    # Convert to radians if input points given in degrees (assumed by default).
+    if is_radians == False:
+        conv = pi / 180.0
+    else:
+        conv = 1.0
+    for i in range(2):
+        end_point_temp[i] = end_point[i] * conv
+    
+    # Get Cartesian coordinatess of end point.  
+    end_carts = shape.polar2cart(end_point_temp[0], end_point_temp[1])
+     
+    # Find end vertex
+    if mesh.type == "pol":
+        end_vertex = mesh.grid.find_vertex_index(end_point_temp[0], end_point_temp[1])
+    else:
+        # Use triangulation
+        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
+        c = np.min(abc)
+        end_vertex = find_closest_vertex(mesh.vertex, array(end_carts), c)
+    
+    end_vertex_carts = mesh.vertex[end_vertex].carts
+    
+    # If closest vertex and endpoint are the same, no interpolation needed.
+    end_diff = end_vertex_carts - end_carts
+    end_diff = end_diff[0]*end_diff[0] + end_diff[1]*end_diff[1] + end_diff[2]*end_diff[2]
+    if end_diff > 1e-9:
+        is_end_interpolate = True
+    else:
+        is_end_interpolate = False
+    # Find neighbours of the endpoint, to use in the stopping criterion
+    end_dict = {}
+    end_dict[end_vertex] = False
+    if is_end_interpolate == True:
+        for j in mesh.vertex[end_vertex].neighbour.keys():
+            end_dict[j] = False       
+    
+    if is_end_interpolate == True:
+        d = endpoint_distance(shape, mesh.vertex, fmm, end_carts, end_vertex)
+    else:
+        d = fmm.distance[end_vertex]
+    
+    return d
+    
