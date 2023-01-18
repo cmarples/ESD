@@ -78,8 +78,8 @@ class Marsaglia(SphereBase):
             self.no_attempts += 1
         p[2] = self.radius * (1.0 - 2.0*r_sq)
         r_sq = 2.0*sqrt(1.0 - r_sq)
-        p[0] = self.radius*r1*r_sq;
-        p[1] = self.radius*r2*r_sq;
+        p[0] = self.radius*r1*r_sq
+        p[1] = self.radius*r2*r_sq
         return p
     
     def set_rng(self, rng_in):

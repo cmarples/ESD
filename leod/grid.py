@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 12 15:39:07 2023
-
-@author: Callum Marples
-
-The Grid class
+""" 
+@brief Defines the grid class, contact distribution class and binary search routine.
+@file grid.py
+@author Callum Marples
+- Created by Callum Marples on 12/01/2023.
+- Last modified on 18/01/2022.
 """
 
 from math import pi, ceil
+from numpy import array
 
 class Grid:
     """! The grid class.
@@ -149,3 +149,45 @@ def binary_search(v, x):
         return L
     else:
         return L + 1
+    
+    
+    
+class ContactDistribution():
+    """! The contact distribution class.
+    Contains an EllipsoidShape object, a Grid object and an array giving the 
+    number of contacts per patch in the Grid. Also contains a function to add
+    new contacts, given either Cartesian or polar coordinates.
+    """
+    def __init__(self, shape, grid):
+        """! The Grid initialiser.
+        @param shape : EllipsoidShape \n
+            The ellipsoid.
+        @param grid : Grid \n
+            The grid defining the ellipsoid surface patches.
+        """
+        self.shape = shape
+        self.grid = grid
+        self.contacts = array([0] * grid.no_vertices)
+    
+    def add_contact(self, point):
+        """! Add a new contact point to the distribution.
+        @param point : list (or NumPy array) of float \n
+            The contact point. Can be specified either using Cartesian \f$(x,y,z\f$
+            or polar \f$(\theta, \phi\f$ coordinates.
+        """
+        if len(point) == 2:   # Polar coordinates
+            self.update_bin(point[0], point[1])
+        elif len(point) == 3: # Cartesian coordinates
+            [th, ph] = self.shape.cart2polar(point[0], point[1], point[2])
+            self.update_bin(th, ph)
+        
+    def update_bin(self, th, ph):
+        """! Increments the relevant bin that contains the input polar coordinates.
+        @param th : float \n
+            The \f$\theta\f$ coordinate of the surface point.
+        @param ph : float \n
+            The \f$\phi\f$ coordinate of the surface point.
+        """
+        index = self.grid.find_vertex_index(th, ph)
+        self.contacts[index] += 1
+    

@@ -1,6 +1,12 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2023-01-18
+### Added
+- Contact distribution class for recording sampling data.
+### Removed
+- Data, analysis and figures directories (only relevant to the papers).
+
 ## 2023-01-17
 ### Added
 - Example scripts for all user callable routines in the fmm, geo, area and sampling directories.
