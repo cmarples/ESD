@@ -13,7 +13,7 @@ os.chdir("..")
 import unittest
 import math
 
-from leod.ellipsoid_shape import EllipsoidShape
+from leod.shape import EllipsoidShape
 
 class TestConversions(unittest.TestCase):
 

@@ -35,7 +35,7 @@ class SphereBase:
         self.no_attempts = 0
         
     
-class CubicReject(SphereBase):
+class CubicRej(SphereBase):
     
     def random_surface_point(self):
         """! Generates a uniformly random point on the surface of a sphere, 
@@ -148,7 +148,7 @@ class Trig(SphereBase):
     def set_rng(self, rng_in):
         self.rng = rng_in
     
-class AreaReject(SphereBase):
+class AreaRejS(SphereBase):
 
     def random_surface_point(self):
         """! Generates a uniformly random point on the surface of a sphere, 

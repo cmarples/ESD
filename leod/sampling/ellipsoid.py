@@ -35,7 +35,7 @@ class EllipsoidBase:
         self.no_attempts = 0
 
 
-class NaiveScaling(EllipsoidBase):
+class NaiveScale(EllipsoidBase):
     
     def __init__(self, shape, rng_type="MT", seed=12345):
         """! Initialiser for the naive scaling ellipsoid sampler.
@@ -68,7 +68,7 @@ class NaiveScaling(EllipsoidBase):
         
 class GradRej(EllipsoidBase):
     
-    def __init__(self, shape, rng_type="MT", seed=12345, sphere_type="Marsaglia"):
+    def __init__(self, shape, rng_type="MT", seed=12345, sphere_type="Trig"):
         """! Initialiser for the gradient rejection ellipsoid sampler.
         @param shape : EllipsoidShape \n
             The ellipsoid whose surface is to be sampled.
@@ -80,14 +80,14 @@ class GradRej(EllipsoidBase):
             The seed of the random number generator, defaults to 12345.
         @param sphere_type : str \n
             Specifies the sphere sampler to use
-            - "Marsaglia" : Marsaglia's method  (default setting).
-            - "Trig"      : Trigonometric method.
+            - "Trig"      : Trigonometric method (default setting).
+            - "Marsaglia" : Marsaglia's method.
         """
         self.initialise(shape, rng_type, seed)
-        if sphere_type == "Trig":
-            self.sphere_sampler = Trig(1.0)
-        else:
+        if sphere_type == "Marsaglia":
             self.sphere_sampler = Marsaglia(1.0)
+        else:
+            self.sphere_sampler = Trig(1.0)
         self.sphere_sampler.set_rng(self.rng) # Make both sphere and ellipsoid samplers use the same rng object.
         # Pre-calculate frequently used values
         self.g_min = shape.c_axis
@@ -99,7 +99,7 @@ class GradRej(EllipsoidBase):
         self.b4 = 1.0 / shape.b_axis ** 4
         self.c4 = 1.0 / shape.c_axis ** 4
         
-    def random_surface_point(self):
+    def random_surface_point(self, out_type="carts"):
         """! Generates a uniformly random point on the surface of an ellipsoid, 
         using the gradient rejection method.
         @return NumPy array \n
@@ -116,11 +116,15 @@ class GradRej(EllipsoidBase):
             if u <= g:
                 accept = True
             self.no_attempts += 1
-        return p        
+        
+        # Output point with the specified type
+        if out_type == "polar":
+            p = self.shape.cart2polar(p[0], p[1], p[2])
+        return p
         
     
     
-class AreaRejPol(EllipsoidBase):
+class AreaRejE(EllipsoidBase):
     
     def __init__(self, shape, rng_type="MT", seed=12345):
         """! Initialiser for the area rejection (polar coordinates) ellipsoid sampler.
@@ -202,100 +206,18 @@ class AreaRejPol(EllipsoidBase):
                 self.no_attempts += 1
         
         # Output point with the specified type
-        if out_type == "polar":
-            p = array([0.0, 0.0])
+        if out_type == "carts":
+            p = self.shape.polar2cart(th, ph)
+        else:
+            p = array([0.0]*2)
             p[0] = th
             p[1] = ph
-        else:
-            p = array([0.0, 0.0, 0.0])
-            p[0] = self.shape.a_axis * sin_th * sqrt(1.0 - sin_2_ph)
-            if (ph > 0.5*pi and ph < 1.5*pi):
-                p[0] *= -1.0
-            p[1] = self.shape.b_axis * sin_th * sin_ph
-            p[2] = self.shape.c_axis * sqrt(1.0 - sin_2_th)
-            if (th > 0.5*pi):
-                p[2] *= -1.0
+
         return p
     
+ 
     
-class AreaRejMer(EllipsoidBase):
-    
-    def __init__(self, shape, rng_type="MT", seed=12345):
-        """! Initialiser for the area rejection (Mercator coordinates) ellipsoid sampler.
-        @param shape : EllipsoidShape \n
-            The ellipsoid whose surface is to be sampled.
-        @param rng_type : str (optional) \n
-            Specifies the random number generator to use. There are two options: \n
-            - "MT"  : Mersenne twister (default setting).
-            - "PCG" : PCG64.
-        @param seed : int (optional) \n
-            The seed of the random number generator, defaults to 12345.
-        """
-        self.initialise(shape, rng_type, seed)
-        # Pre-calculate frequently used values
-        if shape.is_spheroid() == True:
-            self.a2 = shape.a_axis*shape.a_axis
-            self.c2 = shape.c_axis*shape.c_axis
-            self.M = 1.0 / (self.shape.a_axis*self.shape.c_axis)
-        else: # Triaxial
-            a2 = shape.a_axis*shape.a_axis
-            b2 = shape.b_axis*shape.b_axis
-            c2 = shape.c_axis*shape.c_axis
-            self.bc = b2*c2
-            self.ac = a2*c2
-            self.ab = a2*b2
-            self.M = 1.0 / (self.shape.a_axis*self.shape.c_axis)
-        
-    def random_surface_point(self):
-        """! Generates a uniformly random point on the surface of an ellipsoid, 
-        using the area rejection method in Mercator coordinates.
-        @return NumPy array \n
-            Cartesian coordinates of the generated surface point.
-        """        
-        accept = False
-        if self.shape.is_spheroid() == True:
-            ph = 2.0*pi*self.rng.random()
-            sin_ph = sin(ph)
-            sin_2_ph = sin_ph * sin_ph
-            while accept == False:
-                v = 2.0*pi*(-1.0 + 2.0*self.rng.random())
-                sech_v = exp(v)
-                sech_v = 2.0*sech_v / (sech_v*sech_v + 1.0)
-                sech_2_v = sech_v*sech_v
-                # Acceptance probability
-                m = self.M * sech_2_v * self.shape.a_axis * sqrt(self.a2*(1-sech_2_v) + self.c2*sech_2_v)
-                u = self.rng.random() # 'Roll dice'
-                if u <= m:
-                    accept = True
-                self.no_attempts += 1
-        else:
-            while accept == False:
-                v = 2.0*pi*(-1.0 + 2.0*self.rng.random())
-                ph = 2.0*pi*self.rng.random()
-                sech_v = exp(v)
-                sech_v = 2.0*sech_v / (sech_v*sech_v + 1.0)
-                sech_2_v = sech_v*sech_v
-                sin_ph = sin(ph)
-                sin_2_ph = sin_ph*sin_ph
-                # Acceptance probability
-                m = self.M * sech_2_v * sqrt( sech_2_v*(self.bc*(1.0 - sin_2_ph) + self.ac*sin_2_ph) + self.ab*(1.0 - sech_2_v) )
-                u = self.rng.random() # 'Roll dice'
-                if u <= m:
-                    accept = True
-                self.no_attempts += 1
-        p = array([0.0, 0.0, 0.0])
-        p[0] = self.shape.a_axis * sech_v * sqrt(1.0 - sin_2_ph);
-        if (ph > 0.5*pi and ph < 1.5*pi):
-              p[0] *= -1.0
-        p[1] = self.shape.b_axis * sech_v * sin_ph;
-        p[2] = self.shape.c_axis * sqrt(1.0 - sech_2_v);
-        if v < 0:
-             p[2] *= -1.0
-        return p
-    
-    
-    
-class Generic(EllipsoidBase):
+class RayIntersect(EllipsoidBase):
     
     def __init__(self, shape, rng_type="MT", seed=12345):
         """! Initialiser for the generic surface ellipsoid sampler.
@@ -309,7 +231,7 @@ class Generic(EllipsoidBase):
             The seed of the random number generator, defaults to 12345.
         """
         self.initialise(shape, rng_type, seed)
-        self.sphere_sampler = Marsaglia(1.0)
+        self.sphere_sampler = Trig(1.0)
         self.sphere_sampler.set_rng(self.rng) # Make both sphere and ellipsoid samplers use the same rng object.
         # Pre-calculate frequently used values
         self.a2 = 1.0 / (shape.a_axis*shape.a_axis)

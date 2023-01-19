@@ -6,7 +6,7 @@
 - Last modified on 17/01/2022.
 """
 
-import math
+from math import pi, sqrt, sin, cos, asin, acos, atan2
 import numpy as np
 
 class EllipsoidShape:
@@ -84,15 +84,21 @@ class EllipsoidShape:
     def polar2cart(self, th, ph):
         """! Convert polar coordinates to Cartesians.
         @param th : float \n
-            The \f$\theta\f$ coordinate.
+            The \f$\theta\f$ coordinate, in radians.
         @param ph : float \n
-            The \f$\phi\f$ coordinate.
+            The \f$\phi\f$ coordinate, in radians.
         @return list \n
             The Cartesian coordinates \f$[x,y,z]\f$ of the point.
         """
-        x = self.a_axis * math.sin(th) * math.cos(ph)
-        y = self.b_axis * math.sin(th) * math.sin(ph)
-        z = self.c_axis * math.cos(th)
+        sin_th = sin(th)
+        sin_ph = sin(ph)       
+        x = self.a_axis * sin_th * sqrt(1.0 - sin_ph*sin_ph)
+        if (ph > 0.5*pi and ph < 1.5*pi):
+            x *= -1.0
+        y = self.b_axis * sin_th * sin_ph
+        z = self.c_axis * sqrt(1.0 - sin_th*sin_th)
+        if (th > 0.5*pi):
+            z *= -1.0
         return [x, y, z]
     
     def cart2polar(self, x, y, z):
@@ -104,10 +110,12 @@ class EllipsoidShape:
         @param z : float \n
             The \f$z\f$ coordinate.
         @return list \n
-            The polar coordinates \f$[\theta, \phi]\f$ of the point.
+            The polar coordinates \f$[\theta, \phi]\f$ of the point, in radians.
         """
-        th = math.acos(z / self.c_axis)
-        ph = math.atan2(self.a_axis*y, self.b_axis*x)
+        th = acos(z / self.c_axis)
+        ph = atan2(self.a_axis*y, self.b_axis*x)
+        if ph < 0.0:
+            ph += 2.0*pi
         return [th, ph]
     
     def ellip2cart(self, be, lm):
@@ -122,9 +130,9 @@ class EllipsoidShape:
         a2 = self.a_axis * self.a_axis
         b2 = self.b_axis * self.b_axis
         c2 = self.c_axis * self.c_axis
-        x = self.a_axis * math.cos(lm) * math.sqrt(a2 - b2*math.sin(be)**2 - c2*math.cos(be)**2) / math.sqrt(a2 - c2)
-        y = self.b_axis * math.cos(be) * math.sin(lm)
-        z = self.c_axis * math.sin(be) * math.sqrt(a2*math.sin(lm)**2 + b2*math.cos(lm)**2 - c2) / math.sqrt(a2 - c2)
+        x = self.a_axis * cos(lm) * sqrt(a2 - b2*sin(be)**2 - c2*cos(be)**2) / sqrt(a2 - c2)
+        y = self.b_axis * cos(be) * sin(lm)
+        z = self.c_axis * sin(be) * sqrt(a2*sin(lm)**2 + b2*cos(lm)**2 - c2) / sqrt(a2 - c2)
         return [x, y, z]
     
     def cart2ellip(self, x, y, z):
@@ -144,7 +152,7 @@ class EllipsoidShape:
         h_x2 = a2 - c2
         h_y2 = b2 - c2    # Linear eccentricities
         h_e2 = a2 - b2
-        h_x = math.sqrt(h_x2)
+        h_x = sqrt(h_x2)
         
         # Initial guess (using analytical calculation)
         
@@ -155,22 +163,22 @@ class EllipsoidShape:
             k0 = a2*b2 + a2*c2 + b2*c2 - x*x*(b2+c2) - y*y*(a2+c2) - z*z*(a2+b2)
             k1 = x*x + y*y + z*z - (a2+b2+c2)
             # Solve quadratic
-            t2 = 0.5*(-k1 + math.sqrt(k1*k1 - 4*k0))
+            t2 = 0.5*(-k1 + sqrt(k1*k1 - 4*k0))
             t1 = k0 / t2
             # Ensure correct signs
-            x_root = math.sqrt(a2 - t2)
+            x_root = sqrt(a2 - t2)
             if x < 0:
                 x_root *= -1
             if abs(t2 - b2) < 1e-13:
                 y_root = 0
             else:
-                y_root = math.sqrt(t2 - b2) 
+                y_root = sqrt(t2 - b2) 
             if y < 0:
                 y_root *= -1
             if abs(t1 - c2) < 1e-13:
                 z_root = 0
             else:
-                z_root = math.sqrt(t1 - c2)
+                z_root = sqrt(t1 - c2)
             if z < 0:
                 z_root *= -1
             # Use roots to obtain beta and lambda
@@ -180,37 +188,37 @@ class EllipsoidShape:
                 b2t1 = b2 - t1
                 if abs(b2t1) < 1e-14:
                     b2t1 = 0
-                beta = math.atan2(z_root, math.sqrt(b2t1))
-            lmda = math.atan2(y_root, x_root)
+                beta = atan2(z_root, sqrt(b2t1))
+            lmda = atan2(y_root, x_root)
             
         # if spheroid or sphere
         elif self.a_axis == self.b_axis or self.b_axis == self.c_axis:
             # Use simplified expressions
-            beta = math.asin(z/self.c_axis)
-            lmda = math.atan2(self.a_axis*y, self.b_axis*x)
+            beta = asin(z/self.c_axis)
+            lmda = atan2(self.a_axis*y, self.b_axis*x)
             
         # Ensure lambda in correct range (-pi to pi)
-        if lmda < -math.pi:
-            lmda += 2*math.pi
-        elif lmda > math.pi:
-            lmda -= 2*math.pi
+        if lmda < -pi:
+            lmda += 2*pi
+        elif lmda > pi:
+            lmda -= 2*pi
         
         x0, y0, z0 = self.ellip2cart(beta, lmda)
-        d = math.sqrt( (x-x0)**2 + (y-y0)**2 + (z-z0)**2 )
+        d = sqrt( (x-x0)**2 + (y-y0)**2 + (z-z0)**2 )
         # Apply numerical method
         while d > 1e-15:
             delta_r = np.array([x-x0, y-y0, z-z0])
             # Compute B and L (square roots of those in Panou 2019)
-            B = math.sqrt(h_x2*math.cos(beta)**2 + h_e2*math.sin(beta)**2)
-            L = math.sqrt(h_x2 - h_e2*math.cos(lmda)**2)
+            B = sqrt(h_x2*cos(beta)**2 + h_e2*sin(beta)**2)
+            L = sqrt(h_x2 - h_e2*cos(lmda)**2)
             # Use current guess to construct Jacobian
-            J = np.array([ [-self.a_axis*h_y2*math.sin(2*beta)*math.cos(lmda) / (2*h_x*B), -self.a_axis*B*math.sin(lmda)],
-                           [-self.b_axis*math.sin(beta)*math.sin(lmda), self.b_axis*math.cos(beta)*math.cos(lmda)],
-                           [self.c_axis*math.cos(beta)*L/h_x, self.c_axis*h_e2*math.sin(beta)*math.sin(2*lmda) / (2*h_x*L)] ])
+            J = np.array([ [-self.a_axis*h_y2*sin(2*beta)*cos(lmda) / (2*h_x*B), -self.a_axis*B*sin(lmda)],
+                           [-self.b_axis*sin(beta)*sin(lmda), self.b_axis*cos(beta)*cos(lmda)],
+                           [self.c_axis*cos(beta)*L/h_x, self.c_axis*h_e2*sin(beta)*sin(2*lmda) / (2*h_x*L)] ])
             corr = np.linalg.solve(J.transpose()@J, J.transpose()@delta_r) 
             beta += corr[0]
             lmda += corr[1]
             x0, y0, z0 = self.ellip2cart(beta, lmda)
-            d = math.sqrt( (x-x0)**2 + (y-y0)**2 + (z-z0)**2 )
+            d = sqrt( (x-x0)**2 + (y-y0)**2 + (z-z0)**2 )
         
         return [beta, lmda, d]

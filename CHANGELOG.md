@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the LEOD project.
 
+## 2023-01-19
+### Modified
+- Fixed bug in Cartesian to polars conversion where phi coordinate was in wrong range.
+
 ## 2023-01-18
 ### Added
 - Contact distribution class for recording sampling data.
