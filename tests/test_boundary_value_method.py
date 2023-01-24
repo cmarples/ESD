@@ -17,8 +17,8 @@ os.chdir("..")
 import unittest
 import math
 
-from leod.ellipsoid_shape import EllipsoidShape
-from leod.triaxial_geodesics import boundary_value_method
+from esd.shape import EllipsoidShape
+from esd.triaxial_geodesics import boundary_value_method
 
 print(" ")    
 

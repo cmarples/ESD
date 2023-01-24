@@ -7,8 +7,10 @@
 - Last modified on 17/01/2023.
 """
 
-import leod
-import math
+from esd.shape import EllipsoidShape
+from esd.geo.taxicab import sphere_tcd, spheroid_tcd, triaxial_tcd
+from esd.fmm.mesh_pol import gen_pol_mesh
+from esd.fmm.callers import distance_pair
 import os
 
 os.chdir("..")
@@ -20,21 +22,21 @@ end_point = [90.0, 0.0]
 
 ### Taxicab distances
 # Sphere
-sphere = leod.shape.EllipsoidShape(1.0, 1.0, 1.0)
-d_taxi_sphere = leod.geo.taxicab.sphere_tcd(sphere.a_axis, start_point, end_point, out_flag=True, is_radians=False)
+sphere = EllipsoidShape(1.0, 1.0, 1.0)
+d_taxi_sphere = sphere_tcd(sphere.a_axis, start_point, end_point, out_flag=True, is_radians=False)
 print("")
 print("Sphere:             taxicab distance =", d_taxi_sphere[0])
 
 # Spheroid
-sph = leod.shape.EllipsoidShape(2.0, 2.0, 1.0)
+sph = EllipsoidShape(2.0, 2.0, 1.0)
 sph.normalise()
-d_taxi_spheroid = leod.geo.taxicab.spheroid_tcd(sph.a_axis, sph.c_axis, start_point, end_point, out_flag=True, is_radians=False)
+d_taxi_spheroid = spheroid_tcd(sph.a_axis, sph.c_axis, start_point, end_point, out_flag=True, is_radians=False)
 print("Oblate spheroid:    taxicab distance =", d_taxi_spheroid[0])
 
 # Triaxial
-tri = leod.shape.EllipsoidShape(3.0, 2.0, 1.0)
+tri = EllipsoidShape(3.0, 2.0, 1.0)
 tri.normalise()
-d_taxi_tri = leod.geo.taxicab.triaxial_tcd(tri, start_point, end_point, out_flag=True, is_radians=False)
+d_taxi_tri = triaxial_tcd(tri, start_point, end_point, out_flag=True, is_radians=False)
 print("Triaxial ellipsoid: taxicab distance =", d_taxi_tri[0])
 print("")
 
@@ -44,15 +46,15 @@ if dijkstra_flag == True:
     no_theta = 91
     no_phi = 180
     
-    grid_sphere = leod.fmm.mesh_pol.gen_pol_mesh(no_theta, no_phi, shape=sphere, is_connect_8=False)
-    grid_sph = leod.fmm.mesh_pol.gen_pol_mesh(no_theta, no_phi, shape=sph, is_connect_8=False)
-    grid_tri = leod.fmm.mesh_pol.gen_pol_mesh(no_theta, no_phi, shape=tri, is_connect_8=False)
+    grid_sphere = gen_pol_mesh(no_theta, no_phi, shape=sphere, is_connect_8=False)
+    grid_sph = gen_pol_mesh(no_theta, no_phi, shape=sph, is_connect_8=False)
+    grid_tri = gen_pol_mesh(no_theta, no_phi, shape=tri, is_connect_8=False)
     
-    d_sphere, fmm1 = leod.fmm.callers.distance_pair(sphere, grid_sphere, start_point, end_point,
+    d_sphere, fmm1 = distance_pair(sphere, grid_sphere, start_point, end_point,
                                                    is_radians=False, is_dijkstra=True)
-    d_sph, fmm2 = leod.fmm.callers.distance_pair(sph, grid_sph, start_point, end_point,
+    d_sph, fmm2 = distance_pair(sph, grid_sph, start_point, end_point,
                                                    is_radians=False, is_dijkstra=True)
-    d_tri, fmm3 = leod.fmm.callers.distance_pair(tri, grid_tri, start_point, end_point,
+    d_tri, fmm3 = distance_pair(tri, grid_tri, start_point, end_point,
                                                    is_radians=False, is_dijkstra=True)
     print("Sphere:             Dijkstra-4 distance =", d_sphere)
     print("Oblate spheroid:    Dijkstra-4 distance =", d_sph)

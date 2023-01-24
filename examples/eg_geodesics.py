@@ -7,10 +7,10 @@
 - Last modified on 17/01/2023.
 """
 
-from leod.shape import EllipsoidShape
-from leod.geo.sphere import gc_dist, gc_path
-from leod.geo.spheroid import geo_dist
-from leod.geo.triaxial import bvm_dist
+from esd.shape import EllipsoidShape
+from esd.geo.sphere import gc_dist
+from esd.geo.spheroid import geo_dist
+from esd.geo.triaxial import bvm_dist
 import os
 
 os.chdir("..")

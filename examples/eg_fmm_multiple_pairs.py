@@ -9,9 +9,9 @@ To use Dijkstra's algorithm, set is_dijkstra=True in the distance_pair function.
 - Last modified on 17/01/2023.
 """
 
-from leod.shape import EllipsoidShape
-from leod.fmm.mesh_pol import gen_pol_mesh
-from leod.fmm.callers import distance_multiple
+from esd.shape import EllipsoidShape
+from esd.fmm.mesh_pol import gen_pol_mesh
+from esd.fmm.callers import distance_multiple
 import time
 
 ### Grid size

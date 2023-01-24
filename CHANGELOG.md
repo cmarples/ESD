@@ -1,5 +1,16 @@
 # Changelog
-This document tracks the notable changes to the LEOD project.
+This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance) project.
+
+## 2023-01-24
+### Added
+- Unit tests for grid and mesh generation.
+
+## [0.0.4] - 2023-01-23
+### Modified
+- Project renamed from LEOD to ESD. This project will now act as supplementary information to the geodesic paper.
+- Surface area and sampling code removed.
+- Removed obsolete example scripts for geodesics/FMM.
+- Removed newton_raphson and binary_search scripts.
 
 ## 2023-01-19
 ### Modified
