@@ -1,6 +1,14 @@
 # Changelog
 This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance) project.
 
+## 2023-01-26
+### Added
+- Max/min edge lengths and face angles from precalculation/splitting routines.
+- Taxicab and 4-neighbour Dijkstra distance tests.
+### Modified
+- Geodesic unit tests updated for function calls.
+- Closest icosahedral mesh vertex routine now uses maximum edge length.
+
 ## 2023-01-24
 ### Added
 - Unit tests for grid and mesh generation.

@@ -7,9 +7,8 @@
 - Last modified on 17/01/2023.
 """
 
-import math
 import heapq
-from math import sqrt
+from math import sqrt, inf
 
 # This class contains information for a vertex in the mesh used in the fast
 # marching method.
@@ -18,7 +17,7 @@ class FmmResult:
     Contains information obtained from applying the fast marching method to a FmmMesh object.
     """
     def __init__(self, no_vertices):
-        self.distance = [math.inf] * no_vertices
+        self.distance = [inf] * no_vertices
         self.accepted = [False] * no_vertices
         self.update = [[-1]] * no_vertices
         self.no_obtuse = 0
@@ -53,7 +52,7 @@ def fast_marching(mesh, start_vertex, start_carts, is_dijkstra=False, end_dict={
         # Begin queue
         queue = [(0.0, start_vertex)]
     else: # Start point is not a vertex
-        d_start = math.sqrt(d_start)
+        d_start = sqrt(d_start)
         fmm.distance[start_vertex] = d_start
         queue = [(d_start, start_vertex)]
         for j in mesh.vertex[start_vertex].neighbour.keys():
@@ -108,7 +107,7 @@ def euclidean_distance(x, y):
         Euclidean distance between \f$x\f$ and \f$y\f$.
     @see fast_marching
     """
-    return math.sqrt( (x[0] - y[0])**2.0 + (x[1] - y[1])**2.0 + (x[2] - y[2])**2.0 )
+    return sqrt( (x[0] - y[0])**2.0 + (x[1] - y[1])**2.0 + (x[2] - y[2])**2.0 )
 
 
     

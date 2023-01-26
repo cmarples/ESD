@@ -282,7 +282,7 @@ def gen_ico_mesh(n=50, shape=EllipsoidShape(), is_split=False):
     mesh.precalculate()    
     
     if is_split == True:
-        split_obtuse_angles(mesh.vertex)
+        split_obtuse_angles(mesh)
     
     # Set grid type
     mesh.type = "ico"
@@ -290,14 +290,12 @@ def gen_ico_mesh(n=50, shape=EllipsoidShape(), is_split=False):
     return mesh
 
 # Find closest vertex to input point
-def find_closest_vertex(vertex, p, c, v=0):
+def find_closest_vertex(mesh, p, v=0):
     """! @brief Find the closest vertex (in terms of Euclidean distance) to a given point.
-    @param n : list of FmmVertex objects \n
-        The list of vertices.
+    @param mesh : FmmMesh object \n
+        The icosahedral mesh.
     @param p : 3-element NumPy array \n
         The point for which the closest vertex is to be found.
-    @param c : float \n
-        The \f$c\f$-axis length of the ellipsoid.
     @param v : int (optional)
         The starting vertex for the search. Defaults to 0.
     @return int \n
@@ -309,7 +307,7 @@ def find_closest_vertex(vertex, p, c, v=0):
     d2 = {}
     is_min_found = False
     
-    def perform_loop(vertex, p, v, c, d2, is_min_found):
+    def perform_loop(vertex, p, v, d2, is_min_found):
         while is_min_found == False:
             if v not in d2.keys():
                 vec = vertex[v].carts - p
@@ -329,29 +327,30 @@ def find_closest_vertex(vertex, p, c, v=0):
                 v = u
         return v, d_min
     
-    d_min = c*c
-    while d_min > (0.5*c*c): # REPLACE WITH MAX EDGE LENGTH!
-        v, d_min = perform_loop(vertex, p, v, c, d2, is_min_found)
-        if d_min < (0.5*c*c):
+    max_dist = mesh.max_edge*mesh.max_edge # Largest neighbour distance squared.
+    d_min = 2.0*max_dist
+    while d_min > max_dist:
+        v, d_min = perform_loop(mesh.vertex, p, v, d2, is_min_found)
+        if d_min < max_dist:
             break
         else:
             # Select a random vertex for which d2 has not been calculated.
             while v in d2.keys():
-                v = random.randint(0, len(vertex)-1)
+                v = random.randint(0, len(mesh.vertex)-1)
     return v
 
-def split_obtuse_angles(vertex):
+def split_obtuse_angles(mesh):
     """! @brief Split each obtuse angle in a triangular mesh by adding additional edges.
     This routine updates the input vertex list and is a subroutine of gen_ico_mesh.
-    @param vertex : list of FmmVertex objects \n
-        The list of vertices.
+    @param mesh : FmmMesh object \n
+        The icosahedral mesh.
     @see gen_ico_mesh
     """
-    for i in range(len(vertex)):
+    for i in range(len(mesh.vertex)):
         # Find faces to loop over
         face_set = set()
-        for j in vertex[i].neighbour.keys():
-            for k in vertex[i].neighbour[j].face:
+        for j in mesh.vertex[i].neighbour.keys():
+            for k in mesh.vertex[i].neighbour[j].face:
                 if k > j:
                     face_set.add((j, k))
         # Loop over each face, splitting if necessary
@@ -359,38 +358,59 @@ def split_obtuse_angles(vertex):
             j = face[0]
             k = face[1]
             # Check the cosine of the angle to see if it is obtuse.
-            if vertex[i].neighbour[j].face_angle[k] < 0.0:
+            if mesh.vertex[i].neighbour[j].face_angle[k] < 0.0:
                 # Perform split on obtuse angle.
                 # Find vertex s to perform split with.
-                temp_set = vertex[j].neighbour.keys() & vertex[k].neighbour.keys()
+                temp_set = mesh.vertex[j].neighbour.keys() & mesh.vertex[k].neighbour.keys()
                 temp_set.remove(i)
                 (s,) = temp_set
                 # Add new neighbour
-                vertex[i].neighbour[s] = FmmNeighbour()
+                mesh.vertex[i].neighbour[s] = FmmNeighbour()
                 # Add outgoing neighbour
-                vertex[s].neighbour_set.add(i)
+                mesh.vertex[s].neighbour_set.add(i)
                 # Calculate distance
-                vertex[i].neighbour[s].distance = sqrt( (vertex[i].carts[0]-vertex[s].carts[0])**2.0 +
-                                                        (vertex[i].carts[1]-vertex[s].carts[1])**2.0 +
-                                                        (vertex[i].carts[2]-vertex[s].carts[2])**2.0 )
+                mesh.vertex[i].neighbour[s].distance = sqrt( (mesh.vertex[i].carts[0]-mesh.vertex[s].carts[0])**2.0 +
+                                                        (mesh.vertex[i].carts[1]-mesh.vertex[s].carts[1])**2.0 +
+                                                        (mesh.vertex[i].carts[2]-mesh.vertex[s].carts[2])**2.0 )
+                if mesh.vertex[i].neighbour[s].distance < mesh.min_edge:
+                    mesh.min_edge = mesh.vertex[i].neighbour[s].distance
+                if mesh.vertex[i].neighbour[s].distance > mesh.max_edge:
+                    mesh.mxa_edge = mesh.vertex[i].neighbour[s].distance
                 # Update face completion lists
                 for v in range(2):
-                    if vertex[i].neighbour[j].face[v] == k:
-                        vertex[i].neighbour[j].face[v] = s
-                    if vertex[i].neighbour[k].face[v] == j:
-                        vertex[i].neighbour[k].face[v] = s
-                vertex[i].neighbour[s].face = [j, k]
+                    if mesh.vertex[i].neighbour[j].face[v] == k:
+                        mesh.vertex[i].neighbour[j].face[v] = s
+                    if mesh.vertex[i].neighbour[k].face[v] == j:
+                        mesh.vertex[i].neighbour[k].face[v] = s
+                mesh.vertex[i].neighbour[s].face = [j, k]
                 # Remove old face angles        
-                del vertex[i].neighbour[j].face_angle[k]
-                del vertex[i].neighbour[k].face_angle[j]
+                del mesh.vertex[i].neighbour[j].face_angle[k]
+                del mesh.vertex[i].neighbour[k].face_angle[j]
+                mesh.no_obtuse -= 1
                 # Calculate new face angles
-                wj = vertex[j].carts - vertex[i].carts
-                wk = vertex[k].carts - vertex[i].carts
-                ws = vertex[s].carts - vertex[i].carts
-                dj = vertex[i].neighbour[j].distance
-                dk = vertex[i].neighbour[k].distance
-                ds = vertex[i].neighbour[s].distance
-                vertex[i].neighbour[j].face_angle[s] = (wj[0]*ws[0] + wj[1]*ws[1] + wj[2]*ws[2]) / (dj*ds)
-                vertex[i].neighbour[s].face_angle[j] = vertex[i].neighbour[j].face_angle[s]
-                vertex[i].neighbour[k].face_angle[s] = (wk[0]*ws[0] + wk[1]*ws[1] + wk[2]*ws[2]) / (dk*ds)
-                vertex[i].neighbour[s].face_angle[k] = vertex[i].neighbour[k].face_angle[s]
+                wj = mesh.vertex[j].carts - mesh.vertex[i].carts
+                wk = mesh.vertex[k].carts - mesh.vertex[i].carts
+                ws = mesh.vertex[s].carts - mesh.vertex[i].carts
+                dj = mesh.vertex[i].neighbour[j].distance
+                dk = mesh.vertex[i].neighbour[k].distance
+                ds = mesh.vertex[i].neighbour[s].distance
+                mesh.vertex[i].neighbour[j].face_angle[s] = (wj[0]*ws[0] + wj[1]*ws[1] + wj[2]*ws[2]) / (dj*ds)
+                mesh.vertex[i].neighbour[s].face_angle[j] = mesh.vertex[i].neighbour[j].face_angle[s]
+                if mesh.vertex[i].neighbour[j].face_angle[s] < 0.0:
+                    mesh.no_obtuse += 1
+                mesh.vertex[i].neighbour[k].face_angle[s] = (wk[0]*ws[0] + wk[1]*ws[1] + wk[2]*ws[2]) / (dk*ds)
+                mesh.vertex[i].neighbour[s].face_angle[k] = mesh.vertex[i].neighbour[k].face_angle[s]
+                if mesh.vertex[i].neighbour[k].face_angle[s] < 0.0:
+                    mesh.no_obtuse += 1
+                
+    # Determine the updated maximum and minimum face angles
+    mesh.min_angle = -2.0
+    mesh.max_angle = 2.0
+    for i in range(mesh.no_vertices):        
+            for j in mesh.vertex[i].neighbour:
+                for k in mesh.vertex[i].neighbour[j].face_angle.keys():
+                    if mesh.vertex[i].neighbour[j].face_angle[k] < mesh.max_angle:
+                        mesh.max_angle = mesh.vertex[i].neighbour[j].face_angle[k]
+                    if mesh.vertex[i].neighbour[j].face_angle[k] > mesh.min_angle:
+                        mesh.min_angle = mesh.vertex[i].neighbour[j].face_angle[k]
+                

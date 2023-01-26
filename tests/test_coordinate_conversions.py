@@ -13,7 +13,7 @@ os.chdir("..")
 import unittest
 import math
 
-from leod.shape import EllipsoidShape
+from esd.shape import EllipsoidShape
 
 class TestConversions(unittest.TestCase):
 
@@ -34,7 +34,8 @@ class TestConversions(unittest.TestCase):
         # Convert back to polars
         [th_out, ph_out] = E.cart2polar(x, y, z)
         self.assertAlmostEqual(th_out*180.0/math.pi, 75.0, 9, "Expect th = 75 degrees")
-        self.assertAlmostEqual(ph_out*180.0/math.pi, -35.0, 9, "Expect th = -35 degrees")
+        # phi should be given in the range [0, 360]
+        self.assertAlmostEqual(ph_out*180.0/math.pi, 325.0, 9, "Expect ph = 325 degrees")
         print("Test passed")
         print(" ")
         

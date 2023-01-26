@@ -114,8 +114,8 @@ class EllipsoidShape:
         """
         th = acos(z / self.c_axis)
         ph = atan2(self.a_axis*y, self.b_axis*x)
-        #if ph < 0.0:
-        #    ph += 2.0*pi
+        if ph < 0.0:
+            ph += 2.0*pi
         return [th, ph]
     
     def ellip2cart(self, be, lm):

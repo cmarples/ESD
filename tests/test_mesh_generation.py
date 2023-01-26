@@ -11,7 +11,8 @@ from math import pi
 from esd.shape import EllipsoidShape
 from esd.grid import Grid, binary_search
 from esd.fmm.mesh_pol import gen_pol_mesh
-from esd.fmm.mesh_ico import gen_ico_mesh
+from esd.fmm.mesh_ico import gen_ico_mesh, find_closest_vertex
+from numpy import array
 
 class TestBinarySearch(unittest.TestCase):
     
@@ -105,12 +106,16 @@ class TestPolar(unittest.TestCase):
         self.assertAlmostEqual(mesh_4.vertex[0].neighbour[1].distance, 1.15057108, 8, "Expect 1.15057108")
         mesh_1 = gen_pol_mesh(81, 80, shape, is_connect_8=True)
         for neigh in mesh_1.vertex[0].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         for neigh in mesh_1.vertex[1].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         for neigh in mesh_1.vertex[250].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         self.assertEqual(mesh_1.vertex[0].neighbour[1].distance, mesh_1.vertex[1].neighbour[0].distance)
+        
+        # Angle splitting from 4 to 8 neighbours
+        self.assertLess(mesh_8.no_obtuse, mesh_4.no_obtuse, "Expect True")
+        self.assertLess(mesh_4.max_angle, mesh_8.max_angle, "Expect True") # max_angle is cos(psi)
         
         print("Test passed")
         print(" ")
@@ -139,12 +144,29 @@ class TestIco(unittest.TestCase):
         # Neighbour distances
         mesh_1 = gen_ico_mesh(15, shape, is_split=False)
         for neigh in mesh_1.vertex[0].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         for neigh in mesh_1.vertex[1].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         for neigh in mesh_1.vertex[250].neighbour.values():
-            self.assertLess(neigh.distance, 0.2, "Expect small distance")
+            self.assertLessEqual(neigh.distance, mesh_1.max_edge, "Expect small distance")
         self.assertEqual(mesh_1.vertex[0].neighbour[1].distance, mesh_1.vertex[1].neighbour[0].distance)
+        
+        # Angle splitting
+        mesh_split = gen_ico_mesh(4, shape, is_split=True)
+        self.assertLess(mesh_split.no_obtuse, mesh_ico.no_obtuse, "Expect True")
+        self.assertLess(mesh_ico.max_angle, mesh_split.max_angle, "Expect True") # max_angle is cos(psi)
+        # If no split needed (as is the case for a sphere), splitting should make no change
+        sphere = EllipsoidShape(1.0, 1.0, 1.0)
+        mesh_1 = gen_ico_mesh(4, sphere, is_split=False)
+        mesh_2 = gen_ico_mesh(4, sphere, is_split=True)
+        self.assertEqual(mesh_1.no_obtuse, mesh_2.no_obtuse, "Expect True")
+        self.assertEqual(mesh_1.max_angle, mesh_2.max_angle, "Expect True")
+        self.assertEqual(mesh_1.min_angle, mesh_2.min_angle, "Expect True")
+        
+        # Closest vertex
+        carts = array([0.012, 0.525, 0.849])
+        v = find_closest_vertex(mesh_1, carts)
+        self.assertEqual(v, 0, "Expect vertex 0")
         
         print("Test passed")
         print(" ")

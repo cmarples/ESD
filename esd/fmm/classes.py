@@ -5,7 +5,7 @@ Created on Mon Dec 12 20:08:13 2022
 @author: Cal
 """
 
-import math
+from math import sqrt, inf
 import numpy as np
 
 class FmmVertex:
@@ -58,14 +58,24 @@ class FmmMesh:
         @see gen_pol_mesh
         @see gen_ico_mesh
         """
+        self.min_edge = inf
+        self.max_edge = 0.0
         for i in range(self.no_vertices):
             for j in self.vertex[i].neighbour:
                 if i > j:
-                    self.vertex[i].neighbour[j].distance = math.sqrt( (self.vertex[i].carts[0]-self.vertex[j].carts[0])**2.0 +
+                    self.vertex[i].neighbour[j].distance = sqrt( (self.vertex[i].carts[0]-self.vertex[j].carts[0])**2.0 +
                                                             (self.vertex[i].carts[1]-self.vertex[j].carts[1])**2.0 +
                                                             (self.vertex[i].carts[2]-self.vertex[j].carts[2])**2.0 )
                     self.vertex[j].neighbour[i].distance = self.vertex[i].neighbour[j].distance
-                    
+                    # Check if this distance is a new maximum or minimum.
+                    if self.vertex[i].neighbour[j].distance > self.max_edge:
+                        self.max_edge = self.vertex[i].neighbour[j].distance
+                    if self.vertex[i].neighbour[j].distance < self.min_edge:
+                        self.min_edge = self.vertex[i].neighbour[j].distance
+        
+        self.no_obtuse = 0
+        self.min_angle = -2.0
+        self.max_angle = 2.0
         for i in range(self.no_vertices):        
             for j in self.vertex[i].neighbour:
                 for k in self.vertex[i].neighbour[j].face_angle.keys():           
@@ -76,3 +86,11 @@ class FmmMesh:
                         b = self.vertex[i].neighbour[k].distance
                         self.vertex[i].neighbour[j].face_angle[k] = (w1[0]*w2[0] + w1[1]*w2[1] + w1[2]*w2[2]) / (a*b)
                         self.vertex[i].neighbour[k].face_angle[j] = self.vertex[i].neighbour[j].face_angle[k]
+                        # Check if this angle is obtuse, a new maximum or a new minimum.
+                        if self.vertex[i].neighbour[j].face_angle[k] < 0.0: # Obtuse angle (cosine negative)
+                            self.no_obtuse += 1
+                        if self.vertex[i].neighbour[j].face_angle[k] < self.max_angle:
+                            self.max_angle = self.vertex[i].neighbour[j].face_angle[k]
+                        if self.vertex[i].neighbour[j].face_angle[k] > self.min_angle:
+                            self.min_angle = self.vertex[i].neighbour[j].face_angle[k]
+                        

@@ -10,7 +10,6 @@ input start/end points.
 
 from numpy import array
 from numpy import zeros
-import numpy as np
 from math import pi
 from .mesh_ico import find_closest_vertex
 from .fast_marching import fast_marching
@@ -60,10 +59,8 @@ def distance_pair(shape, mesh, start_point, end_point, is_dijkstra=False, is_rad
         end_vertex = mesh.grid.find_vertex_index(end_point_temp[0], end_point_temp[1])
     else:
         # Use triangulation
-        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
-        c = np.min(abc)
-        start_vertex = find_closest_vertex(mesh.vertex, array(start_carts), c)
-        end_vertex = find_closest_vertex(mesh.vertex, array(end_carts), c)
+        start_vertex = find_closest_vertex(mesh, array(start_carts))
+        end_vertex = find_closest_vertex(mesh, array(end_carts))
     
     
     end_vertex_carts = mesh.vertex[end_vertex].carts
@@ -169,11 +166,9 @@ def distance_multiple(shape, mesh, start_point, end_point=[], is_dijkstra=False,
         for i in range(n):
             end_vertex[i] = mesh.grid.find_vertex_index(end_point_temp[i][0], end_point_temp[i][1])
     else: # Icosahedral triangulation
-        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
-        c = np.min(abc)
-        start_vertex = find_closest_vertex(mesh.vertex, array(start_carts), c)
+        start_vertex = find_closest_vertex(mesh, array(start_carts))
         for i in range(n):
-            end_vertex[i] = find_closest_vertex(mesh.vertex, array(end_carts[i]), c)
+            end_vertex[i] = find_closest_vertex(mesh, array(end_carts[i]))
    
     ### Prepare end points
     end_vertex_carts = [0] * n
@@ -253,9 +248,7 @@ def distance_all(shape, mesh, start_point, is_dijkstra=False, is_radians=False):
     if mesh.type == "pol": # Polar mesh
         start_vertex = mesh.grid.find_vertex_index(start_point_temp[0], start_point_temp[1])
     else: # Icosahedral triangulation
-        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
-        c = np.min(abc)
-        start_vertex = find_closest_vertex(mesh.vertex, array(start_carts), c) 
+        start_vertex = find_closest_vertex(mesh, array(start_carts)) 
             
     ### Call fast marching method
     fmm = fast_marching(mesh, start_vertex, start_carts, is_dijkstra, end_dict={})
@@ -300,9 +293,7 @@ def distance_end(shape, mesh, fmm, end_point, is_radians=False):
         end_vertex = mesh.grid.find_vertex_index(end_point_temp[0], end_point_temp[1])
     else:
         # Use triangulation
-        abc = np.array([shape.a_axis, shape.b_axis, shape.c_axis])
-        c = np.min(abc)
-        end_vertex = find_closest_vertex(mesh.vertex, array(end_carts), c)
+        end_vertex = find_closest_vertex(mesh, array(end_carts))
     
     end_vertex_carts = mesh.vertex[end_vertex].carts
     

@@ -9,7 +9,7 @@ import math
 import numpy as np
 import scipy.integrate
 
-def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, Jacobi=False, n=10000):
+def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=10000):
     
     start_temp = [0.0, 0.0]
     end_temp = [0.0, 0.0]
@@ -29,7 +29,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, Jacobi=False, n=100
                    
     if th_0 == th_1 and ph_0 == ph_1:
         # Start and end points are the same => distance = 0
-        if Jacobi:
+        if is_jacobi:
             x, y, z = shape.ellip2cart(th_0, ph_0)
         else:
             x, y, z = shape.polar2cart(th_0, ph_0)
@@ -46,7 +46,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, Jacobi=False, n=100
         
         if shape.a_axis > shape.b_axis and shape.b_axis > shape.c_axis: # Triaxial ellipsoid
             
-            if Jacobi:
+            if is_jacobi:
                 beta_0, lmda_0 = th_0, ph_0
                 beta_1, lmda_1 = th_1, ph_1
             else:
@@ -247,7 +247,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, Jacobi=False, n=100
             h2 = h_x2
             
             lmda_0, lmda_1 = ph_0, ph_1
-            if Jacobi:
+            if is_jacobi:
                 beta_0, beta_1 = th_0, th_1
             else:
                 # Convert to Jacobi's coordinates
