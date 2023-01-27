@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance) project.
 
+## 2023-01-27
+### Added
+- Unit tests for FMM routines.
+
 ## 2023-01-26
 ### Added
 - Max/min edge lengths and face angles from precalculation/splitting routines.
