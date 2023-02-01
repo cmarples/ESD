@@ -1,14 +1,27 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec 13 13:09:40 2022
-
-@author: Cal
+"""! 
+@brief Ellipsoid-plane intersection routine.
+@file intersection.py
+@author Callum Marples
+- Created by Callum Marples on 13/12/2022.
+- Last modified on 30/01/2022.
 """
 
 import math
 import numpy as np
 
-def ellipsoid_plane(shape, n_vec, q, out_flag=False):
+def ellipsoid_plane(shape, n_vec, q):
+    """! Determine the ellipse of intersection between an ellipsoid and a plane.
+         This routine implements the method given by Klein \cite Klein2012, and 
+         is used in ESD to calculate triaxial taxicab distance.
+    @param shape : EllipsoidShape \n
+        The ellipsoid.
+    @param n_vec : NumPy array of float \n
+        Normal vector to the plane.
+    @param q : list of float \n
+        A point interior to the ellipsoid that lies within the plane.
+    @return 2 element list of float \n
+        The \f$a\f$ and \f$b\f$ axes of the intersecting ellipse.
+    """
     
     Dq = np.array([q[0]/shape.a_axis, q[1]/shape.b_axis, q[2]/shape.c_axis])
     
@@ -44,13 +57,9 @@ def ellipsoid_plane(shape, n_vec, q, out_flag=False):
     DqDs = np.dot(Dq, Ds)
     DqDq = np.dot(Dq, Dq)
     
-    # Ellipse centre and axes
-    center = [-DqDr/DrDr, -DqDs/DsDs]
+    # Ellipse axes
     d = DqDq - DqDr*DqDr/(DrDr) - DqDs*DqDs/(DsDs)
     a_ellipse = math.sqrt((1.0-d) / DrDr)
     b_ellipse = math.sqrt((1.0-d) / DsDs)   
     
-    if out_flag == True:
-        return [center, a_ellipse, b_ellipse, r, s]
-    else:
-        return [center, a_ellipse, b_ellipse]
+    return [a_ellipse, b_ellipse]

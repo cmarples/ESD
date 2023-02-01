@@ -1,6 +1,19 @@
 # Changelog
 This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance) project.
 
+## 2023-02-01
+### Modified
+- Updated figure generation scripts for newest set of function calls.
+
+## 2023-01-31
+### Added
+- Documentation for the files in the geo directory.
+- Reincluded data and figure generation scripts.
+
+## 2023-01-30
+### Added
+- Documentation for the shape, grid and intersection files.
+
 ## 2023-01-27
 ### Added
 - Unit tests for FMM routines.

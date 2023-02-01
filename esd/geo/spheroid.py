@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Sep  5 14:32:03 2022
-
-@author: Callum Marples
+"""! 
+@brief Spheroid geodesic routine.
+@file spheroid.py
+@author Callum Marples
+- Created by Callum Marples on 5/09/2022.
+- Last modified on 31/01/2022.
 
 This file contains code to call routines from the GeographicLib library to
-calculate geodesic distnaces on the spheroid.
+calculate geodesic distances on the spheroid.
 
-To run any function in this file, GeographicLib must be installed!
+To the routine in this file, GeographicLib must be installed!
 """
 
 from math import pi

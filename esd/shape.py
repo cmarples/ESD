@@ -1,18 +1,47 @@
-""" 
+"""!
 @brief Defines the ellipsoid shape class.
-@file ellipsoid_shape.py
+@file shape.py
 @author Callum Marples
 - Created by Callum Marples on 04/07/2022.
-- Last modified on 17/01/2022.
+- Last modified on 30/01/2022.
 """
 
 from math import pi, sqrt, sin, cos, asin, acos, atan2
 import numpy as np
 
 class EllipsoidShape:
-    """! The ellipsoid shape class.
-    Contains the principal semi-axis lengths; \f$a\f$, \f$b\f$ and \f$c\f$ of an ellipsoid. 
-    Also includes functions for conversion between different coordinate systems on the ellipsoid surface.
+    """! 
+    The ellipsoid shape class.
+    Contains the principal semi-axis lengths; \f$a\f$, \f$b\f$ and \f$c\f$ of an 
+    ellipsoid with equation,\n
+    \n
+    \f$\left( x/a \right)^2 + \left( y/b \right)^2 + \left( z/c \right)^2 = 1\f$,\n
+    \n
+    where \f$x\f$, \f$y\f$ and \f$z\f$ are Cartesian coordinates.
+    Functions are included to tell whether a given shape is a sphere or spheroid, 
+    based on the axis lengths. 
+    Also includes functions for conversion between polar and Cartesian coordinates, 
+    as well as ellipsoidal to Cartesian coordinates.
+    The polar coordiantes \f$\theta\f$ and \f$\phi\f$ are defined such that,\n
+    \n
+    \f$ x = a \sin\theta \cos\phi \f$,\n
+    \f$ y = b \sin\theta \sin\phi \f$,\n
+    \f$ z = c \cos\theta \f$,
+    \n    
+    where \f$\theta \in [0, \pi]\f$ and \f$\phi \in [0, 2\pi)\f$. For the purposes
+    of the calculations in this library, it is assumed that \f$a \geq b \geq c\f$.
+    The only exception to this is a prolate spheroid, for which \f$a = b < c\f$, 
+    so that the \f$c\f$-axis (from which \f$\theta\f$ is measured) is distinct.
+    \n
+    The ellipsoidal coordiantes \f$\beta\f$ and \f$\lambda\f$ are defined according to,\n
+    \n
+    \f$ x = a \cos\lambda \left( \cos^2\beta + \frac{a^2-b^2}{a^2-c^2} \sin^2\beta \right)^{1/2} \f$,\n
+    \f$ y = b \cos\beta \sin\lambda\f$,\n 
+    \f$ z = c \sin\beta \left( 1 - \frac{a^2-b^2}{a^2-c^2} \cos^2\lambda \right)^{1/2} \f$,\n
+    \n
+    where \f$\beta \in [-\pi /2, \pi /2]\f$ and \f$\lambda \in (-\pi, \pi]\f$.
+    These coordinates are used to perform geodesic calculations using the 
+    boundary value method of Panou \cite Panou2013.
     """
     def __init__(self, a=1.0, b=1.0, c=1.0):
         """! The EllipsoidShape initialiser.
@@ -37,6 +66,8 @@ class EllipsoidShape:
         
     def is_spheroid(self):
         """! Determines whether the shape is a spheroid (i.e. \f$a=b\f$).
+        This routine will not recognise a spheroid with \f$a=c\f$ or \f$b=c\f$,
+        since it is assumed here that the \f$c\f$-axis is always distinct.
         @return bool \n
             True if spheroidal, False otherwise.
         """
@@ -47,6 +78,8 @@ class EllipsoidShape:
         
     def set_axes(self, a, b, c, normalise=False):
         """! Set the axis lengths in the EllipsoidShape instance.
+        This is used in the initialiser, but can also be used on an already 
+        existing EllipsoidShape object.
         @param a : float \n
             The \f$a\f$-axis length.
         @param b : float \n
@@ -64,8 +97,11 @@ class EllipsoidShape:
         if not (isinstance(c, (int, float)) and c > 0):
              raise ValueError(f"positive c-axis expected, got {c}")
         # Set axis length values
+        ## The \f$a\f$ semi-axis of the ellipsoid. The \f$\phi\f$ angle equals 0 or \f$\pi\f$ at this axis.
         self.a_axis = a
+        ## The \f$b\f$ semi-axis of the ellipsoid. The \f$\phi\f$ angle equals \f$\pi/2\f$ or \f$3\pi/2\f$ at this axis.
         self.b_axis = b
+        ## The \f$c\f$ semi-axis of the ellipsoid. The \f$\theta\f$ angle is defined from this axis.
         self.c_axis = c
         if normalise == True:
             self.normalise()
@@ -137,6 +173,7 @@ class EllipsoidShape:
     
     def cart2ellip(self, x, y, z):
         """! Convert Cartesian coordinates to ellipsoidal coordiantes.
+        This routine uses the numerical method given by Panou and Korakitis \cite Panou2019.
         @param x : float \n
             The \f$x\f$ coordinate.
         @param y : float \n

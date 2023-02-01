@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 16 11:25:04 2022
-
-@author: Callum Marples
+"""! 
+@brief Spherical geodesic (great circle) routines.
+@file sphere.py
+@author Callum Marples
+- Created by Callum Marples on 16/08/2022.
+- Last modified on 31/01/2022.
 """
 
 from math import pi, sin, cos, tan, acos, atan2

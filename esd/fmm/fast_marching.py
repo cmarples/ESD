@@ -4,11 +4,11 @@
 @author Callum Marples
 
 - Created on 11/10/2022. 
-- Last modified on 17/01/2023.
+- Last modified on 31/01/2023.
 """
 
 import heapq
-from math import sqrt, inf
+from math import sqrt, inf, fabs
 
 # This class contains information for a vertex in the mesh used in the fast
 # marching method.
@@ -284,12 +284,15 @@ def fmm_first_order_update(visit, trial, support, vertex, fmm):
         discr = beta*beta - 4.0*alpha*gamma
         if discr > 0.0:
             t = ( -beta + sqrt(discr) ) / (2.0*alpha)
-    
-            # Check upwinding condition
-            x = b*(t-u)/t
-            if u < t and ((cos_psi >= 0.0 and cos_psi < 1.0e-12) or (x > a_cos_psi and x < a/cos_psi)):
-                fmm.update[visit] = [trial, support]
-                return t + fmm.distance[support]
+            if fabs(t) > 1.0e-14:
+                # Check upwinding condition
+                x = b*(t-u)/t
+                if u < t and ((cos_psi >= 0.0 and cos_psi < 1.0e-12) or (x > a_cos_psi and x < a/cos_psi)):
+                    fmm.update[visit] = [trial, support]
+                    return t + fmm.distance[support]
+                else:
+                    fmm.update[visit] = [trial]
+                    return -1
             else:
                 fmm.update[visit] = [trial]
                 return -1

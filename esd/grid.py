@@ -1,17 +1,28 @@
-""" 
-@brief Defines the grid class, contact distribution class and binary search routine.
+"""! 
+@brief Defines the grid class and a binary search routine.
 @file grid.py
 @author Callum Marples
 - Created by Callum Marples on 12/01/2023.
-- Last modified on 24/01/2022.
+- Last modified on 30/01/2022.
 """
 
 from math import pi, ceil
 
 class Grid:
     """! The grid class.
-    Contains information pertaining to a set of (polar coordinate) patches/vertices defined over 
-    the surface of an ellipsoid.
+    In ESD, the term 'grid' refers to a set of \f$\theta\f$ and \f$\phi\f$ 
+    points used to define a polar coordiante surface mesh. The grid object contains 
+    the polar coordinate information in the \f$\theta\f$-\f$\phi\f$ plane. This 
+    class is shape independent; it contains neither shape information, nor 
+    Cartesian coordinates of surface points.
+    
+    Each vertex in a FmmMesh object (based on polar coordinates) can be indexed 
+    by a scalar, or by a pair of integers giving the \f$\theta\f$ and \f$\phi\f$ 
+    positions. Functions are defined as Grid members to convert between the two 
+    and to find the index/indices of the vertex closest to a given surface point 
+    (as given in polar coordinates).
+    
+    All angular coordiantes in this class are stored in radians.
     """
     def __init__(self, no_theta=19, no_phi=36):
         """! The Grid initialiser.
@@ -21,13 +32,20 @@ class Grid:
             The number of phi values in the grid, defaults to 36.
         """
         # Grid parameters
+        ## Number of \f$\theta\f$ values, \f$n_\theta\f$.
         self.no_theta = no_theta
+        ## Number of \f$\phi\f$ values, \f$n_\phi\f$.
         self.no_phi = no_phi
+        ## Number of vertices in the grid. This is given by,
+        ## \f$n_\mathrm{vertices} = (n_\theta - 2)n_\phi + 2\f$
         self.no_vertices = (no_theta - 2)*no_phi + 2
+        ## Increment of \f$\theta\f$.
         self.delta_theta = pi / (no_theta - 1)
+        ## Increment of \f$\phi\f$.
         self.delta_phi = 2.0*pi / no_phi
-        # Lists of theta and phi values
+        ## List of the \f$\theta\f$ values. Ranges from 0 to \f$\pi\f$.
         self.theta_list = [0.0] * no_theta
+        ## List of the \f$\phi\f$ values. Ranges from 0 to \f$2\pi\f$.
         self.phi_list = [0.0] * (no_phi + 1)
         for i in range(no_theta):
             self.theta_list[i] = i * self.delta_theta
@@ -71,7 +89,7 @@ class Grid:
         """! Get \f$\phi\f$ index, given the \f$\theta\f$ index and the scalar vertex index.
         @param vertex_index : int \n
             Scalar index of the vertex.
-        @param vertex_index : int \n
+        @param theta_index : int \n
             \f$\theta\f$ index of the vertex.
         @return int \n
             \f$\phi\f$ index of the vertex.
@@ -121,8 +139,9 @@ class Grid:
 
 
 def binary_search(v, x):
-    """! Find index of the closest value in list v to number x
-         using the binary search algorithm.
+    """! Find the index of the closest value in list v to number x
+         using the binary search algorithm. For further details of the algorithm, 
+         see \cite Knuth1998.
          It is assumed that the elements in v are monotonically increasing.
     @param v : list of floats \n
         List of monotonically increasing values.

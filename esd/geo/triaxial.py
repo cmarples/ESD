@@ -1,8 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep  6 14:02:30 2022
+"""! 
+@brief Triaxial ellipsoid geodesic routines.
+@file triaxial.py
+@author Callum Marples
+- Created by Callum Marples on 06/09/2022.
+- Last modified on 31/01/2022.
 
-@author: Callum Marples
+The routines in this file compute ellipsoid geodesics using the boundary value
+method of Panou et al. \cite Panou2013 \cite Panou2013a.
 """
 
 import math
@@ -10,7 +14,34 @@ import numpy as np
 import scipy.integrate
 
 def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=10000):
-    
+    """! Determine the geodesic distance between two points on an ellipsoid.
+    This routine uses the boundary value method of Panou et al. \cite Panou2013 \cite Panou2013a
+    @param shape : EllipsoidShape \n
+        The ellipsoid.
+    @param start : list of floats (2 elements) \n
+        The start point, in \f$(\theta, \phi)\f$ coordinates.
+    @param end : list of floats (2 elements) \n
+        The end point, in \f$(\theta, \phi)\f$ coordinates.
+    @param is_radians : bool (optional) \n
+        Specifies whether the elements start_point and end_point are given in
+        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians is performed. Defaults to False.
+    @param tol : float (optional) \n
+        Tolerance used to determine convergence. Defaults to 1e-12.
+    @param is_jacobi (optional) \n
+        If True, it is assumed that the input start and end points are given in 
+        Jacobi's ellipsoidal coordinates. Otherwise, it is assumed that scaled spherical 
+        polar coordinates were input and necessary conversions are made within the routine. 
+        Defaults to False.
+    @param n : int (optional)
+        Number of steps to use for numerical integration on each iteration. Defaults to 10000.
+    @return list \n
+        Element 0 : float
+            The distance from start to end along the obtained geodesic path.
+        \n
+        Element 1 : n \f$\times\f$ 3 NumPy array
+            The obtained n points along the geodesic path from start to end.
+    """
     start_temp = [0.0, 0.0]
     end_temp = [0.0, 0.0]
     # Convert to radians if input points given in degrees (assumed by default).
@@ -193,7 +224,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=
                 
                 x0 = [beta_0, ddlmda, 0.0, 1.0]
                  
-                x = solve_RK4(x_prime, x0, h, lmda_vec, beta_1, tol, n)
+                x = solve_rk4(x_prime, x0, h, lmda_vec, beta_1, tol, n)
                   
                 # Calculate distance along geodesic
                 # Determine integrand using vectorised calculation
@@ -231,7 +262,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=
                 
                 y0 = [lmda_0, math.tan(A) / cb0, 0.0, 1.0]
                 
-                y = solve_RK4(y_prime, y0, h, beta_vec, lmda_1, tol, n)
+                y = solve_rk4(y_prime, y0, h, beta_vec, lmda_1, tol, n)
                   
                 # Calculate distance along geodesic
                 # Determine integrand using vectorised calculation
@@ -323,7 +354,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=
                 
                 x0 = [beta_0, cb0 / math.tan(A), 0.0, 1.0]
                  
-                x = solve_RK4(x_prime_spheroid, x0, h, lmda_vec, beta_1, tol, n)
+                x = solve_rk4(x_prime_spheroid, x0, h, lmda_vec, beta_1, tol, n)
                   
                 # Calculate distance along geodesic
                 # Determine integrand using vectorised calculation
@@ -350,28 +381,42 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=
         
         return s, path_positions
     
-def solve_RK4(fun, z0, h, t, z_end, tol, n):
+def solve_rk4(fun, z0, h, t, z_end, tol, n):
+    """! Uses the 4th order Runge-Kutta method to numerically solve systems of 
+    differential equations, encountered when calculating geodesics in the bvm_dist routine.
+    @param fun : function \n
+        The system of equations to be solved (one of two subroutines of bvm_dist). 
+        Has 2 inputs and 4 outputs).
+    @param z0 : 4 element list of float \n
+        The initial conditions.
+    @param h : float \n
+        Step length.
+    @param t : n+1 element NumPy array \n
+        Values of the independent variable.
+    @param z_end : float \n
+        Value of the dependent variable at the end point.
+    @param tol : float (optional) \n
+        Tolerance used to determine convergence.
+    @param n : int
+        Number of steps to use for numerical integration on each iteration. Defaults to 10000.
+    @return NumPy array \n
+        An n+1 element array containing values of the dependent variable.
+    """
     m = 0
     diff = 1
     # Solve for geodesic
     while diff > tol and m < 25:
-
         z = np.array((n+1) * [z0])
-
         for i in range(n):
-
             k1 = h * fun(z[i], t[i])
             k2 = h * fun(z[i] + 0.5*k1, t[i] + 0.5*h)
             k3 = h * fun(z[i] + 0.5*k2, t[i] + 0.5*h)
             k4 = h * fun(z[i] + k3, t[i] + h)
-            
             z[i+1] = z[i] + (k1 + 2*k2 + 2*k3 + k4)/6.0  
-            
         m += 1
         diff = z_end - z[n][0]
         # Apply correction
         z0[1] += diff / z[n][2]
         # Absolute value of difference
         diff = abs(diff)
-    
     return z
