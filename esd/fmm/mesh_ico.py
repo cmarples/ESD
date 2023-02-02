@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 27 11:03:20 2022
-
-@author: Callum Marples
-
-Generate sphere triangulation using the vertices of an icosahedron.
+"""! 
+@brief Icosahedral mesh routines.
+@file mesh_ico.py
+@author Callum Marples
+- Created by Callum Marples on 27/10/2022.
+- Last modified on 02/02/2022.
 """
 
 import numpy as np

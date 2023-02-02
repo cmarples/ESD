@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 12 20:08:13 2022
-
-@author: Cal
+"""! 
+@brief Defines classes used in the fast marching method.
+@file classes.py
+@author Callum Marples
+- Created by Callum Marples on 12/12/2022.
+- Last modified on 02/02/2022.
 """
 
 from math import sqrt, inf
@@ -22,24 +23,33 @@ class FmmVertex:
         @param is_endpoint : bool (optional) \n
             If True, this vertex represents an end point. Defaults to False.
         """
+        ## Scalar index of the vertex.
         self.index = index
-        self.is_endpoint = is_endpoint
+        ## Cartesian coordinates of the vertex.
         self.carts = carts
+        ## Dictionary containing all neighbours of the vertex
         self.neighbour = {}
+        ## Set of all neighbours of the vertex
         self.neighbour_set = set()
+        ## Integer giving the icosahedral face the vertex belongs to (used for building an icosahedral mesh)
         self.ico = []
 
 class FmmNeighbour:
     """! The neighbour class.
-    Contains information for a given neighbour, j, of vertex i.
+    Contains information for a given neighbour, j, of vertex i. This information 
+    includes Euclidean distance between the neighbours, the faces to which the 
+    pair belong and the angles in these faces.
     """
     def __init__(self):
         """! The FmmNeighbour initialiser.
         """
+        ## Euclidean distance between neighbours.
         self.distance = -1.0
+        ## List of two integers, giving the common neighbours of the pair stored here.
+        ## This gives the two faces to which this edge belongs.
         self.face = []
+        ## Dictionary giving the angles at the host vertex, in the two faces specified by face.
         self.face_angle = {}
-        self.ico_face = []
 
 class FmmMesh:
     """! The mesh class.
@@ -49,8 +59,11 @@ class FmmMesh:
     def __init__(self):
         """! The FmmMesh initialiser.
         """
+        ## List of vertices in the mesh.
         self.vertex = []
+        ## Number of vertices in the mesh.
         self.no_vertices = 0
+        ## Polar ("pol") or Icosahedral ("ico").
         self.type = "none"
         
     def precalculate(self):
@@ -58,7 +71,9 @@ class FmmMesh:
         @see gen_pol_mesh
         @see gen_ico_mesh
         """
+        ## Smallest edge length.
         self.min_edge = inf
+        ## Largest edge length.
         self.max_edge = 0.0
         for i in range(self.no_vertices):
             for j in self.vertex[i].neighbour:
@@ -72,9 +87,12 @@ class FmmMesh:
                         self.max_edge = self.vertex[i].neighbour[j].distance
                     if self.vertex[i].neighbour[j].distance < self.min_edge:
                         self.min_edge = self.vertex[i].neighbour[j].distance
-        
+                        
+        ## Number of obtuse angles in the mesh.
         self.no_obtuse = 0
+        ## Cosine of the smallest face angle.
         self.min_angle = -2.0
+        ## Cosine of the largest face angle.
         self.max_angle = 2.0
         for i in range(self.no_vertices):        
             for j in self.vertex[i].neighbour:

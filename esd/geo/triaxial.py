@@ -4,9 +4,6 @@
 @author Callum Marples
 - Created by Callum Marples on 06/09/2022.
 - Last modified on 31/01/2022.
-
-The routines in this file compute ellipsoid geodesics using the boundary value
-method of Panou et al. \cite Panou2013 \cite Panou2013a.
 """
 
 import math
@@ -24,7 +21,7 @@ def bvm_dist(shape, start, end, is_radians=False, tol=1e-12, is_jacobi=False, n=
         The end point, in \f$(\theta, \phi)\f$ coordinates.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @param tol : float (optional) \n
         Tolerance used to determine convergence. Defaults to 1e-12.

@@ -25,7 +25,7 @@ def sphere_tcd(r, start, end, out_flag=False, is_radians=False):
         included in the output. Defaults to False. 
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return float or 3 element list of float \n
         If out_flag False, outputs the taxicab distance from start to end.
@@ -74,7 +74,7 @@ def spheroid_tcd(a, c, start, end, out_flag=False, is_radians=False):
         included in the output. Defaults to False. 
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return float or 3 element list of float \n
         If out_flag False, outputs the taxicab distance from start to end.
@@ -126,7 +126,7 @@ def triaxial_tcd(shape, start, end, out_flag=False, is_radians=False):
         included in the output. Defaults to False. 
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return float or 3 element list of float \n
         If out_flag False, outputs the taxicab distance from start to end.

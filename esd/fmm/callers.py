@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 14 16:38:56 2022
-
-@author: Callum Marples
-
-Prepare and call the fast marching routine for a given precaluculated graph and
-input start/end points.
+"""! 
+@brief Routines for calling the fast marching method.
+@file callers.py
+@author Callum Marples
+- Created by Callum Marples on 14/11/2022.
+- Last modified on 02/02/2023.
 """
 
 from numpy import array
@@ -32,7 +30,7 @@ def distance_pair(shape, mesh, start_point, end_point, is_dijkstra=False, is_rad
         is used. Defaults to False.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return [float, FmmResult] \n
         The first element is the obtained distance from start_point to end_point.
@@ -129,7 +127,7 @@ def distance_multiple(shape, mesh, start_point, end_point=[], is_dijkstra=False,
         is used. Defaults to False.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return [list of floats, FmmResult] \n
         The first element is a list of obtained distances from the start_point to all points in end_point.
@@ -223,7 +221,7 @@ def distance_all(shape, mesh, start_point, is_dijkstra=False, is_radians=False):
         is used. Defaults to False.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return [list of floats, FmmResult] \n
         The first element is a list of obtained distances from the start_point to all points in end_point.
@@ -270,7 +268,7 @@ def distance_end(shape, mesh, fmm, end_point, is_radians=False):
         The end point, in \f$(\theta, \phi)\f$ coordinates.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return float \n
         Interpolated distance to the specified end point.

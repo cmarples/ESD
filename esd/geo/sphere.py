@@ -22,7 +22,7 @@ def gc_dist(r, start, end, is_radians=False):
         The end point in polar coordinates, \f$[\theta_1, \phi_1]\f$.
     @param is_radians : bool (optional) \n
         Specifies whether the elements start_point and end_point are given in
-        radians (True) or degrees (False). If False, a coordiante conversion to
+        radians (True) or degrees (False). If False, a coordinate conversion to
         radians is performed. Defaults to False.
     @return The shortest distance between start and end.
     """

@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Oct  4 16:49:51 2022
-
-@author: Callum Marples
-
-Generate FmmGrid using an ellipsoid with scaled spherical polar coordinates
+"""! 
+@brief Routines for generating a polar mesh.
+@file mesh_pol.py
+@author Callum Marples
+- Created by Callum Marples on 4/10/2022.
+- Last modified on 02/02/2023.
 """
 
 import numpy as np

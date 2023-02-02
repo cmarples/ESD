@@ -1,6 +1,10 @@
 # Changelog
 This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance) project.
 
+## [1.0.0] - 2023-02-02
+### Modified
+- Completed documentation of ESD.
+
 ## 2023-02-01
 ### Modified
 - Updated figure generation scripts for newest set of function calls.
@@ -74,8 +78,6 @@ This document tracks the notable changes to the ESD (Ellipsoid Shortest Distance
 ## 2023-01-10
 ### Added
 - Spherical surface sampling algorithms.
-
-ADD DECEMBER CODING!
 
 ## 2022-11-30
 ### Added

@@ -1,10 +1,9 @@
 """! 
-@brief Routines and classes to perform the fast marching method.
+@brief Routines used to perform the fast marching method.
 @file fast_marching.py
 @author Callum Marples
-
-- Created on 11/10/2022. 
-- Last modified on 31/01/2023.
+- Created by Callum Marples on 11/10/2022. 
+- Last modified on 02/02/2023.
 """
 
 import heapq
@@ -17,13 +16,19 @@ class FmmResult:
     Contains information obtained from applying the fast marching method to a FmmMesh object.
     """
     def __init__(self, no_vertices):
+        ## List of distances from the start point to each vertex in the mesh.
         self.distance = [inf] * no_vertices
+        ## List of boolean values for each vertex. If element i is True, then 
+        ## distance to vertex i has been accepted as the shortest.
         self.accepted = [False] * no_vertices
+        ## List of lists. Element i gives the vertex or vertices used to update vertex i.
         self.update = [[-1]] * no_vertices
+        ## Number of obtuse angles encountered throughout the fast marching method.
         self.no_obtuse = 0
         
 def fast_marching(mesh, start_vertex, start_carts, is_dijkstra=False, end_dict={}):
-    """! @brief Calculate approximate distances over a surface mesh, using either the fast marching method or Dijkstra's algorithm.
+    """! @brief Calculate approximate distances over a surface mesh, using either 
+        the fast marching method \cite Kimmel1998 or Dijkstra's algorithm \cite Dijkstra1959.
     @param mesh : FmmMesh \n
         The mesh on which the wavefront algorithm is applied.
     @param start_vertex : int \n

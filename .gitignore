@@ -1,8 +1,9 @@
 # ignore all contents of the data/ directory
 data/
 
-# ignore all contents of the docs/html/ directory
+# ignore all contents of the docs/html/ and docs/latex directories
 docs/html/
+docs/latex/
 
 # ignore __pycache__
-leod/__pycache__
+esd/__pycache__
