@@ -16,7 +16,8 @@ Karney \cite Karney2011 \cite Karney2012 \cite Karney2019 is also used for makin
 
 The examples/ directory contains a set of Python scripts that illustrate how the ESD library is used.
 
-To read the full documentation, open index.html in the docs/html/ directory.
+To read the full documentation, open index.html in the docs/html/ directory (this must first be generated using Doxygen - the create_documentation.sh 
+and open_documentation.sh scripts perform genertation and opening of the documentation).
 
 ## Features {#features}
 
@@ -39,4 +40,4 @@ The ESD library includes code implementing the following:
 
 ## Author {#author}
 
-   * Callum Marples
+   * Callum Marples (cmarples@hotmail.co.uk)
